@@ -14,7 +14,7 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 
 ### Semana 3-4: Gestión de Autenticación y Seguridad
 - [ ] Implementar login y registro
-- [ ] Protecciones con JWT y roles (`admin`, `vendedor`)
+- [ ] Protecciones con JWT y roles (`admin`, `vendedor`, `cajero`, `supervisor`)
 - [ ] Seed de usuario admin inicial
 
 ### Semana 5-6: Ventas y Cupones
@@ -266,7 +266,7 @@ node server.js
 Para evitar reiniciar manualmente con `Ctrl + C`, instalá nodemon y usalo así:
 
 ```bash
-npm install -g nodemon
+npm install --save-dev nodemon
 nodemon server.js
 ```
 
