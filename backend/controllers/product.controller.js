@@ -56,24 +56,35 @@ exports.create = async (req, res) => {
   }
 };
 
-// ✅ Actualizar producto
+// ✅ Actualizar producto con validación de existencia
 exports.update = async (req, res) => {
   try {
-    await Product.update(req.body, { where: { id: req.params.id } });
-    res.sendStatus(204);
+    const [updatedCount] = await Product.update(req.body, { where: { id: req.params.id } });
+
+    if (updatedCount === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    const updatedProduct = await Product.findByPk(req.params.id);
+    res.status(200).json(updatedProduct);
   } catch (error) {
     console.error('❌ Error al actualizar producto:', error);
     res.status(500).json({ error: 'Error al actualizar producto' });
   }
 };
 
-// ✅ Eliminar producto
+// ✅ Eliminar producto con validación
 exports.remove = async (req, res) => {
   try {
-    await Product.destroy({ where: { id: req.params.id } });
-    res.sendStatus(204);
+    const deletedCount = await Product.destroy({ where: { id: req.params.id } });
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    res.status(200).json({ message: 'Producto eliminado exitosamente' });
   } catch (error) {
     console.error('❌ Error al eliminar producto:', error);
-    res.status(500).json({ error: 'Error al eliminar producto' });
+    res.status(500).json
   }
 };
