@@ -33,6 +33,123 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 
 ---
 
+## 🔁 Modelo de Negocio y Flujo de Trabajo
+
+### 🧩 Modelo de Negocio
+- **Tipo**: Venta minorista presencial
+- **Canal**: Punto de orden (vendedor) + Punto de caja (cajero)
+- **Clientes**: ORDEN (inmediato) / PEDIDO (programado)
+- **Medios de Pago**: Efectivo, Tarjeta, Transferencia
+- **Valor Agregado**: Descuentos solo en efectivo, pedidos programables
+- **Sistema**: Transacciones, cupones, comprobantes, estadísticas
+
+---
+
+### 🔄 Flujo de Trabajo
+
+#### 👤 VENDEDOR (Punto de Orden)
+1. Recibe al cliente
+2. Registra tipo de transacción: ORDEN o PEDIDO
+3. Datos del cliente:
+   - ORDEN: solo nombre
+   - PEDIDO: nombre, tel, email, fecha/hora
+4. Agrega productos
+5. Sistema genera N° único
+6. Registra medio de pago
+7. Envía transacción al cajero
+
+#### 💵 CAJERO (Punto de Caja)
+1. Recibe y prioriza transacciones
+2. Llama al cliente
+3. Confirma/cambia medio de pago
+4. Procesa cobro:
+   - Tarjeta: POS
+   - Efectivo: aplica cupón
+   - Transferencia: registra referencia
+5. En PEDIDO: cobra seña / saldo
+6. Genera comprobante
+7. Actualiza estadísticas
+8. Realiza cierre de caja
+
+---
+
+## ✅ Funcionalidades Faltantes
+
+### 📊 Reportes
+- Ventas diarias / semanales / mensuales
+- Cupones aplicados por día / valor descontado
+- Pedidos por estado y tasa de cancelación
+- Estadísticas de caja por método de pago
+
+### 💼 Funciones de Caja
+- **Apertura**: fondo inicial, cajero
+- **Movimiento**: ingresos, egresos, señas
+- **Cierre**: totales, diferencias, firma
+- **Historial**: cierres por turno, exportable
+- **Alertas**: diferencias y cupones de alto valor
+
+---
+
+## 👥 Roles del Sistema
+
+### VENDEDOR
+- Carga ORDEN/PEDIDO
+- Elige método de pago
+- No cobra ni aplica cupones
+
+### CAJERO
+- Cobra, aplica cupones
+- Maneja señas y saldos
+- Realiza arqueos y cierres
+
+### SUPERVISOR
+- Reportes, historial, auditoría
+
+### ADMINISTRADOR
+- Configura sistema
+- Carga usuarios, productos y reglas
+
+---
+
+## 🔐 Sistema de Roles Modulares
+
+### Permisos por módulo
+
+#### 📦 Transacciones
+- ver_transacciones
+- crear_orden
+- crear_pedido
+- modificar_transacciones
+
+#### 🧾 Pagos y Caja
+- procesar_pagos
+- aplicar_cupones
+- registrar_senias_y_saldos
+- abrir_caja
+- realizar_arqueos
+- cerrar_caja
+- ver_historial_caja
+
+#### 📊 Reportes
+- ver_reporte_ventas
+- ver_reporte_cupones
+- ver_reporte_caja
+- exportar_reportes
+
+#### ⚙️ Administración
+- gestionar_usuarios
+- gestionar_productos
+- gestionar_cupones
+- configurar_parametros
+
+### Ejemplo de Rol: Super Cajero
+Permisos asignados:
+- ✅ Todos los de cajero
+- ✅ ver_reporte_caja
+- ✅ ver_reporte_cupones
+
+--- 
+
 ## 🧱 Arquitectura General
 
 - **Backend:** Node.js + Express
