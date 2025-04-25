@@ -1,3 +1,5 @@
+// backend/middlewares
+
 const jwt = require('jsonwebtoken');
 const SECRET = process.env.JWT_SECRET || 'secreto123';
 

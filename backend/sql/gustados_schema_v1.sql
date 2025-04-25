@@ -65,3 +65,49 @@ CREATE TABLE Products (
   FOREIGN KEY (product_image_id) REFERENCES ProductImages(id)
 );
 GO
+
+-- Tabla de Ordenes
+CREATE TABLE Orders (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+
+  -- Tipo de orden y código visible
+  type VARCHAR(20) NOT NULL CHECK (type IN ('orden', 'pedido', 'delivery', 'salon')),
+  order_code VARCHAR(10) NOT NULL, -- Ej: O001, P001...
+
+  -- Cliente / mesa / dirección
+  customer_name NVARCHAR(100),
+  customer_phone NVARCHAR(30),
+  customer_email NVARCHAR(100),
+  table_number INT NULL, -- solo para 'salon'
+  delivery_address NVARCHAR(255) NULL, -- solo para 'delivery'
+
+  -- Fechas clave
+  delivery_date DATETIME NULL, -- pedidos y delivery
+  first_payment_date DATETIME NULL,
+  last_payment_date DATETIME NULL,
+
+  -- Totales
+  total_amount DECIMAL(10,2) NOT NULL,
+  deposit_amount DECIMAL(10,2) DEFAULT 0,
+  total_cash_paid DECIMAL(10,2) DEFAULT 0,
+
+  -- Descuentos
+  discount_percentage DECIMAL(5,2) DEFAULT 0,
+  discount_amount DECIMAL(10,2) DEFAULT 0,
+  total_amount_with_discount AS (total_amount - discount_amount) PERSISTED,
+
+  -- Estado y forma de pago
+  status NVARCHAR(30) DEFAULT 'pendiente',
+  payment_method NVARCHAR(50), -- efectivo, tarjeta, mixto
+
+  -- Relacionales
+  created_by UNIQUEIDENTIFIER NOT NULL,
+  cash_register_id UNIQUEIDENTIFIER NULL,
+  coupon_code NVARCHAR(50) NULL,
+
+  -- Metadatos
+  created_at DATETIME DEFAULT GETDATE(),
+  updated_at DATETIME NULL,
+
+  CONSTRAINT FK_orders_user FOREIGN KEY (created_by) REFERENCES Users(id)
+);
