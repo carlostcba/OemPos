@@ -90,6 +90,7 @@ CREATE TABLE Orders (
   total_amount DECIMAL(10,2) NOT NULL,
   deposit_amount DECIMAL(10,2) DEFAULT 0,
   total_cash_paid DECIMAL(10,2) DEFAULT 0,
+  total_non_cash_paid DECIMAL(10,2) DEFAULT 0,
 
   -- Descuentos
   discount_percentage DECIMAL(5,2) DEFAULT 0,
@@ -110,4 +111,41 @@ CREATE TABLE Orders (
   updated_at DATETIME NULL,
 
   CONSTRAINT FK_orders_user FOREIGN KEY (created_by) REFERENCES Users(id)
+);
+
+
+--Tabla de Items de Ordenes
+CREATE TABLE OrderItems (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  
+  -- Relación con la orden
+  order_id UNIQUEIDENTIFIER NOT NULL,
+  product_id UNIQUEIDENTIFIER NOT NULL,
+
+  -- Info desnormalizada del producto (para históricos)
+  product_name NVARCHAR(100) NOT NULL,
+  unit_label NVARCHAR(20) NOT NULL, -- unidad, kg, etc.
+
+  -- Cantidad comprada (puede ser decimal para pesables)
+  quantity DECIMAL(10, 3) NOT NULL,
+
+  -- Precio original del producto en ese momento
+  unit_price DECIMAL(10, 2) NOT NULL,
+
+  -- Descuento aplicado a este ítem (en $)
+  discount_applied DECIMAL(10, 2) DEFAULT 0,
+
+  -- Precio final después del descuento (unitario * quantity - descuento)
+  final_price DECIMAL(10, 2) NOT NULL,
+
+  -- Código de cupón aplicado (si corresponde)
+  coupon_code NVARCHAR(50) NULL,
+
+  -- Timestamps
+  created_at DATETIME DEFAULT GETDATE(),
+  updated_at DATETIME NULL,
+
+  -- Foreign keys
+  CONSTRAINT FK_orderitems_order FOREIGN KEY (order_id) REFERENCES Orders(id),
+  CONSTRAINT FK_orderitems_product FOREIGN KEY (product_id) REFERENCES Products(id)
 );

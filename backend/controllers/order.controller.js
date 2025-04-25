@@ -1,5 +1,5 @@
 // backend/controllers/order.controller.js
-const { Order } = require('../models');
+const { Order, OrderItem, sequelize } = require('../models');
 const { Op } = require('sequelize');
 
 // Obtener todas las órdenes
@@ -25,8 +25,9 @@ exports.getById = async (req, res) => {
   }
 };
 
-// Crear una orden nueva
+// Crear una orden nueva con productos (OrderItems)
 exports.create = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const {
       type,
@@ -46,40 +47,60 @@ exports.create = async (req, res) => {
       last_payment_date,
       created_by,
       cash_register_id,
-      coupon_code
+      coupon_code,
+      items
     } = req.body;
 
-    if (!type || !total_amount || !created_by) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    if (!type || !total_amount || !created_by || !items || !items.length) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios o productos' });
     }
 
-    const codePrefix = {
-      orden: 'O',
-      pedido: 'P',
-      delivery: 'D',
-      salon: 'S'
-    }[type];
-
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const codePrefix = { orden: 'O', pedido: 'P', delivery: 'D', salon: 'S' }[type];
+    const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
 
     const countToday = await Order.count({
-      where: {
-        type,
-        created_at: { [Op.gte]: startOfDay }
-      }
+      where: { type, created_at: { [Op.gte]: startOfDay } }
     });
 
-    const padded = String(countToday + 1).padStart(3, '0');
-    const code = `${codePrefix}${padded}`;
+    const code = `${codePrefix}${String(countToday + 1).padStart(3, '0')}`;
 
     const order = await Order.create({
-      ...req.body,
-      code
-    });
+      code,
+      type,
+      customer_name,
+      customer_phone,
+      customer_email,
+      table_number,
+      delivery_date,
+      total_amount,
+      deposit_amount,
+      discount_percentage,
+      discount_amount,
+      total_amount_with_discount,
+      payment_method,
+      total_cash_paid,
+      first_payment_date,
+      last_payment_date,
+      created_by,
+      cash_register_id,
+      coupon_code
+    }, { transaction: t });
 
+    for (const item of items) {
+      await OrderItem.create({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        final_price: item.final_price,
+        discount_applied: item.discount_applied || 0
+      }, { transaction: t });
+    }
+
+    await t.commit();
     res.status(201).json(order);
   } catch (error) {
+    await t.rollback();
     console.error('❌ Error al crear orden:', error);
     res.status(500).json({ error: 'Error al crear orden', message: error.message });
   }
