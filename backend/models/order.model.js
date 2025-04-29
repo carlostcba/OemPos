@@ -18,7 +18,7 @@ const Order = sequelize.define('Order', {
     allowNull: false
   },
   status: {
-    type: DataTypes.STRING(30),
+    type: DataTypes.ENUM('pendiente', 'confirmado', 'esperando_retiro', 'entregado', 'cancelado'),
     defaultValue: 'pendiente'
   },
   customer_name: {
