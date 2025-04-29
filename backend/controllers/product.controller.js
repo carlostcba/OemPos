@@ -1,3 +1,4 @@
+// backend/controllers/product.controller.js
 const { Product, Category, Subcategory, ProductImage, User } = require('../models');
 
 // ✅ Obtener todos los productos con relaciones
@@ -85,6 +86,6 @@ exports.remove = async (req, res) => {
     res.status(200).json({ message: 'Producto eliminado exitosamente' });
   } catch (error) {
     console.error('❌ Error al eliminar producto:', error);
-    res.status(500).json
+    res.status(500).json({ error: 'Error al eliminar producto' });
   }
 };

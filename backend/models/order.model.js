@@ -8,7 +8,7 @@ const Order = sequelize.define('Order', {
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
-  code: {
+  order_code: {  // Cambiado de "code" a "order_code" para coincidir con la base de datos
     type: DataTypes.STRING(10),
     allowNull: false,
     unique: true
@@ -32,6 +32,10 @@ const Order = sequelize.define('Order', {
   },
   table_number: {
     type: DataTypes.STRING(10),
+    allowNull: true
+  },
+  delivery_address: {  // Añadido campo para dirección de entrega
+    type: DataTypes.STRING(255),
     allowNull: true
   },
   delivery_date: {
@@ -61,6 +65,10 @@ const Order = sequelize.define('Order', {
     type: DataTypes.STRING(50)
   },
   total_cash_paid: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0
+  },
+  total_non_cash_paid: { // Añadido campo para pagos no en efectivo
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0
   },
