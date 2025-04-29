@@ -1,21 +1,24 @@
 const express = require('express');
 const router = express.Router();
-const orderQueueController = require('../controllers/orderQueue.controller'); // ✅ corregido
+const orderQueueController = require('../controllers/orderQueue.controller');
 const { verifyToken } = require('../middlewares/authJwt');
 
-// Todas las rutas requieren token
+// ✅ Todas las rutas protegidas por token
 router.use(verifyToken);
 
-// Listar la cola de pedidos
+// Listar toda la cola
 router.get('/', orderQueueController.getAll);
 
-// Agregar un pedido a la cola
+// Obtener una entrada específica
+router.get('/:id', orderQueueController.getById);
+
+// Crear una nueva entrada en la cola
 router.post('/', orderQueueController.create);
 
-// Actualizar un pedido de la cola
+// Actualizar una entrada de la cola
 router.put('/:id', orderQueueController.update);
 
-// Eliminar un pedido de la cola
+// Eliminar una entrada de la cola
 router.delete('/:id', orderQueueController.remove);
 
 module.exports = router;

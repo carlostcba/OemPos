@@ -5,8 +5,8 @@ const sequelize = require('../config/database');
 const OrderQueue = sequelize.define('OrderQueue', {
   id: {
     type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    primaryKey: true,
+    allowNull: false
   },
   order_id: {
     type: DataTypes.UUID,
@@ -14,15 +14,15 @@ const OrderQueue = sequelize.define('OrderQueue', {
   },
   priority: {
     type: DataTypes.INTEGER,
-    defaultValue: 2 // 1 = urgente, 2 = normal
+    defaultValue: 0
   },
   queue_position: {
     type: DataTypes.INTEGER,
-    allowNull: true // la vamos a calcular al insertar
+    allowNull: false
   },
   status: {
-    type: DataTypes.STRING(30),
-    defaultValue: 'pendiente' // pendiente, llamado, entregado, cancelado
+    type: DataTypes.STRING,
+    defaultValue: 'waiting'
   },
   called_at: {
     type: DataTypes.DATE,

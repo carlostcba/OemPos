@@ -8,6 +8,7 @@ const ProductImage = require('./productImage.model');
 const User = require('./user.model');
 const Order = require('./order.model');
 const OrderItem = require('./orderItem.model');
+const OrderQueue = require('./orderQueue.model');
 
 // Relaciones de productos
 Product.belongsTo(Category, {
@@ -61,5 +62,6 @@ module.exports = {
   ProductImage,
   User,
   Order,
-  OrderItem
+  OrderItem,
+  OrderQueue
 };
