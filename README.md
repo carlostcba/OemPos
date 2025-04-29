@@ -1,35 +1,33 @@
 
 # OemPOS
 
-Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express, Sequelize y MSSQL como parte de la arquitectura del proyecto OemStock.
+Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express, Sequelize y MSSQL como parte de la arquitectura del proyecto OemPos.
 
 ---
 
-## 🧭 Etapas del Proyecto
+## 🛍️ Etapas del Proyecto
 
 ### Semana 1-2: Setup del Proyecto
-- ✅ Conexión a MSSQL
-- ✅ Definición de modelos: Product, User, Category, etc.
-- ✅ CRUD de productos funcionando
+- ✅ MSSQL conectado, Sequelize configurado
+- ✅ Models Product, User, Category, Subcategory, ProductImage
+- ✅ CRUD Products funcionando
 
-### Semana 3-4: Gestión de Autenticación y Seguridad
-- [ ] Implementar login y registro
-- [ ] Protecciones con JWT y roles (`admin`, `vendedor`, `cajero`, `supervisor`)
-- [ ] Seed de usuario admin inicial
+### Semana 3-4: Autenticación y Seguridad
+- ✅ Login funcional
+- ✅ JWT funcionando
+- ✅ Middleware verifyToken activo
+- 🔸 Falta implementar requireRole() en rutas sensibles
 
 ### Semana 5-6: Ventas y Cupones
-- [ ] CRUD de ventas y pedidos
-- [ ] Lógica de cupones y condiciones
-- [ ] Control por medio de pago (efectivo/tarjeta)
+- ⏳ CRUD de Orders, OrderItems, OrderQueue funcionando
+- ⏳ Generación de código especial (O001, P001, D001, S001)
+- ⏳ Faltante: aplicar cupones con descuentos reales sobre efectivo
 
 ### Semana 7-8: Reportes y Caja
-- [ ] Ventas por producto/categoría
-- [ ] Reporte de cupones aplicados
-- [ ] Cierre de caja, arqueos y estadísticas
+- ❌ No iniciado
 
 ### Semana 9+: Frontend Ionic + Tests
-- [ ] Conexión con Frontend Ionic
-- [ ] Testeo unitario y validaciones
+- ❌ No iniciado
 
 ---
 
@@ -69,28 +67,38 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 5. En PEDIDO: cobra seña / saldo
 6. Genera comprobante
 7. Actualiza estadísticas
-8. Realiza cierre de caja
+8. Realiza cierre turno / caja
 
 ---
 
-## ✅ Funcionalidades Faltantes
-
 ### 📊 Reportes
 - Ventas diarias / semanales / mensuales
-- Cupones aplicados por día / valor descontado
-- Pedidos por estado y tasa de cancelación
-- Estadísticas de caja por método de pago
+- Uso de cupones
+- Productos más vendidos
 
-### 💼 Funciones de Caja
-- **Apertura**: fondo inicial, cajero
-- **Movimiento**: ingresos, egresos, señas
-- **Cierre**: totales, diferencias, firma
-- **Historial**: cierres por turno, exportable
-- **Alertas**: diferencias y cupones de alto valor
+### 💼 Caja
+- Apertura y fondo inicial
+- Arqueo de caja
+- Control de diferencias
+- Exportación de reportes (Excel/PDF)
+
+### 📆 Tickets / Cola de atención
+- Administración de prioridad
+- Llamado a clientes según estado
+
+### 💳 Cupones
+- Validación avanzada
+- Cálculo proporcional efectivo/productos elegibles
+- Registro de uso de cupones
 
 ---
 
 ## 👥 Roles del Sistema
+
+- **VENDEDOR**: carga pedidos
+- **CAJERO**: procesa pagos
+- **SUPERVISOR**: audita operaciones
+- **ADMINISTRADOR**: configura parámetros
 
 ### VENDEDOR
 - Carga ORDEN/PEDIDO
@@ -108,6 +116,12 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 ### ADMINISTRADOR
 - Configura sistema
 - Carga usuarios, productos y reglas
+
+---
+
+## 🔐 Seguridad
+- Middleware `verifyToken` activo
+- Falta aplicar `requireRole('rol')` en rutas sensibles
 
 ---
 
@@ -164,15 +178,26 @@ Permisos asignados:
 
 ---
 
-## ✨ Estado del Proyecto
+## 📢 Estado Actual OemPOS - Backend
 
-✅ Conexión a base de datos MSSQL  
-✅ Estructura modular backend  
-✅ CRUD de productos con relaciones  
-✅ Middleware de autenticación y control de roles JWT  
-✅ Pruebas con Postman exitosas  
+| Etapa                           | Estado         | Detalle |
+|----------------------------------|----------------|---------|
+| Semana 1-2: Setup del Proyecto   | ✅ COMPLETO  | MSSQL + Models + CRUD Products |
+| Semana 3-4: Seguridad            | ✅ 99% Completo | Login + JWT. Falta control de roles |
+| Semana 5-6: Ventas y Cupones     | ⏳ En Progreso  | CRUD Orders + OrderItems + OrderQueue |
+| Semana 7-8: Reportes y Caja      | ❌ No iniciado |  |
+| Semana 9+: Frontend Ionic + Tests| ❌ No iniciado |  |
 
-Próxima etapa: gestión de usuarios y autenticación completa (`auth.controller.js`, hashing de contraseñas, login/register).
+---
+
+## 🔍 Prioridades Inmediatas
+
+| Prioridad | Tarea |
+|-----------|-------|
+| 🔥 | Agregar middleware requireRole en rutas |
+| 🔥 | Implementar cálculo y aplicación de cupones según efectivo |
+| ✅ | Testear flujo completo: orden -> productos -> cupón -> pago |
+| 🛠️ | Preparar cierre de caja (después) |
 
 ---
 
