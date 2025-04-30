@@ -9,51 +9,54 @@ const User = require('./user.model');
 const Order = require('./order.model');
 const OrderItem = require('./orderItem.model');
 const OrderQueue = require('./orderQueue.model');
+const Role = require('./role.model');
+const Permission = require('./permission.model');
 
-// Relaciones de productos
-Product.belongsTo(Category, {
-  foreignKey: 'category_id',
-  as: 'category'
+// 🔗 Relaciones de productos
+Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
+Product.belongsTo(Subcategory, { foreignKey: 'subcategory_id', as: 'subcategory' });
+Product.belongsTo(ProductImage, { foreignKey: 'product_image_id', as: 'image' });
+Product.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
+// 🔗 Relaciones de órdenes
+Order.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+Order.hasMany(OrderItem, { foreignKey: 'order_id', as: 'items' });
+
+// 🔗 Relaciones de ítems de orden
+OrderItem.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+OrderItem.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+
+// ✅ Relaciones de usuarios y roles
+User.belongsToMany(Role, {
+  through: 'UserRoles',
+  foreignKey: 'user_id',
+  otherKey: 'role_id',
+  as: 'roles'
 });
 
-Product.belongsTo(Subcategory, {
-  foreignKey: 'subcategory_id',
-  as: 'subcategory'
+Role.belongsToMany(User, {
+  through: 'UserRoles',
+  foreignKey: 'role_id',
+  otherKey: 'user_id',
+  as: 'users'
 });
 
-Product.belongsTo(ProductImage, {
-  foreignKey: 'product_image_id',
-  as: 'image'
+// ✅ Relaciones de roles y permisos
+Role.belongsToMany(Permission, {
+  through: 'RolePermissions',
+  foreignKey: 'role_id',
+  otherKey: 'permission_id',
+  as: 'permissions'
 });
 
-Product.belongsTo(User, {
-  foreignKey: 'created_by',
-  as: 'creator'
+Permission.belongsToMany(Role, {
+  through: 'RolePermissions',
+  foreignKey: 'permission_id',
+  otherKey: 'role_id',
+  as: 'roles'
 });
 
-// Relaciones de órdenes
-Order.belongsTo(User, {
-  foreignKey: 'created_by',
-  as: 'creator'
-});
-
-Order.hasMany(OrderItem, {
-  foreignKey: 'order_id',
-  as: 'items'
-});
-
-// Relaciones de ítems de orden
-OrderItem.belongsTo(Order, {
-  foreignKey: 'order_id',
-  as: 'order'
-});
-
-OrderItem.belongsTo(Product, {
-  foreignKey: 'product_id',
-  as: 'product'
-});
-
-// Exportación de modelos
+// 📦 Exportar todo
 module.exports = {
   sequelize,
   Product,
@@ -63,5 +66,7 @@ module.exports = {
   User,
   Order,
   OrderItem,
-  OrderQueue
+  OrderQueue,
+  Role,
+  Permission
 };

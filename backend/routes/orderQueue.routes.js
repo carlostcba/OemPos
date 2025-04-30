@@ -1,24 +1,17 @@
+// backend/routes/orderQueue.routes.js
 const express = require('express');
 const router = express.Router();
-const orderQueueController = require('../controllers/orderQueue.controller');
-const { verifyToken } = require('../middlewares/authJwt');
+const controller = require('../controllers/orderQueue.controller');
+const { verifyToken, requirePermission } = require('../middlewares/authJwt');
 
-// ✅ Todas las rutas protegidas por token
 router.use(verifyToken);
 
-// Listar toda la cola
-router.get('/', orderQueueController.getAll);
+// Reemplazá esto 👇
+router.get('/', requirePermission('ver_orden'), controller.getAll);
 
-// Obtener una entrada específica
-router.get('/:id', orderQueueController.getById);
-
-// Crear una nueva entrada en la cola
-router.post('/', orderQueueController.create);
-
-// Actualizar una entrada de la cola
-router.put('/:id', orderQueueController.update);
-
-// Eliminar una entrada de la cola
-router.delete('/:id', orderQueueController.remove);
+// Y agregá lo que corresponda para create, update, delete si hace falta
+router.post('/', requirePermission('crear_orden'), controller.create);
+router.put('/:id', requirePermission('modificar_orden'), controller.update);
+router.delete('/:id', requirePermission('eliminar_orden'), controller.remove);
 
 module.exports = router;

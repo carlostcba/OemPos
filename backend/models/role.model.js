@@ -1,27 +1,24 @@
-// backend/models/user.model.js
-
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const User = sequelize.define('User', {
+const Role = sequelize.define('Role', {
   id: {
     type: DataTypes.UUID,
-    primaryKey: true,
-    defaultValue: DataTypes.UUIDV4
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
   },
-  username: {
+  name: {
     type: DataTypes.STRING(50),
     allowNull: false,
     unique: true
   },
-  password: {
+  description: {
     type: DataTypes.STRING(255),
-    allowNull: false,
-    field: 'password_hash'
+    allowNull: true
   }
 }, {
-  tableName: 'Users',
+  tableName: 'Roles',
   timestamps: false
 });
 
-module.exports = User;
+module.exports = Role;

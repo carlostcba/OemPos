@@ -1,25 +1,15 @@
 // backend/routes/order.routes.js
 const express = require('express');
 const router = express.Router();
-const orderController = require('../controllers/order.controller');
-const { verifyToken } = require('../middlewares/authJwt');
+const controller = require('../controllers/order.controller');
+const { verifyToken, requirePermission } = require('../middlewares/authJwt');
 
-// Todas las rutas requieren token
 router.use(verifyToken);
 
-// Listar todas las órdenes
-router.get('/', orderController.getAll);
-
-// Obtener una orden por ID
-router.get('/:id', orderController.getById);
-
-// Crear una nueva orden
-router.post('/', orderController.create);
-
-// Actualizar una orden
-router.put('/:id', orderController.update);
-
-// Eliminar una orden
-router.delete('/:id', orderController.remove);
+router.get('/', requirePermission('ver_ordenes'), controller.getAll);
+router.get('/:id', requirePermission('ver_ordenes'), controller.getById);
+router.post('/', requirePermission('crear_orden'), controller.create);
+router.put('/:id', requirePermission('modificar_orden'), controller.update);
+router.delete('/:id', requirePermission('eliminar_orden'), controller.remove);
 
 module.exports = router;

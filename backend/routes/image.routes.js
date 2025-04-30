@@ -1,9 +1,11 @@
+// backend/routes/image.routes.js
+
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const upload = multer(); // memoria
-const controller = require('../controllers/image.controller');
+const imageController = require('../controllers/image.controller');
+const { verifyToken, requirePermission } = require('../middlewares/authJwt');
 
-router.post('/', upload.single('image'), controller.upload);
+router.post('/', verifyToken, requirePermission('gestionar_imagenes'), imageController.upload);
+router.delete('/:id', verifyToken, requirePermission('gestionar_imagenes'), imageController.remove);
 
 module.exports = router;

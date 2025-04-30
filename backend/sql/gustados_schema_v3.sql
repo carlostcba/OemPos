@@ -176,3 +176,32 @@ CREATE TABLE Coupons (
   FOREIGN KEY (created_by) REFERENCES Users(id),
   FOREIGN KEY (applies_to_category_id) REFERENCES Categories(id)
 );
+
+
+CREATE TABLE Roles (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  name NVARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE Permissions (
+  id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+  name NVARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE RolePermissions (
+  role_id UNIQUEIDENTIFIER,
+  permission_id UNIQUEIDENTIFIER,
+  PRIMARY KEY (role_id, permission_id),
+  FOREIGN KEY (role_id) REFERENCES Roles(id),
+  FOREIGN KEY (permission_id) REFERENCES Permissions(id)
+);
+
+ALTER TABLE Users
+ADD role_id UNIQUEIDENTIFIER;
+
+ALTER TABLE Users
+ADD CONSTRAINT FK_users_role FOREIGN KEY (role_id) REFERENCES Roles(id);
+
+-- ALTER TABLE Users DROP CONSTRAINT DF__Users__role__398D8EEE;
+-- ALTER TABLE Users DROP COLUMN role;
+
