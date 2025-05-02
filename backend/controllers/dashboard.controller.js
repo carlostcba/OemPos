@@ -3,142 +3,172 @@
 const { Order, OrderItem, Product, Category, CashRegister, CashTransaction, Receipt } = require('../models');
 const { Op, Sequelize } = require('sequelize');
 const sequelize = require('../config/database');
+const cache = require('../utils/cache');
+const logger = require('../utils/logger');
 
 // Obtener resumen general del dashboard
 exports.getSummary = async (req, res) => {
   try {
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    // Usar caché con una clave que depende de la fecha actual
+    // para que se regenere cada día automáticamente
+    const today = new Date().toISOString().split('T')[0];
+    const cacheKey = `dashboard:summary:${today}`;
     
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
-    
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    
-    // Ventas del día
-    const todaySales = await Order.sum('total_amount', {
-      where: {
-        created_at: {
-          [Op.between]: [startOfDay, endOfDay]
-        },
-        status: {
-          [Op.in]: ['confirmado', 'entregado']
-        }
-      }
-    }) || 0;
-    
-    // Ventas de la semana
-    const weeklySales = await Order.sum('total_amount', {
-      where: {
-        created_at: {
-          [Op.between]: [startOfWeek, endOfDay]
-        },
-        status: {
-          [Op.in]: ['confirmado', 'entregado']
-        }
-      }
-    }) || 0;
-    
-    // Ventas del mes
-    const monthlySales = await Order.sum('total_amount', {
-      where: {
-        created_at: {
-          [Op.between]: [startOfMonth, endOfDay]
-        },
-        status: {
-          [Op.in]: ['confirmado', 'entregado']
-        }
-      }
-    }) || 0;
-    
-    // Cantidad de órdenes del día
-    const todayOrderCount = await Order.count({
-      where: {
-        created_at: {
-          [Op.between]: [startOfDay, endOfDay]
-        }
-      }
-    });
-    
-    // Cantidad de órdenes de la semana
-    const weeklyOrderCount = await Order.count({
-      where: {
-        created_at: {
-          [Op.between]: [startOfWeek, endOfDay]
-        }
-      }
-    });
-    
-    // Productos con stock bajo
-    const lowStockProducts = await Product.count({
-      where: {
-        stock: { [Op.lt]: 5 },
-        track_stock: true,
-        is_active: true
-      }
-    });
-    
-    // Ticket promedio del día
-    const averageTicket = todayOrderCount > 0 ? todaySales / todayOrderCount : 0;
-    
-    // Estado de caja actual
-    const currentCashRegister = await CashRegister.findOne({
-      where: {
-        status: 'open'
-      },
-      include: [{
-        model: CashTransaction,
-        as: 'transactions'
-      }],
-      order: [['opened_at', 'DESC']]
-    });
-    
-    let cashRegisterBalance = null;
-    if (currentCashRegister) {
-      // Calcular saldo actual
-      let balance = parseFloat(currentCashRegister.opening_amount);
+    const data = await cache.getOrSet(cacheKey, async () => {
+      logger.info('Generando datos de resumen del dashboard');
       
-      if (currentCashRegister.transactions && currentCashRegister.transactions.length > 0) {
-        currentCashRegister.transactions.forEach(tx => {
-          if (['income', 'deposit'].includes(tx.type)) {
-            balance += parseFloat(tx.amount);
-          } else if (['expense', 'withdrawal', 'adjustment'].includes(tx.type)) {
-            balance -= parseFloat(tx.amount);
+      const nowDate = new Date();
+      const startOfDay = new Date(nowDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(nowDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      const startOfWeek = new Date(nowDate);
+      startOfWeek.setDate(nowDate.getDate() - nowDate.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      const startOfMonth = new Date(nowDate.getFullYear(), nowDate.getMonth(), 1);
+      
+      // Todas las consultas en paralelo para mayor eficiencia
+      const [
+        todaySales, 
+        weeklySales, 
+        monthlySales, 
+        todayOrderCount, 
+        weeklyOrderCount,
+        lowStockProducts,
+        currentCashRegister
+      ] = await Promise.all([
+        // Ventas del día
+        Order.sum('total_amount', {
+          where: {
+            created_at: {
+              [Op.between]: [startOfDay, endOfDay]
+            },
+            status: {
+              [Op.in]: ['confirmado', 'entregado']
+            }
           }
-        });
+        }),
+        
+        // Ventas de la semana
+        Order.sum('total_amount', {
+          where: {
+            created_at: {
+              [Op.between]: [startOfWeek, endOfDay]
+            },
+            status: {
+              [Op.in]: ['confirmado', 'entregado']
+            }
+          }
+        }),
+        
+        // Ventas del mes
+        Order.sum('total_amount', {
+          where: {
+            created_at: {
+              [Op.between]: [startOfMonth, endOfDay]
+            },
+            status: {
+              [Op.in]: ['confirmado', 'entregado']
+            }
+          }
+        }),
+        
+        // Cantidad de órdenes del día
+        Order.count({
+          where: {
+            created_at: {
+              [Op.between]: [startOfDay, endOfDay]
+            }
+          }
+        }),
+        
+        // Cantidad de órdenes de la semana
+        Order.count({
+          where: {
+            created_at: {
+              [Op.between]: [startOfWeek, endOfDay]
+            }
+          }
+        }),
+        
+        // Productos con stock bajo
+        Product.count({
+          where: {
+            stock: { [Op.lt]: 5 },
+            track_stock: true,
+            is_active: true
+          }
+        }),
+        
+        // Estado de caja actual
+        CashRegister.findOne({
+          where: {
+            status: 'open'
+          },
+          include: [{
+            model: CashTransaction,
+            as: 'transactions'
+          }],
+          order: [['opened_at', 'DESC']]
+        })
+      ]);
+      
+      // Ticket promedio del día
+      const averageTicket = todayOrderCount > 0 ? todaySales / todayOrderCount : 0;
+      
+      let cashRegisterBalance = null;
+      if (currentCashRegister) {
+        // Calcular saldo actual
+        let balance = parseFloat(currentCashRegister.opening_amount || 0);
+        
+        if (currentCashRegister.transactions && currentCashRegister.transactions.length > 0) {
+          currentCashRegister.transactions.forEach(tx => {
+            if (['income', 'deposit'].includes(tx.type)) {
+              balance += parseFloat(tx.amount || 0);
+            } else if (['expense', 'withdrawal', 'adjustment'].includes(tx.type)) {
+              balance -= parseFloat(tx.amount || 0);
+            }
+          });
+        }
+        
+        cashRegisterBalance = {
+          id: currentCashRegister.id,
+          opened_at: currentCashRegister.opened_at,
+          opening_amount: parseFloat(currentCashRegister.opening_amount || 0),
+          current_balance: balance,
+          transaction_count: currentCashRegister.transactions.length
+        };
       }
       
-      cashRegisterBalance = {
-        id: currentCashRegister.id,
-        opened_at: currentCashRegister.opened_at,
-        opening_amount: parseFloat(currentCashRegister.opening_amount),
-        current_balance: balance,
-        transaction_count: currentCashRegister.transactions.length
+      return {
+        sales: {
+          today: parseFloat(todaySales || 0),
+          week: parseFloat(weeklySales || 0),
+          month: parseFloat(monthlySales || 0)
+        },
+        orders: {
+          today: todayOrderCount || 0,
+          week: weeklyOrderCount || 0,
+          average_ticket: Math.round(averageTicket * 100) / 100
+        },
+        inventory: {
+          low_stock_count: lowStockProducts || 0
+        },
+        cash_register: cashRegisterBalance,
+        generated_at: new Date()
       };
-    }
+    }, 300); // Caché por 5 minutos
     
-    res.json({
-      sales: {
-        today: parseFloat(todaySales),
-        week: parseFloat(weeklySales),
-        month: parseFloat(monthlySales)
-      },
-      orders: {
-        today: todayOrderCount,
-        week: weeklyOrderCount,
-        average_ticket: Math.round(averageTicket * 100) / 100
-      },
-      inventory: {
-        low_stock_count: lowStockProducts
-      },
-      cash_register: cashRegisterBalance,
-      generated_at: new Date()
-    });
+    res.json(data);
     
   } catch (error) {
-    console.error('❌ Error al obtener resumen del dashboard:', error);
+    logger.error('❌ Error al obtener resumen del dashboard:', { 
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({ error: 'Error al obtener resumen del dashboard' });
   }
 };

@@ -1,9 +1,13 @@
-// backend/app.js
+// backend/app.js (actualizado)
 
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
-const sequelize = require('./config/database');
+const helmet = require('helmet');
+const config = require('./config/config');
+const logger = require('./utils/logger');
+const securityMiddleware = require('./middlewares/security');
+const compressionMiddleware = require('./middlewares/compression');
+const errorHandler = require('./middlewares/errorHandler');
 
 // Rutas
 const productRoutes = require('./routes/product.routes');
@@ -16,14 +20,37 @@ const couponRoutes = require('./routes/coupon.routes');
 const cashRegisterRoutes = require('./routes/cashRegister.routes');
 const receiptRoutes = require('./routes/receipt.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
-const dashboardRoutes = require('./routes/dashboard.routes'); // Nueva ruta
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 
-app.use(cors());
-app.use(bodyParser.json());
+// Middlewares básicos
+app.use(helmet());
+app.use(cors(config.cors));
+app.use(securityMiddleware);
+app.use(compressionMiddleware);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Endpoints
+// Logging de solicitudes
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.url}`, {
+    ip: req.ip,
+    userAgent: req.get('User-Agent')
+  });
+  next();
+});
+
+// Ruta de estado
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || '1.0.0'
+  });
+});
+
+// Endpoints API
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
@@ -34,8 +61,17 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/cash-register', cashRegisterRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/inventory', inventoryRoutes);
-app.use('/api/dashboard', dashboardRoutes); // Nuevo endpoint
+app.use('/api/dashboard', dashboardRoutes);
 
-sequelize.sync(); // crea las tablas si no existen
+// Manejo de rutas no encontradas
+app.use((req, res, next) => {
+  res.status(404).json({
+    error: 'Ruta no encontrada',
+    path: req.path
+  });
+});
+
+// Manejo centralizado de errores
+app.use(errorHandler);
 
 module.exports = app;
