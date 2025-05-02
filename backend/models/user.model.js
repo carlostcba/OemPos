@@ -18,6 +18,10 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(255),
     allowNull: false,
     field: 'password_hash'
+  },
+  role_id: {
+    type: DataTypes.UUID,
+    allowNull: true
   }
 }, {
   tableName: 'Users',
@@ -25,4 +29,3 @@ const User = sequelize.define('User', {
 });
 
 module.exports = User;
-

@@ -17,7 +17,6 @@ const verifyToken = async (req, res, next) => {
     const decoded = jwt.verify(token, SECRET);
     req.user = decoded;
 
-    // 🔍 Cargar usuario con sus roles y permisos desde la base
     const user = await User.findByPk(decoded.id, {
       include: [{
         model: Role,
@@ -29,17 +28,14 @@ const verifyToken = async (req, res, next) => {
       }]
     });   
     
-
     if (!user) {
       return res.status(401).json({ error: 'Usuario no encontrado' });
     }
 
-    // 🧠 Consolidar lista de permisos del usuario
     const userPermissions = user.roles.flatMap(role =>
       role.permissions.map(perm => perm.name)
     );
     
-    // 🧠 Debug completo
     console.log('🧠 Usuario autenticado:', {
       id: user.id,
       username: user.username,
@@ -47,9 +43,6 @@ const verifyToken = async (req, res, next) => {
       permisos: userPermissions
     });
     
-    req.user.permissions = userPermissions;
-    next();
-
     req.user.permissions = userPermissions;
     next();
   } catch (err) {

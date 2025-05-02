@@ -27,6 +27,10 @@ OrderItem.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 OrderItem.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
 // ✅ Relaciones de usuarios y roles
+// Relación directa a través de role_id
+User.belongsTo(Role, { foreignKey: 'role_id', as: 'role' });
+
+// Relación muchos a muchos a través de UserRoles
 User.belongsToMany(Role, {
   through: 'UserRoles',
   foreignKey: 'user_id',

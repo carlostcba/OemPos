@@ -13,29 +13,59 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({
-    where: { username },
-    include: {
-      model: Role,
-      as: 'roles',
-      attributes: ['id', 'name'],
-      through: { attributes: [] } // evita datos del join table
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({
+      where: { username },
+      include: [
+        {
+          model: Role,
+          as: 'role',
+          attributes: ['id', 'name']
+        },
+        {
+          model: Role,
+          as: 'roles',
+          attributes: ['id', 'name'],
+          through: { attributes: [] },
+          include: [{
+            model: Permission,
+            as: 'permissions'
+          }]
+        }
+      ]
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
     }
-  });
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    return res.status(401).json({ error: 'Credenciales inválidas' });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    // Combinar roles de ambas relaciones
+    const directRole = user.role ? [user.role.name] : [];
+    const manyToManyRoles = user.roles?.map(role => role.name) || [];
+    const roleNames = [...new Set([...directRole, ...manyToManyRoles])];
+
+    console.log('Generando token para:', { 
+      id: user.id, 
+      username: user.username, 
+      roles: roleNames
+    });
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username, roles: roleNames },
+      SECRET,
+      { expiresIn: '8h' }
+    );
+
+    res.json({ token });
+  } catch (error) {
+    console.error('Error en login:', error);
+    res.status(500).json({ error: 'Error en el servidor' });
   }
-
-  const roleNames = user.roles.map(role => role.name);
-
-  const token = jwt.sign(
-    { id: user.id, username: user.username, roles: roleNames },
-    SECRET,
-    { expiresIn: '8h' }
-  );
-
-  res.json({ token });
 };
 
