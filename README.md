@@ -19,14 +19,23 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - Sistema de roles y permisos implementado
 - Middlewares `requirePermission` y `requireRole` operativos
 
-### Semana 5-6: Ventas y Cupones ⏳ EN PROGRESO (90%)
+### Semana 5-6: Ventas y Cupones ✅ COMPLETADO
 - CRUD de Orders, OrderItems, OrderQueue completo
 - Sistema de códigos automáticos (O001, P001, D001, S001) implementado
 - Gestión de cupones y descuentos funcionando
 - Implementada lógica para aplicar cupones según método de pago
 - Cola de atención con priorización implementada
+- Sistema de caja implementado con apertura/cierre
+- Comprobantes de venta generados automáticamente
+- Control de inventario integrado con ventas
 
-### Semana 7-8: Reportes y Caja ❌ NO INICIADO
+### Semana 7-8: Reportes y Caja ⏳ EN PROGRESO (80%)
+- Sistema de caja con apertura, cierre y arqueos
+- Reportes de caja con totales por método de pago
+- Reportes de inventario
+- Reportes de ventas y comprobantes
+- Toma de inventario implementada
+- Pendiente: Dashboard con estadísticas generales
 
 ### Semana 9+: Frontend Ionic + Tests ❌ NO INICIADO
 
@@ -56,13 +65,15 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 7. Envía transacción a la cola de atención
 
 #### 💵 CAJERO (Punto de Caja)
-1. Gestiona cola de atención con priorización
-2. Llama al siguiente cliente según prioridad
-3. Confirma o modifica método de pago
-4. Procesa cobro y aplica cupones si corresponde
-5. Registra pagos completos o señas para pedidos
-6. Emite comprobante (pendiente implementar)
-7. Marca transacción como procesada
+1. Abre caja al iniciar turno
+2. Gestiona cola de atención con priorización
+3. Llama al siguiente cliente según prioridad
+4. Confirma o modifica método de pago
+5. Procesa cobro y aplica cupones si corresponde
+6. Registra pagos completos o señas para pedidos
+7. Genera comprobante de venta
+8. Actualiza inventario automáticamente
+9. Cierra caja al finalizar turno
 
 ---
 
@@ -86,22 +97,28 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - modificar_orden
 - eliminar_orden
 - gestionar_cola
+- ver_inventario
+- gestionar_inventario
 
 #### 🧾 Pagos y Cupones
 - procesar_pagos
 - ver_cupones
 - aplicar_cupones
 - gestionar_imagenes
+- ver_comprobantes
+- anular_comprobantes
 
-#### 📊 Reportes
+#### 📊 Reportes y Caja
 - ver_reportes
+- ver_caja
+- abrir_caja
+- cerrar_caja
 - ver_historial_caja
 
 #### ⚙️ Administración
 - ver_usuarios
 - gestionar_usuarios
-- abrir_caja
-- cerrar_caja
+- configurar_parametros
 
 ---
 
@@ -118,6 +135,9 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - Product → Category / Subcategory / ProductImage / User
 - Order → OrderItems → Products
 - Order → OrderQueue para gestión de cola
+- Order → Receipt para comprobantes
+- CashRegister → CashTransaction para movimientos de caja
+- Product → InventoryMovement para control de stock
 
 ---
 
@@ -130,6 +150,10 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - **Coupons**: Sistema de cupones con múltiples reglas
 - **Users**: Usuarios con roles y permisos
 - **Roles/Permissions**: Sistema modular de permisos
+- **CashRegister**: Control de cajas con apertura y cierre
+- **CashTransaction**: Movimientos de dinero en caja
+- **Receipt**: Comprobantes de venta
+- **InventoryMovement**: Control de stock y movimientos
 
 ---
 
@@ -137,9 +161,9 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 
 | Prioridad | Tarea |
 |-----------|-------|
-| 🔥 | Implementar módulo de reportes |
-| 🔥 | Desarrollar sistema de caja (apertura/cierre) |
-| 🔥 | Implementar gestión de comprobantes |
+| 🔥 | Implementar dashboard con estadísticas generales |
+| 🔥 | Desarrollar informes para toma de decisiones |
+| 🔥 | Sistema de alertas para stock bajo |
 | 🛠️ | Desarrollar frontend en Ionic |
 
 ---
@@ -170,7 +194,10 @@ backend/
 │   ├── coupon.controller.js
 │   ├── image.controller.js
 │   ├── orderQueue.controller.js
-│   └── user.controller.js  # Gestión de usuarios
+│   ├── user.controller.js  # Gestión de usuarios
+│   ├── cashRegister.controller.js # Gestión de caja
+│   ├── receipt.controller.js # Comprobantes
+│   └── inventory.controller.js # Control de inventario
 ├── middleware/
 │   └── authJwt.js          # Middlewares de autenticación y permisos
 ├── models/
@@ -185,7 +212,11 @@ backend/
 │   ├── category.model.js   # Categorías de productos
 │   ├── subcategory.model.js # Subcategorías de productos
 │   ├── productImage.model.js # Imágenes de productos
-│   └── coupon.model.js     # Cupones de descuento
+│   ├── coupon.model.js     # Cupones de descuento
+│   ├── cashRegister.model.js # Cajas registradoras
+│   ├── cashTransaction.model.js # Transacciones en caja
+│   ├── receipt.model.js    # Comprobantes
+│   └── inventory.model.js  # Movimientos de inventario
 ├── routes/
 │   ├── product.routes.js
 │   ├── auth.routes.js
@@ -193,13 +224,17 @@ backend/
 │   ├── coupon.routes.js
 │   ├── orderQueue.routes.js
 │   ├── image.routes.js     # Rutas para gestión de imágenes
-│   └── user.routes.js      # Rutas para gestión de usuarios
+│   ├── user.routes.js      # Rutas para gestión de usuarios
+│   ├── cashRegister.routes.js # Rutas para gestión de caja
+│   ├── receipt.routes.js   # Rutas para comprobantes
+│   └── inventory.routes.js # Rutas para inventario
 ├── sql/                    # Scripts SQL para seed de datos
 │   ├── gustados_schema_v3.sql  # Esquema de base de datos
 │   ├── insert_categories.sql   # Datos iniciales de categorías
 │   ├── insert_products.sql     # Datos iniciales de productos
 │   ├── insert_sub_categories.sql # Datos iniciales de subcategorías
-│   └── roles_permisos_seed.sql # Datos iniciales de roles y permisos
+│   ├── roles_permisos_seed.sql # Datos iniciales de roles y permisos
+│   └── cash_inventory_receipts_tables.sql # Nuevas tablas
 ├── app.js                  # Configuración de Express
 └── server.js              # Punto de entrada
 ```

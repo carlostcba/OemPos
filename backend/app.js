@@ -11,7 +11,11 @@ const userRoutes = require('./routes/user.routes');
 const authRoutes = require('./routes/auth.routes');
 const imageRoutes = require('./routes/image.routes');
 const orderRoutes = require('./routes/order.routes');
-const orderQueueRoutes = require('./routes/orderQueue.routes'); // ✅ agregado
+const orderQueueRoutes = require('./routes/orderQueue.routes');
+const couponRoutes = require('./routes/coupon.routes');
+const cashRegisterRoutes = require('./routes/cashRegister.routes');
+const receiptRoutes = require('./routes/receipt.routes');
+const inventoryRoutes = require('./routes/inventory.routes');
 
 const app = express();
 
@@ -24,7 +28,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/order-queue', orderQueueRoutes); // ✅ agregado
+app.use('/api/order-queue', orderQueueRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/cash-register', cashRegisterRoutes);
+app.use('/api/receipts', receiptRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 sequelize.sync(); // crea las tablas si no existen
 

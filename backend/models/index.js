@@ -11,23 +11,52 @@ const OrderItem = require('./orderItem.model');
 const OrderQueue = require('./orderQueue.model');
 const Role = require('./role.model');
 const Permission = require('./permission.model');
+const CashRegister = require('./cashRegister.model');
+const CashTransaction = require('./cashTransaction.model');
+const Receipt = require('./receipt.model');
+const InventoryMovement = require('./inventory.model');
+const Coupon = require('./coupon.model');
 
 // 🔗 Relaciones de productos
 Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
 Product.belongsTo(Subcategory, { foreignKey: 'subcategory_id', as: 'subcategory' });
 Product.belongsTo(ProductImage, { foreignKey: 'product_image_id', as: 'image' });
 Product.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+Product.hasMany(InventoryMovement, { foreignKey: 'product_id', as: 'inventory_movements' });
 
 // 🔗 Relaciones de órdenes
 Order.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
 Order.hasMany(OrderItem, { foreignKey: 'order_id', as: 'items' });
+Order.hasOne(Receipt, { foreignKey: 'order_id', as: 'receipt' });
+Order.belongsTo(CashRegister, { foreignKey: 'cash_register_id', as: 'cash_register' });
+Order.hasMany(CashTransaction, { foreignKey: 'order_id', as: 'transactions' });
 
 // 🔗 Relaciones de ítems de orden
 OrderItem.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 OrderItem.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
+// 🔗 Relaciones de caja
+CashRegister.belongsTo(User, { foreignKey: 'opened_by', as: 'opener' });
+CashRegister.belongsTo(User, { foreignKey: 'closed_by', as: 'closer' });
+CashRegister.hasMany(CashTransaction, { foreignKey: 'cash_register_id', as: 'transactions' });
+CashRegister.hasMany(Order, { foreignKey: 'cash_register_id', as: 'orders' });
+
+// 🔗 Relaciones de transacciones de caja
+CashTransaction.belongsTo(CashRegister, { foreignKey: 'cash_register_id', as: 'cash_register' });
+CashTransaction.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+CashTransaction.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
+// 🔗 Relaciones de comprobantes
+Receipt.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+Receipt.belongsTo(User, { foreignKey: 'issued_by', as: 'issuer' });
+Receipt.belongsTo(User, { foreignKey: 'voided_by', as: 'voider' });
+
+// 🔗 Relaciones de inventario
+InventoryMovement.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+InventoryMovement.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+InventoryMovement.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
 // ✅ Relaciones de usuarios y roles
-// Relación directa a través de role_id
 User.belongsTo(Role, { foreignKey: 'role_id', as: 'role' });
 
 // Relación muchos a muchos a través de UserRoles
@@ -36,7 +65,7 @@ User.belongsToMany(Role, {
   foreignKey: 'user_id',
   otherKey: 'role_id',
   as: 'roles',
-  timestamps: false // Agregar esta línea
+  timestamps: false
 });
 
 Role.belongsToMany(User, {
@@ -44,7 +73,7 @@ Role.belongsToMany(User, {
   foreignKey: 'role_id',
   otherKey: 'user_id',
   as: 'users',
-  timestamps: false // Agregar esta línea
+  timestamps: false
 });
 
 // ✅ Relaciones de roles y permisos
@@ -53,7 +82,7 @@ Role.belongsToMany(Permission, {
   foreignKey: 'role_id',
   otherKey: 'permission_id',
   as: 'permissions',
-  timestamps: false // Agregar esta línea
+  timestamps: false
 });
 
 Permission.belongsToMany(Role, {
@@ -61,7 +90,7 @@ Permission.belongsToMany(Role, {
   foreignKey: 'permission_id',
   otherKey: 'role_id',
   as: 'roles',
-  timestamps: false // Agregar esta línea
+  timestamps: false
 });
 
 // 📦 Exportar todo
@@ -76,5 +105,10 @@ module.exports = {
   OrderItem,
   OrderQueue,
   Role,
-  Permission
+  Permission,
+  CashRegister,
+  CashTransaction,
+  Receipt,
+  InventoryMovement,
+  Coupon
 };
