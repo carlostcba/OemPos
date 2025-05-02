@@ -35,14 +35,16 @@ User.belongsToMany(Role, {
   through: 'UserRoles',
   foreignKey: 'user_id',
   otherKey: 'role_id',
-  as: 'roles'
+  as: 'roles',
+  timestamps: false // Agregar esta línea
 });
 
 Role.belongsToMany(User, {
   through: 'UserRoles',
   foreignKey: 'role_id',
   otherKey: 'user_id',
-  as: 'users'
+  as: 'users',
+  timestamps: false // Agregar esta línea
 });
 
 // ✅ Relaciones de roles y permisos
@@ -50,14 +52,16 @@ Role.belongsToMany(Permission, {
   through: 'RolePermissions',
   foreignKey: 'role_id',
   otherKey: 'permission_id',
-  as: 'permissions'
+  as: 'permissions',
+  timestamps: false // Agregar esta línea
 });
 
 Permission.belongsToMany(Role, {
   through: 'RolePermissions',
   foreignKey: 'permission_id',
   otherKey: 'role_id',
-  as: 'roles'
+  as: 'roles',
+  timestamps: false // Agregar esta línea
 });
 
 // 📦 Exportar todo

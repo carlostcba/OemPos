@@ -53,7 +53,8 @@ exports.login = async (req, res) => {
           through: { attributes: [] },
           include: [{
             model: Permission,
-            as: 'permissions'
+            as: 'permissions',
+            through: { attributes: [] } // Este es el cambio clave
           }]
         }
       ]

@@ -29,9 +29,11 @@ const verifyToken = async (req, res, next) => {
         {
           model: Role,
           as: 'roles', // Relación muchos a muchos
+          through: { attributes: [] },
           include: [{
             model: Permission,
-            as: 'permissions'
+            as: 'permissions',
+            through: { attributes: [] } // Agregar esta línea
           }]
         }
       ]
