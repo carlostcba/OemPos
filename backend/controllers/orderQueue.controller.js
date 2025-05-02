@@ -1,5 +1,5 @@
 // backend/controllers/orderQueue.controller.js
-const { OrderQueue } = require('../models');
+const { OrderQueue, Order, OrderItem } = require('../models');
 const { Op } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
 
@@ -77,5 +77,103 @@ exports.remove = async (req, res) => {
   } catch (error) {
     console.error('❌ Error al eliminar entrada de cola:', error);
     res.status(500).json({ error: 'Error al eliminar entrada' });
+  }
+};
+
+// Llamar al siguiente cliente
+exports.callNext = async (req, res) => {
+  try {
+    // Buscar la primera orden en espera ordenada por prioridad y posición
+    const nextInQueue = await OrderQueue.findOne({
+      where: { status: 'waiting' },
+      order: [
+        ['priority', 'DESC'],
+        ['queue_position', 'ASC']
+      ]
+    });
+    
+    if (!nextInQueue) {
+      return res.status(404).json({ error: 'No hay órdenes en espera' });
+    }
+    
+    // Actualizar a estado "called"
+    await nextInQueue.update({
+      status: 'called',
+      called_at: new Date()
+    });
+    
+    // Buscar información de la orden
+    const order = await Order.findByPk(nextInQueue.order_id, {
+      include: [{ model: OrderItem, as: 'items' }]
+    });
+    
+    res.json({
+      queueEntry: nextInQueue,
+      order
+    });
+    
+  } catch (error) {
+    console.error('❌ Error al llamar al siguiente cliente:', error);
+    res.status(500).json({ error: 'Error al llamar al siguiente cliente' });
+  }
+};
+
+// Marcar como procesada
+exports.markAsProcessed = async (req, res) => {
+  try {
+    const entry = await OrderQueue.findByPk(req.params.id);
+    
+    if (!entry) {
+      return res.status(404).json({ error: 'Entrada no encontrada' });
+    }
+    
+    await entry.update({
+      status: 'processed',
+      processed_at: new Date()
+    });
+    
+    res.json(entry);
+    
+  } catch (error) {
+    console.error('❌ Error al marcar como procesada:', error);
+    res.status(500).json({ error: 'Error al marcar como procesada' });
+  }
+};
+
+// Reordenar la cola
+exports.reorder = async (req, res) => {
+  const t = await sequelize.transaction();
+  
+  try {
+    const { entries } = req.body;
+    
+    if (!entries || !Array.isArray(entries)) {
+      await t.rollback();
+      return res.status(400).json({ error: 'Formato inválido' });
+    }
+    
+    // Actualizar posiciones
+    for (let i = 0; i < entries.length; i++) {
+      await OrderQueue.update(
+        { queue_position: i + 1 },
+        { 
+          where: { id: entries[i].id },
+          transaction: t
+        }
+      );
+    }
+    
+    await t.commit();
+    
+    const updatedQueue = await OrderQueue.findAll({
+      order: [['queue_position', 'ASC']]
+    });
+    
+    res.json(updatedQueue);
+    
+  } catch (error) {
+    await t.rollback();
+    console.error('❌ Error al reordenar cola:', error);
+    res.status(500).json({ error: 'Error al reordenar cola' });
   }
 };

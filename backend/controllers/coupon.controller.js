@@ -1,6 +1,6 @@
 // backend/controllers/coupon.controller.js
-const { Coupon, Category } = require('../models');
-const { Op } = require('sequelize');
+const { Coupon, Category, Product } = require('../models');
+const { Op, sequelize } = require('sequelize');
 
 // Obtener todos los cupones
 exports.getAll = async (req, res) => {
@@ -192,5 +192,95 @@ exports.incrementUsage = async (req, res) => {
   } catch (error) {
     console.error('❌ Error al incrementar uso de cupón:', error);
     res.status(500).json({ error: 'Error al incrementar uso de cupón' });
+  }
+};
+
+// Función para calcular el descuento aplicable basado en el método de pago
+exports.calculateDiscount = async (req, res) => {
+  try {
+    const { couponCode, totalAmount, paymentMethod, items } = req.body;
+    
+    if (!couponCode || !totalAmount) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios' });
+    }
+    
+    // Buscar el cupón
+    const coupon = await Coupon.findOne({ 
+      where: { 
+        code: couponCode,
+        is_active: true,
+        valid_from: { [Op.lte]: new Date() },
+        [Op.or]: [
+          { valid_to: null },
+          { valid_to: { [Op.gte]: new Date() }}
+        ]
+      }
+    });
+    
+    if (!coupon) {
+      return res.status(404).json({ error: 'Cupón no válido o expirado' });
+    }
+    
+    // Verificar si aplica solo a ciertas categorías
+    let applicableAmount = totalAmount;
+    
+    if (!coupon.applies_to_all_products && coupon.applies_to_category_id) {
+      // Si el cupón solo aplica a cierta categoría, filtrar items
+      if (!items || !items.length) {
+        return res.status(400).json({ error: 'Se requiere el detalle de los items para este cupón' });
+      }
+      
+      // Calcular el monto aplicable solo para los productos de la categoría
+      const productIds = items.map(item => item.product_id);
+      
+      const products = await Product.findAll({
+        where: {
+          id: { [Op.in]: productIds },
+          category_id: coupon.applies_to_category_id
+        }
+      });
+      
+      const applicableProductIds = products.map(p => p.id);
+      
+      applicableAmount = items
+        .filter(item => applicableProductIds.includes(item.product_id))
+        .reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+    }
+    
+    // Calcular el descuento según el tipo
+    let discountAmount = 0;
+    
+    if (coupon.discount_type === 'percentage') {
+      discountAmount = applicableAmount * (coupon.discount_value / 100);
+    } else {
+      // Si es monto fijo, no puede ser mayor que el aplicable
+      discountAmount = Math.min(coupon.discount_value, applicableAmount);
+    }
+    
+    // Aplicar lógica específica para pago en efectivo (si aplica)
+    if (paymentMethod === 'efectivo' && coupon.cash_payment_only) {
+      // Si el cupón es exclusivo para efectivo, aumentar el descuento
+      discountAmount *= 1.1; // 10% extra por pagar en efectivo
+    } else if (coupon.cash_payment_only && paymentMethod !== 'efectivo') {
+      // Si el cupón es solo para efectivo pero no se paga en efectivo
+      return res.status(400).json({ 
+        error: 'Este cupón solo es válido para pagos en efectivo' 
+      });
+    }
+    
+    // Redondeamos a 2 decimales
+    discountAmount = Math.round(discountAmount * 100) / 100;
+    
+    res.json({
+      couponCode,
+      originalAmount: totalAmount,
+      applicableAmount,
+      discountAmount,
+      finalAmount: totalAmount - discountAmount
+    });
+    
+  } catch (error) {
+    console.error('❌ Error al calcular descuento:', error);
+    res.status(500).json({ error: 'Error al calcular el descuento' });
   }
 };

@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const couponController = require('../controllers/coupon.controller');
-const { verifyToken, requireRole } = require('../middlewares/authJwt');
+const { verifyToken, requireRole, requirePermission } = require('../middlewares/authJwt');
 
 // Todas las rutas requieren token
 router.use(verifyToken);
@@ -12,6 +12,7 @@ router.get('/', couponController.getAll);
 router.get('/code/:code', couponController.getByCode);
 router.post('/verify', couponController.verify);
 router.post('/increment-usage/:code', couponController.incrementUsage);
+router.post('/calculate', couponController.calculateDiscount);
 
 // Rutas privadas (solo admin)
 router.post('/', requireRole('admin'), couponController.create);

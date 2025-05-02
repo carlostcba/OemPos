@@ -11,5 +11,6 @@ router.get('/:id', requirePermission('ver_ordenes'), controller.getById);
 router.post('/', requirePermission('crear_orden'), controller.create);
 router.put('/:id', requirePermission('modificar_orden'), controller.update);
 router.delete('/:id', requirePermission('eliminar_orden'), controller.remove);
+router.post('/:id/apply-coupon', requirePermission('aplicar_cupones'), controller.applyCoupon);
 
 module.exports = router;

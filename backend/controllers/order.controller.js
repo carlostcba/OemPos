@@ -1,5 +1,5 @@
 // backend/controllers/order.controller.js
-const { Order, OrderItem, sequelize } = require('../models');
+const { Order, OrderItem, Coupon, Product, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const { v4: uuidv4 } = require('uuid'); // Asegúrate de tener esta dependencia instalada
 
@@ -59,6 +59,56 @@ exports.create = async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos obligatorios o productos' });
     }
 
+    // Si hay un cupón, verificarlo
+    let finalDiscountAmount = discount_amount || 0;
+    
+    if (coupon_code) {
+      const coupon = await Coupon.findOne({ 
+        where: { 
+          code: coupon_code,
+          is_active: true,
+          valid_from: { [Op.lte]: new Date() },
+          [Op.or]: [
+            { valid_to: null },
+            { valid_to: { [Op.gte]: new Date() }}
+          ]
+        }
+      });
+      
+      if (!coupon) {
+        await t.rollback();
+        return res.status(400).json({ error: 'Cupón inválido o expirado' });
+      }
+      
+      // Calcular el descuento según si es porcentual o monto fijo
+      if (coupon.discount_type === 'percentage') {
+        finalDiscountAmount = total_amount * (coupon.discount_value / 100);
+      } else {
+        finalDiscountAmount = coupon.discount_value;
+      }
+      
+      // Validar condiciones específicas del cupón
+      if (coupon.min_purchase_amount > 0 && total_amount < coupon.min_purchase_amount) {
+        await t.rollback();
+        return res.status(400).json({ 
+          error: `El monto mínimo para este cupón es ${coupon.min_purchase_amount}` 
+        });
+      }
+      
+      if (coupon.cash_payment_only && payment_method !== 'efectivo') {
+        await t.rollback();
+        return res.status(400).json({ 
+          error: 'Este cupón solo es válido para pagos en efectivo' 
+        });
+      }
+      
+      // Incrementar contador de uso del cupón
+      await Coupon.update(
+        { usage_count: sequelize.literal('usage_count + 1') },
+        { where: { code: coupon_code }, transaction: t }
+      );
+    }
+
     const codePrefix = { orden: 'O', pedido: 'P', delivery: 'D', salon: 'S' }[type];
 
     const [results] = await sequelize.query(
@@ -103,7 +153,7 @@ exports.create = async (req, res) => {
           total_cash_paid: total_cash_paid || 0,
           total_non_cash_paid: total_non_cash_paid || 0,
           discount_percentage: discount_percentage || 0,
-          discount_amount: discount_amount || 0,
+          discount_amount: finalDiscountAmount, // Usamos el descuento calculado
           payment_method: payment_method || null,
           first_payment_date: first_payment_date || null,
           last_payment_date: last_payment_date || null,
@@ -183,5 +233,106 @@ exports.remove = async (req, res) => {
   } catch (error) {
     console.error('❌ Error al eliminar orden:', error);
     res.status(500).json({ error: 'Error al eliminar orden' });
+  }
+};
+
+// Aplicar cupón a una orden existente
+exports.applyCoupon = async (req, res) => {
+  const t = await sequelize.transaction();
+  
+  try {
+    const { id } = req.params;
+    const { coupon_code, payment_method } = req.body;
+    
+    // Verificar si la orden existe
+    const order = await Order.findByPk(id, {
+      include: [{ model: OrderItem, as: 'items' }],
+      transaction: t
+    });
+    
+    if (!order) {
+      await t.rollback();
+      return res.status(404).json({ error: 'Orden no encontrada' });
+    }
+    
+    // Verificar el cupón
+    const coupon = await Coupon.findOne({ 
+      where: { 
+        code: coupon_code,
+        is_active: true,
+        valid_from: { [Op.lte]: new Date() },
+        [Op.or]: [
+          { valid_to: null },
+          { valid_to: { [Op.gte]: new Date() }}
+        ]
+      },
+      transaction: t
+    });
+    
+    if (!coupon) {
+      await t.rollback();
+      return res.status(400).json({ error: 'Cupón inválido o expirado' });
+    }
+    
+    // Calcular el descuento
+    let discountAmount = 0;
+    
+    if (coupon.discount_type === 'percentage') {
+      discountAmount = order.total_amount * (coupon.discount_value / 100);
+    } else {
+      discountAmount = Math.min(coupon.discount_value, order.total_amount);
+    }
+    
+    // Validar condiciones
+    if (coupon.min_purchase_amount > 0 && order.total_amount < coupon.min_purchase_amount) {
+      await t.rollback();
+      return res.status(400).json({ 
+        error: `El monto mínimo para este cupón es ${coupon.min_purchase_amount}` 
+      });
+    }
+    
+    if (coupon.cash_payment_only && payment_method !== 'efectivo') {
+      await t.rollback();
+      return res.status(400).json({ 
+        error: 'Este cupón solo es válido para pagos en efectivo' 
+      });
+    }
+    
+    // Aplicar lógica específica para pago en efectivo (si aplica)
+    if (payment_method === 'efectivo' && coupon.cash_payment_only) {
+      // Si el cupón es exclusivo para efectivo, aumentar el descuento
+      discountAmount *= 1.1; // 10% extra por pagar en efectivo
+    }
+    
+    // Redondear a 2 decimales
+    discountAmount = Math.round(discountAmount * 100) / 100;
+    
+    // Actualizar la orden
+    await order.update({
+      coupon_code,
+      discount_amount: discountAmount,
+      payment_method: payment_method || order.payment_method,
+      updated_at: new Date()
+    }, { transaction: t });
+    
+    // Incrementar uso del cupón
+    await Coupon.update(
+      { usage_count: sequelize.literal('usage_count + 1') },
+      { where: { code: coupon_code }, transaction: t }
+    );
+    
+    await t.commit();
+    
+    // Recuperar la orden actualizada
+    const updatedOrder = await Order.findByPk(id, {
+      include: [{ model: OrderItem, as: 'items' }]
+    });
+    
+    res.json(updatedOrder);
+    
+  } catch (error) {
+    await t.rollback();
+    console.error('❌ Error al aplicar cupón:', error);
+    res.status(500).json({ error: 'Error al aplicar cupón' });
   }
 };

@@ -6,12 +6,15 @@ const { verifyToken, requirePermission } = require('../middlewares/authJwt');
 
 router.use(verifyToken);
 
-// Reemplazá esto 👇
+// Rutas básicas
 router.get('/', requirePermission('ver_orden'), controller.getAll);
-
-// Y agregá lo que corresponda para create, update, delete si hace falta
 router.post('/', requirePermission('crear_orden'), controller.create);
 router.put('/:id', requirePermission('modificar_orden'), controller.update);
 router.delete('/:id', requirePermission('eliminar_orden'), controller.remove);
+
+// Nuevas rutas para manejo de cola
+router.post('/call-next', requirePermission('procesar_pagos'), controller.callNext);
+router.post('/:id/process', requirePermission('procesar_pagos'), controller.markAsProcessed);
+router.post('/reorder', requirePermission('gestionar_cola'), controller.reorder);
 
 module.exports = router;

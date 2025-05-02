@@ -72,6 +72,10 @@ const Coupon = sequelize.define('Coupon', {
   updated_at: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  cash_payment_only: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   tableName: 'Coupons',
