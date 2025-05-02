@@ -16,6 +16,7 @@ const couponRoutes = require('./routes/coupon.routes');
 const cashRegisterRoutes = require('./routes/cashRegister.routes');
 const receiptRoutes = require('./routes/receipt.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
+const dashboardRoutes = require('./routes/dashboard.routes'); // Nueva ruta
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/cash-register', cashRegisterRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/dashboard', dashboardRoutes); // Nuevo endpoint
 
 sequelize.sync(); // crea las tablas si no existen
 
