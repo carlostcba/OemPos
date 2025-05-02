@@ -3,23 +3,13 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
-const { verifyToken } = require('../middlewares/authJwt'); // Importar el middleware
+const { verifyToken } = require('../middlewares/authJwt');
 
-// Rutas válidas
+// Rutas públicas
 router.post('/login', authController.login);
-router.post('/register', authController.register); // si está habilitado
+router.post('/register', authController.register);
 
-// Ruta para verificar token
-router.get('/verify-token', verifyToken, (req, res) => {
-  res.json({
-    valid: true,
-    user: {
-      id: req.user.id,
-      username: req.user.username,
-      roles: req.user.roles,
-      permissions: req.user.permissions
-    }
-  });
-});
+// Ruta para verificar token (protegida)
+router.get('/verify-token', verifyToken, authController.verifyToken);
 
 module.exports = router;

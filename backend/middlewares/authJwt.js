@@ -1,4 +1,5 @@
 // backend/middlewares/authJwt.js
+
 const jwt = require('jsonwebtoken');
 const { User, Role, Permission } = require('../models');
 
@@ -17,34 +18,53 @@ const verifyToken = async (req, res, next) => {
     const decoded = jwt.verify(token, SECRET);
     req.user = decoded;
 
+    // 🔍 Cargar usuario con sus roles y permisos desde la base
     const user = await User.findByPk(decoded.id, {
-      include: [{
-        model: Role,
-        as: 'roles',
-        include: [{
-          model: Permission,
-          as: 'permissions'
-        }]
-      }]
+      include: [
+        {
+          model: Role,
+          as: 'role', // Relación directa
+          attributes: ['id', 'name']
+        },
+        {
+          model: Role,
+          as: 'roles', // Relación muchos a muchos
+          include: [{
+            model: Permission,
+            as: 'permissions'
+          }]
+        }
+      ]
     });   
     
     if (!user) {
       return res.status(401).json({ error: 'Usuario no encontrado' });
     }
 
-    const userPermissions = user.roles.flatMap(role =>
-      role.permissions.map(perm => perm.name)
-    );
+    // 🧠 Consolidar lista de permisos del usuario de ambas relaciones
+    let userPermissions = [];
     
+    // Permisos de la relación muchos a muchos
+    const manyToManyPermissions = user.roles?.flatMap(role =>
+      role.permissions?.map(perm => perm.name) || []
+    ) || [];
+    
+    // Si tiene permisos directos a través de role_id, los agregamos 
+    // (necesitarías añadir esta relación en la tabla Roles o consultar directamente)
+    
+    userPermissions = [...new Set([...manyToManyPermissions])];
+    
+    // 🧠 Debug completo
     console.log('🧠 Usuario autenticado:', {
       id: user.id,
       username: user.username,
-      roles: user.roles?.map(r => r.name),
+      roleDirecto: user.role?.name,
+      rolesMuchos: user.roles?.map(r => r.name),
       permisos: userPermissions
     });
     
     req.user.permissions = userPermissions;
-    next();
+    next(); // Solo una llamada a next()
   } catch (err) {
     console.error('❌ Error verificando token:', err.message);
     return res.status(403).json({ error: 'Token inválido o expirado' });
@@ -59,8 +79,17 @@ const requirePermission = (permission) => (req, res, next) => {
   next();
 };
 
+// ✅ Middleware para verificar si el usuario tiene un rol específico
+const requireRole = (role) => (req, res, next) => {
+  if (!req.user?.roles?.includes(role)) {
+    return res.status(403).json({ error: `Acceso denegado: se requiere el rol "${role}"` });
+  }
+  next();
+};
+
 // ✅ Exportaciones
 module.exports = {
   verifyToken,
-  requirePermission
+  requirePermission,
+  requireRole
 };
