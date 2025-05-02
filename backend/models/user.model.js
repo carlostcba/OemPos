@@ -6,8 +6,8 @@ const sequelize = require('../config/database');
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.UUID,
-    primaryKey: true,
-    defaultValue: DataTypes.UUIDV4
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true
   },
   username: {
     type: DataTypes.STRING(50),
@@ -25,3 +25,4 @@ const User = sequelize.define('User', {
 });
 
 module.exports = User;
+

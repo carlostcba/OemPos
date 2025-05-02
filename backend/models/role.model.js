@@ -1,3 +1,4 @@
+// backend/models/role.model.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -9,12 +10,8 @@ const Role = sequelize.define('Role', {
   },
   name: {
     type: DataTypes.STRING(50),
-    allowNull: false,
-    unique: true
-  },
-  description: {
-    type: DataTypes.STRING(255),
-    allowNull: true
+    unique: true,
+    allowNull: false
   }
 }, {
   tableName: 'Roles',

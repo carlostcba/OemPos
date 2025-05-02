@@ -1,3 +1,4 @@
+// backend/models/permission.model.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -8,13 +9,9 @@ const Permission = sequelize.define('Permission', {
     primaryKey: true
   },
   name: {
-    type: DataTypes.STRING(50),
-    allowNull: false,
-    unique: true
-  },
-  description: {
-    type: DataTypes.STRING(255),
-    allowNull: true
+    type: DataTypes.STRING(100),
+    unique: true,
+    allowNull: false
   }
 }, {
   tableName: 'Permissions',
