@@ -1,33 +1,34 @@
-
 # OemPOS
 
-Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express, Sequelize y MSSQL como parte de la arquitectura del proyecto OemPos.
+Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express, Sequelize y SQL Server como parte de la arquitectura del proyecto OemPos.
 
 ---
 
-## 🛍️ Etapas del Proyecto
+## 🛍️ Estado Actual del Proyecto
 
-### Semana 1-2: Setup del Proyecto
-- ✅ MSSQL conectado, Sequelize configurado
-- ✅ Models Product, User, Category, Subcategory, ProductImage
-- ✅ CRUD Products funcionando
+### Semana 1-2: Setup del Proyecto ✅ COMPLETADO
+- Base de datos SQL Server conectada mediante Sequelize
+- Modelos implementados: Product, Category, Subcategory, ProductImage, User, Role, Permission
+- Sistema de relaciones entre entidades configurado
+- CRUD de productos completo y funcional
 
-### Semana 3-4: Autenticación y Seguridad
-- ✅ Login funcional
-- ✅ JWT funcionando
-- ✅ Middleware verifyToken activo
-- 🔸 Falta implementar requireRole() en rutas sensibles
+### Semana 3-4: Autenticación y Seguridad ✅ COMPLETADO
+- Login y registro de usuarios implementado
+- Autenticación JWT funcionando correctamente
+- Middleware `verifyToken` activo en todas las rutas
+- Sistema de roles y permisos implementado
+- Middlewares `requirePermission` y `requireRole` operativos
 
-### Semana 5-6: Ventas y Cupones
-- ⏳ CRUD de Orders, OrderItems, OrderQueue funcionando
-- ⏳ Generación de código especial (O001, P001, D001, S001)
-- ⏳ Faltante: aplicar cupones con descuentos reales sobre efectivo
+### Semana 5-6: Ventas y Cupones ⏳ EN PROGRESO (90%)
+- CRUD de Orders, OrderItems, OrderQueue completo
+- Sistema de códigos automáticos (O001, P001, D001, S001) implementado
+- Gestión de cupones y descuentos funcionando
+- Implementada lógica para aplicar cupones según método de pago
+- Cola de atención con priorización implementada
 
-### Semana 7-8: Reportes y Caja
-- ❌ No iniciado
+### Semana 7-8: Reportes y Caja ❌ NO INICIADO
 
-### Semana 9+: Frontend Ionic + Tests
-- ❌ No iniciado
+### Semana 9+: Frontend Ionic + Tests ❌ NO INICIADO
 
 ---
 
@@ -36,279 +37,213 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 ### 🧩 Modelo de Negocio
 - **Tipo**: Venta minorista presencial
 - **Canal**: Punto de orden (vendedor) + Punto de caja (cajero)
-- **Clientes**: ORDEN (inmediato) / PEDIDO (programado)
+- **Clientes**: ORDEN (inmediato) / PEDIDO (programado) / DELIVERY (a domicilio) / SALON (consumo en local)
 - **Medios de Pago**: Efectivo, Tarjeta, Transferencia
-- **Valor Agregado**: Descuentos solo en efectivo, pedidos programables
+- **Valor Agregado**: Descuentos especiales en efectivo, pedidos programables
 - **Sistema**: Transacciones, cupones, comprobantes, estadísticas
 
 ---
 
-### 🔄 Flujo de Trabajo
+### 🔄 Flujo de Trabajo Implementado
 
 #### 👤 VENDEDOR (Punto de Orden)
 1. Recibe al cliente
-2. Registra tipo de transacción: ORDEN o PEDIDO
-3. Datos del cliente:
-   - ORDEN: solo nombre
-   - PEDIDO: nombre, tel, email, fecha/hora
-4. Agrega productos
-5. Sistema genera N° único
-6. Registra medio de pago
-7. Envía transacción al cajero
+2. Registra tipo de transacción: ORDEN, PEDIDO, DELIVERY o SALON
+3. Recopila datos según tipo de operación
+4. Agrega productos al pedido
+5. Sistema genera código único automático (Ej: O001, P001)
+6. Registra medio de pago tentativo
+7. Envía transacción a la cola de atención
 
 #### 💵 CAJERO (Punto de Caja)
-1. Recibe y prioriza transacciones
-2. Llama al cliente
-3. Confirma/cambia medio de pago
-4. Procesa cobro:
-   - Tarjeta: POS
-   - Efectivo: aplica cupón
-   - Transferencia: registra referencia
-5. En PEDIDO: cobra seña / saldo
-6. Genera comprobante
-7. Actualiza estadísticas
-8. Realiza cierre turno / caja
+1. Gestiona cola de atención con priorización
+2. Llama al siguiente cliente según prioridad
+3. Confirma o modifica método de pago
+4. Procesa cobro y aplica cupones si corresponde
+5. Registra pagos completos o señas para pedidos
+6. Emite comprobante (pendiente implementar)
+7. Marca transacción como procesada
 
 ---
 
-### 📊 Reportes
-- Ventas diarias / semanales / mensuales
-- Uso de cupones
-- Productos más vendidos
+## 🔐 Sistema de Roles y Permisos
 
-### 💼 Caja
-- Apertura y fondo inicial
-- Arqueo de caja
-- Control de diferencias
-- Exportación de reportes (Excel/PDF)
-
-### 📆 Tickets / Cola de atención
-- Administración de prioridad
-- Llamado a clientes según estado
-
-### 💳 Cupones
-- Validación avanzada
-- Cálculo proporcional efectivo/productos elegibles
-- Registro de uso de cupones
-
----
-
-## 👥 Roles del Sistema
-
+### Roles Principales
 - **VENDEDOR**: carga pedidos
 - **CAJERO**: procesa pagos
 - **SUPERVISOR**: audita operaciones
-- **ADMINISTRADOR**: configura parámetros
+- **ADMINISTRADOR**: gestión completa del sistema
 
-### VENDEDOR
-- Carga ORDEN/PEDIDO
-- Elige método de pago
-- No cobra ni aplica cupones
-
-### CAJERO
-- Cobra, aplica cupones
-- Maneja señas y saldos
-- Realiza arqueos y cierres
-
-### SUPERVISOR
-- Reportes, historial, auditoría
-
-### ADMINISTRADOR
-- Configura sistema
-- Carga usuarios, productos y reglas
-
----
-
-## 🔐 Seguridad
-- Middleware `verifyToken` activo
-- Falta aplicar `requireRole('rol')` en rutas sensibles
-
----
-
-## 🔐 Sistema de Roles Modulares
-
-### Permisos por módulo
+### Permisos Implementados
 
 #### 📦 Transacciones
-- ver_transacciones
+- ver_productos
+- crear_producto
+- modificar_producto
+- eliminar_producto
+- ver_ordenes
 - crear_orden
-- crear_pedido
-- modificar_transacciones
+- modificar_orden
+- eliminar_orden
+- gestionar_cola
 
-#### 🧾 Pagos y Caja
+#### 🧾 Pagos y Cupones
 - procesar_pagos
+- ver_cupones
 - aplicar_cupones
-- registrar_senias_y_saldos
-- abrir_caja
-- realizar_arqueos
-- cerrar_caja
-- ver_historial_caja
+- gestionar_imagenes
 
 #### 📊 Reportes
-- ver_reporte_ventas
-- ver_reporte_cupones
-- ver_reporte_caja
-- exportar_reportes
+- ver_reportes
+- ver_historial_caja
 
 #### ⚙️ Administración
+- ver_usuarios
 - gestionar_usuarios
-- gestionar_productos
-- gestionar_cupones
-- configurar_parametros
+- abrir_caja
+- cerrar_caja
 
-### Ejemplo de Rol: Super Cajero
-Permisos asignados:
-- ✅ Todos los de cajero
-- ✅ ver_reporte_caja
-- ✅ ver_reporte_cupones
+---
 
---- 
-
-## 🧱 Arquitectura General
+## 🧱 Arquitectura del Sistema
 
 - **Backend:** Node.js + Express
-- **ORM:** Sequelize (MSSQL)
+- **ORM:** Sequelize
 - **Base de Datos:** SQL Server 2022
-- **Autenticación:** JWT con roles
+- **Autenticación:** JWT con sistema de roles y permisos
 - **Frontend (próximo):** Ionic Framework
 
-### 🔗 Relaciones
+### 🔗 Estructura de Relaciones
+- User → Role → Permissions (relación muchos a muchos)
 - Product → Category / Subcategory / ProductImage / User
-- Venta → Productos y métodos de pago
+- Order → OrderItems → Products
+- Order → OrderQueue para gestión de cola
 
 ---
 
-## 📢 Estado Actual OemPOS - Backend
+## 📊 Modelos implementados
 
-| Etapa                           | Estado         | Detalle |
-|----------------------------------|----------------|---------|
-| Semana 1-2: Setup del Proyecto   | ✅ COMPLETO  | MSSQL + Models + CRUD Products |
-| Semana 3-4: Seguridad            | ✅ 99% Completo | Login + JWT. Falta control de roles |
-| Semana 5-6: Ventas y Cupones     | ⏳ En Progreso  | CRUD Orders + OrderItems + OrderQueue |
-| Semana 7-8: Reportes y Caja      | ❌ No iniciado |  |
-| Semana 9+: Frontend Ionic + Tests| ❌ No iniciado |  |
+- **Products**: Productos con categorías, subcategorías e imágenes
+- **Orders**: Pedidos con múltiples tipos (orden, pedido, delivery, salon)
+- **OrderItems**: Líneas de productos en cada pedido
+- **OrderQueue**: Sistema de cola para atención de clientes
+- **Coupons**: Sistema de cupones con múltiples reglas
+- **Users**: Usuarios con roles y permisos
+- **Roles/Permissions**: Sistema modular de permisos
 
 ---
 
-## 🔍 Prioridades Inmediatas
+## 🔍 Próximas Implementaciones
 
 | Prioridad | Tarea |
 |-----------|-------|
-| 🔥 | Agregar middleware requireRole en rutas |
-| 🔥 | Implementar cálculo y aplicación de cupones según efectivo |
-| ✅ | Testear flujo completo: orden -> productos -> cupón -> pago |
-| 🛠️ | Preparar cierre de caja (después) |
+| 🔥 | Implementar módulo de reportes |
+| 🔥 | Desarrollar sistema de caja (apertura/cierre) |
+| 🔥 | Implementar gestión de comprobantes |
+| 🛠️ | Desarrollar frontend en Ionic |
 
 ---
 
-## 📚 Tecnologías
+## 📚 Tecnologías Utilizadas
 
-- Node.js
-- Express.js
-- Sequelize ORM
-- SQL Server 2022 (MSSQL)
+- Node.js v18+
+- Express.js v5.1.0
+- Sequelize ORM v6.37.7
+- SQL Server 2022
 - JWT para autenticación
-- Postman para pruebas de API
+- bcrypt para cifrado de contraseñas
+- Multer para gestión de imágenes
 
 ---
 
-## 📂 Estructura del Proyecto (backend)
+## 📂 Estructura del Proyecto
 
 ```
 backend/
 ├── config/
-│   └── database.js               # Configuración de Sequelize + MSSQL
+│   ├── database.js         # Configuración de Sequelize + MSSQL
+│   └── db.config.js        # Parámetros de conexión a la BD
 ├── controllers/
-│   ├── product.controller.js     # Lógica de productos
-│   └── auth.controller.js        # (Pendiente) Login / Registro
+│   ├── auth.controller.js  # Autenticación y registro
+│   ├── product.controller.js
+│   ├── order.controller.js
+│   ├── coupon.controller.js
+│   ├── image.controller.js
+│   ├── orderQueue.controller.js
+│   └── user.controller.js  # Gestión de usuarios
 ├── middleware/
-│   └── authJwt.js                # Verifica JWT y roles
+│   └── authJwt.js          # Middlewares de autenticación y permisos
 ├── models/
-│   ├── index.js                  # Asociaciones
-│   ├── product.model.js          # Modelo de producto
-│   ├── user.model.js             # Modelo de usuario
-│   ├── category.model.js         # Modelo de categoría
-│   ├── subcategory.model.js      # Modelo de subcategoría
-│   └── productImage.model.js     # Imágenes relacionadas
+│   ├── index.js            # Asociaciones entre modelos
+│   ├── product.model.js
+│   ├── order.model.js
+│   ├── orderItem.model.js
+│   ├── orderQueue.model.js
+│   ├── user.model.js
+│   ├── role.model.js
+│   ├── permission.model.js
+│   ├── category.model.js   # Categorías de productos
+│   ├── subcategory.model.js # Subcategorías de productos
+│   ├── productImage.model.js # Imágenes de productos
+│   └── coupon.model.js     # Cupones de descuento
 ├── routes/
-│   └── product.routes.js         # Rutas protegidas
-├── app.js
-└── server.js
+│   ├── product.routes.js
+│   ├── auth.routes.js
+│   ├── order.routes.js
+│   ├── coupon.routes.js
+│   ├── orderQueue.routes.js
+│   ├── image.routes.js     # Rutas para gestión de imágenes
+│   └── user.routes.js      # Rutas para gestión de usuarios
+├── sql/                    # Scripts SQL para seed de datos
+│   ├── gustados_schema_v3.sql  # Esquema de base de datos
+│   ├── insert_categories.sql   # Datos iniciales de categorías
+│   ├── insert_products.sql     # Datos iniciales de productos
+│   ├── insert_sub_categories.sql # Datos iniciales de subcategorías
+│   └── roles_permisos_seed.sql # Datos iniciales de roles y permisos
+├── app.js                  # Configuración de Express
+└── server.js              # Punto de entrada
 ```
 
 ---
 
-## ✅ Endpoints Disponibles (requieren token)
-
-- `GET /api/products`
-- `POST /api/products`
-- `PUT /api/products/:id`
-- `DELETE /api/products/:id`
-
-Middleware:
-- `verifyToken`: valida JWT
-- `requireRole('admin')`: restringe según rol
-
----
-
-## 🌐 Variables de entorno (.env)
+## 🔐 Variables de entorno (.env)
 
 ```
 DB_HOST=localhost
 DB_USER=sa
-DB_PASSWORD=...
+DB_PASSWORD=tu_password
 DB_NAME=gustados
 DB_INSTANCE=SQLEXPRESS
-JWT_SECRET=secreto123
+DB_DIALECT=mssql
+JWT_SECRET=tu_secreto
+PORT=3001
 ```
 
 ---
 
-## ⚡ Recomendaciones Siguientes
-
-- [ ] Crear `auth.controller.js` (login, registro, token)
-- [ ] Hashear contraseñas (`bcrypt`)
-- [ ] Endpoint `POST /api/auth/login`
-- [ ] Proteger más rutas con `verifyToken`
-- [ ] Crear seeder inicial para usuario admin
-
----
-
-## 🚀 Comenzar
+## 🚀 Instalación y Ejecución
 
 ```bash
-cd backend
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/oempos.git
+
+# Instalar dependencias
+cd oempos/backend
 npm install
-node server.js
-```
 
-> El backend corre en `http://localhost:3001`.
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
 
----
-
-### 🐞 Ejecutar en modo depuración (nodemon)
-
-Para evitar reiniciar manualmente con `Ctrl + C`, instalá nodemon y usalo así:
-
-```bash
-npm install --save-dev nodemon
-nodemon server.js
-```
-
-O bien, agregalo como script en `package.json`:
-
-```json
-"scripts": {
-  "dev": "nodemon server.js"
-}
-```
-
-Y ejecutá:
-
-```bash
+# Iniciar en modo desarrollo
 npm run dev
+
+# O iniciar en modo producción
+npm start
 ```
+
+> El backend corre en `http://localhost:3001` por defecto.
 
 ---
 
-### 💡 Documentación y colección Postman disponible a pedido.
+### 💡 Documentación de API disponible via Postman a solicitud.

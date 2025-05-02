@@ -1,3 +1,5 @@
+// backend/models/subcategory.model.js
+
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Category = require('./category.model');
