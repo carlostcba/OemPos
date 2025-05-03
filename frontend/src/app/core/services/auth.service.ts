@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, from } from 'rxjs';
-import { map, tap, switchMap } from 'rxjs/operators';
+import { HttpClient, HttpHeaders } from '@angular/common/http'; // Añadir HttpHeaders
+import { Observable, BehaviorSubject, from, throwError } from 'rxjs';
+import { map, tap, switchMap, catchError } from 'rxjs/operators';
 import { Storage } from '@ionic/storage-angular';
 import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
@@ -20,7 +20,8 @@ export class AuthService {
   private currentUserSubject: BehaviorSubject<Usuario | null>;
   public currentUser: Observable<Usuario | null>;
   private apiUrl = environment.apiUrl || 'http://localhost:3001/api';
-  private storageReady = false; // Agregar esta propiedad que faltaba
+  private storageReady = false;
+  private tokenKey = 'auth_token'; // Usar una clave constante
 
   constructor(
     private http: HttpClient,
@@ -36,20 +37,61 @@ export class AuthService {
       // Crear el storage
       await this.storage.create();
       this.storageReady = true;
+      console.log('Storage inicializado correctamente');
       
       // Intentar recuperar el token
-      const token = await this.storage.get('token');
+      await this.loadStoredToken();
+    } catch (error) {
+      console.error('Error al inicializar el almacenamiento', error);
+    }
+  }
+
+  // Método separado para cargar el token almacenado
+  private async loadStoredToken() {
+    try {
+      let token = null;
+      
+      // Intentar obtener token de IonicStorage
+      if (this.storageReady) {
+        token = await this.storage.get(this.tokenKey);
+        console.log('Token obtenido de IonicStorage:', !!token);
+      }
+      
+      // Si no se encuentra, intentar de localStorage
+      if (!token) {
+        token = localStorage.getItem(this.tokenKey);
+        console.log('Token obtenido de localStorage:', !!token);
+      }
+      
+      // Si hay token, decodificar y establecer usuario
       if (token) {
         try {
           const user = this.getUserFromToken(token);
           this.currentUserSubject.next(user);
+          console.log('Usuario cargado de token almacenado:', user.username);
+          return true;
         } catch (error) {
-          console.error('Error al analizar el token', error);
-          await this.storage.remove('token');
+          console.error('Error al analizar el token almacenado', error);
+          // Limpiar token inválido
+          this.clearStoredToken();
         }
       }
     } catch (error) {
-      console.error('Error al inicializar el almacenamiento', error);
+      console.error('Error al cargar token almacenado', error);
+    }
+    return false;
+  }
+
+  // Método para limpiar token de todas las ubicaciones
+  private async clearStoredToken() {
+    try {
+      if (this.storageReady) {
+        await this.storage.remove(this.tokenKey);
+      }
+      localStorage.removeItem(this.tokenKey);
+      console.log('Token eliminado de todos los almacenamientos');
+    } catch (error) {
+      console.error('Error al limpiar token', error);
     }
   }
 
@@ -71,40 +113,80 @@ export class AuthService {
     return this.http.post<{ token: string }>(`${this.apiUrl}/auth/login`, { username, password })
       .pipe(
         tap(async response => {
-          console.log('Login exitoso, token recibido:', response.token.slice(0, 10) + '...');
+          console.log('Login exitoso, token recibido');
           
-          if (this.storageReady) {
-            await this.storage.set('token', response.token);
-          } else {
-            console.warn('Storage no inicializado, guardando token en localStorage');
-            localStorage.setItem('token', response.token);
+          try {
+            const token = response.token;
+            
+            // Guardar token en ambos lugares
+            await this.storeToken(token);
+            
+            const user = this.getUserFromToken(token);
+            this.currentUserSubject.next(user);
+            console.log('Usuario decodificado:', user);
+          } catch (error) {
+            console.error('Error al almacenar token:', error);
           }
-          
-          const user = this.getUserFromToken(response.token);
-          this.currentUserSubject.next(user);
-          console.log('Usuario decodificado:', user);
         }),
         map(response => {
           return this.getUserFromToken(response.token);
+        }),
+        catchError(error => {
+          console.error('Error en el proceso de login:', error);
+          return throwError(() => error);
         })
       );
   }
 
-  async logout() {
-    if (this.storageReady) {
-      await this.storage.remove('token');
-    } else {
-      localStorage.removeItem('token');
+  // Método unificado para guardar token
+  private async storeToken(token: string): Promise<void> {
+    try {
+      // Guardar en localStorage siempre como respaldo
+      localStorage.setItem(this.tokenKey, token);
+      console.log('Token guardado en localStorage');
+      
+      // También guardar en IonicStorage si está disponible
+      if (this.storageReady) {
+        await this.storage.set(this.tokenKey, token);
+        console.log('Token guardado en IonicStorage');
+      }
+    } catch (error) {
+      console.error('Error al guardar token:', error);
+      throw error;
     }
+  }
+
+  async logout() {
+    await this.clearStoredToken();
     this.currentUserSubject.next(null);
+    console.log('Sesión cerrada correctamente');
   }
 
   async getToken(): Promise<string | null> {
-    if (this.storageReady) {
-      return await this.storage.get('token');
-    } 
-    // Fallback a localStorage si el storage no está listo
-    return localStorage.getItem('token');
+    try {
+      let token = null;
+      
+      // Primero intenta obtener de IonicStorage
+      if (this.storageReady) {
+        token = await this.storage.get(this.tokenKey);
+        console.log('Token obtenido de IonicStorage:', token ? 'Sí' : 'No');
+      }
+      
+      // Si no hay token en IonicStorage, intenta con localStorage
+      if (!token) {
+        token = localStorage.getItem(this.tokenKey);
+        console.log('Token obtenido de localStorage:', token ? 'Sí' : 'No');
+      }
+      
+      if (!token) {
+        console.warn('No se encontró ningún token almacenado');
+      }
+      
+      return token;
+    } catch (error) {
+      console.error('Error al obtener token:', error);
+      return null;
+    }
   }
 
   hasPermission(permission: string): boolean {
@@ -119,5 +201,46 @@ export class AuthService {
 
   verifyToken(): Observable<{ valid: boolean; user: Usuario }> {
     return this.http.get<{ valid: boolean; user: Usuario }>(`${this.apiUrl}/auth/verify-token`);
+  }
+
+  verifyTokenDirectly(): Observable<any> {
+    return from(this.getToken()).pipe(
+      switchMap(token => {
+        if (!token) {
+          console.error('No hay token para verificar');
+          return throwError(() => new Error('No hay token'));
+        }
+        
+        // Crear headers manualmente
+        const headers = new HttpHeaders({
+          'Authorization': `Bearer ${token}`
+        });
+        
+        console.log('Verificando token directo con headers:', headers.get('Authorization'));
+        
+        return this.http.get<any>(`${this.apiUrl}/auth/verify-token`, { headers });
+      }),
+      catchError(error => {
+        console.error('Error en verificación directa:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  async checkStoredToken(): Promise<boolean> {
+    const token = await this.getToken();
+    console.log('Existe token almacenado:', !!token);
+    if (token) {
+      console.log('El token comienza con:', token.substring(0, 10) + '...');
+      try {
+        const decoded = this.getUserFromToken(token);
+        console.log('El token puede ser decodificado:', !!decoded);
+        return true;
+      } catch (error) {
+        console.error('Error al decodificar token:', error);
+        return false;
+      }
+    }
+    return false;
   }
 }

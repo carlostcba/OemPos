@@ -31,3 +31,85 @@
 {"timestamp":"2025-05-03T22:24:52.268Z","timestamp_local":"3/5/2025, 07:24:52","level":"info","message":"Modo: development"}
 {"timestamp":"2025-05-03T22:24:53.994Z","timestamp_local":"3/5/2025, 07:24:53","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
 {"timestamp":"2025-05-03T22:24:57.670Z","timestamp_local":"3/5/2025, 07:24:57","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T22:46:53.320Z","timestamp_local":"3/5/2025, 07:46:53","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:46:53.625Z","timestamp_local":"3/5/2025, 07:46:53","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:46:53.628Z","timestamp_local":"3/5/2025, 07:46:53","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:46:53.630Z","timestamp_local":"3/5/2025, 07:46:53","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:49:00.792Z","timestamp_local":"3/5/2025, 07:49:00","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:49:00.890Z","timestamp_local":"3/5/2025, 07:49:00","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:49:00.893Z","timestamp_local":"3/5/2025, 07:49:00","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:49:00.893Z","timestamp_local":"3/5/2025, 07:49:00","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:51:05.077Z","timestamp_local":"3/5/2025, 07:51:05","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:51:05.170Z","timestamp_local":"3/5/2025, 07:51:05","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:51:05.173Z","timestamp_local":"3/5/2025, 07:51:05","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:51:05.174Z","timestamp_local":"3/5/2025, 07:51:05","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:54:22.483Z","timestamp_local":"3/5/2025, 07:54:22","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:54:22.577Z","timestamp_local":"3/5/2025, 07:54:22","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:54:22.580Z","timestamp_local":"3/5/2025, 07:54:22","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:54:22.581Z","timestamp_local":"3/5/2025, 07:54:22","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:55:19.413Z","timestamp_local":"3/5/2025, 07:55:19","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:55:19.515Z","timestamp_local":"3/5/2025, 07:55:19","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:55:19.518Z","timestamp_local":"3/5/2025, 07:55:19","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:55:19.519Z","timestamp_local":"3/5/2025, 07:55:19","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:55:22.024Z","timestamp_local":"3/5/2025, 07:55:22","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:55:22.120Z","timestamp_local":"3/5/2025, 07:55:22","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:55:22.123Z","timestamp_local":"3/5/2025, 07:55:22","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:55:22.124Z","timestamp_local":"3/5/2025, 07:55:22","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:55:29.698Z","timestamp_local":"3/5/2025, 07:55:29","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:55:29.801Z","timestamp_local":"3/5/2025, 07:55:29","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:55:29.804Z","timestamp_local":"3/5/2025, 07:55:29","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:55:29.805Z","timestamp_local":"3/5/2025, 07:55:29","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:55:43.762Z","timestamp_local":"3/5/2025, 07:55:43","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:55:43.924Z","timestamp_local":"3/5/2025, 07:55:43","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:55:43.927Z","timestamp_local":"3/5/2025, 07:55:43","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:55:43.928Z","timestamp_local":"3/5/2025, 07:55:43","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:55:49.333Z","timestamp_local":"3/5/2025, 07:55:49","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:55:49.429Z","timestamp_local":"3/5/2025, 07:55:49","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:55:49.432Z","timestamp_local":"3/5/2025, 07:55:49","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:55:49.432Z","timestamp_local":"3/5/2025, 07:55:49","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:56:46.937Z","timestamp_local":"3/5/2025, 07:56:46","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:56:47.036Z","timestamp_local":"3/5/2025, 07:56:47","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:56:47.038Z","timestamp_local":"3/5/2025, 07:56:47","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:56:47.039Z","timestamp_local":"3/5/2025, 07:56:47","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:56:55.877Z","timestamp_local":"3/5/2025, 07:56:55","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:56:55.983Z","timestamp_local":"3/5/2025, 07:56:55","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:56:55.985Z","timestamp_local":"3/5/2025, 07:56:55","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:56:55.987Z","timestamp_local":"3/5/2025, 07:56:55","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:57:55.446Z","timestamp_local":"3/5/2025, 07:57:55","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T22:58:23.340Z","timestamp_local":"3/5/2025, 07:58:23","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T22:58:23.438Z","timestamp_local":"3/5/2025, 07:58:23","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T22:58:23.441Z","timestamp_local":"3/5/2025, 07:58:23","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T22:58:23.442Z","timestamp_local":"3/5/2025, 07:58:23","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T22:58:27.308Z","timestamp_local":"3/5/2025, 07:58:27","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T22:58:58.333Z","timestamp_local":"3/5/2025, 07:58:58","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T22:59:23.591Z","timestamp_local":"3/5/2025, 07:59:23","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:01:47.839Z","timestamp_local":"3/5/2025, 08:01:47","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T23:01:47.961Z","timestamp_local":"3/5/2025, 08:01:47","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T23:01:47.965Z","timestamp_local":"3/5/2025, 08:01:47","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T23:01:47.966Z","timestamp_local":"3/5/2025, 08:01:47","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T23:02:59.366Z","timestamp_local":"3/5/2025, 08:02:59","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T23:02:59.461Z","timestamp_local":"3/5/2025, 08:02:59","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T23:02:59.464Z","timestamp_local":"3/5/2025, 08:02:59","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T23:02:59.465Z","timestamp_local":"3/5/2025, 08:02:59","level":"info","message":"Modo: development"}
+{"timestamp":"2025-05-03T23:06:32.536Z","timestamp_local":"3/5/2025, 08:06:32","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:08:06.190Z","timestamp_local":"3/5/2025, 08:08:06","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:08:33.418Z","timestamp_local":"3/5/2025, 08:08:33","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:17:29.223Z","timestamp_local":"3/5/2025, 08:17:29","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:18:59.319Z","timestamp_local":"3/5/2025, 08:18:59","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:18:59.456Z","timestamp_local":"3/5/2025, 08:18:59","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:19:19.620Z","timestamp_local":"3/5/2025, 08:19:19","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:19:19.723Z","timestamp_local":"3/5/2025, 08:19:19","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:21:05.084Z","timestamp_local":"3/5/2025, 08:21:05","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:25:41.457Z","timestamp_local":"3/5/2025, 08:25:41","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:25:41.561Z","timestamp_local":"3/5/2025, 08:25:41","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:26:10.469Z","timestamp_local":"3/5/2025, 08:26:10","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:26:10.565Z","timestamp_local":"3/5/2025, 08:26:10","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:33:20.173Z","timestamp_local":"3/5/2025, 08:33:20","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:33:20.280Z","timestamp_local":"3/5/2025, 08:33:20","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:36:38.068Z","timestamp_local":"3/5/2025, 08:36:38","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:36:38.161Z","timestamp_local":"3/5/2025, 08:36:38","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:38:57.212Z","timestamp_local":"3/5/2025, 08:38:57","level":"info","message":"POST /api/auth/login","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:38:57.328Z","timestamp_local":"3/5/2025, 08:38:57","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:38:57.416Z","timestamp_local":"3/5/2025, 08:38:57","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:39:11.218Z","timestamp_local":"3/5/2025, 08:39:11","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}
+{"timestamp":"2025-05-03T23:39:15.740Z","timestamp_local":"3/5/2025, 08:39:15","level":"info","message":"GET /api/auth/verify-token","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"}

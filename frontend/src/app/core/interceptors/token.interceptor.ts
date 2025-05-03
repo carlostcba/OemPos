@@ -13,24 +13,27 @@ export class TokenInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    // El problema está aquí - necesitamos asegurarnos de que el token se obtenga correctamente
     return from(this.authService.getToken()).pipe(
       switchMap(token => {
         if (token) {
+          console.log('Enviando solicitud con token:', token.substring(0, 10) + '...');
+          // Cambiando el formato del encabezado
           request = request.clone({
-            setHeaders: {
-              Authorization: `Bearer ${token}`
-            }
+            headers: request.headers.set('Authorization', `Bearer ${token}`)
           });
+        } else {
+          console.warn('No hay token disponible para la solicitud a:', request.url);
         }
         
         return next.handle(request).pipe(
           catchError((error: HttpErrorResponse) => {
             if (error.status === 401) {
-              // Token expirado o inválido
+              console.log('Error 401: Token expirado o inválido. Mensaje:', error.error);
               this.authService.logout();
               this.router.navigate(['/login']);
             }
-            return throwError(error);
+            return throwError(() => error);
           })
         );
       })

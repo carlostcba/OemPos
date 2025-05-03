@@ -15,7 +15,7 @@ import { CoreModule } from '../../core/core.module';
     CommonModule,
     ReactiveFormsModule,
     IonicModule,
-    CoreModule // Importante: importa el módulo Core
+    CoreModule
   ]
 })
 export class LoginComponent implements OnInit {
@@ -38,7 +38,8 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Podemos reinicializar aquí también si es necesario
+    // Limpiar cualquier token previo
+    this.authService.logout();
   }
 
   // Getter para acceder fácilmente a los campos del formulario
@@ -69,31 +70,41 @@ export class LoginComponent implements OnInit {
         loading.dismiss();
         this.isLoading = false;
   
-        // Redirigir según el rol del usuario
-        if (user.roles.includes('admin')) {
-          console.log('Usuario es admin, redirigiendo a /admin/dashboard');
-          this.router.navigateByUrl('/admin/dashboard');
-        } else if (user.roles.includes('cajero')) {
-          console.log('Usuario es cajero, redirigiendo a /caja');
-          this.router.navigateByUrl('/caja');
-        } else {
-          console.log('Usuario es vendedor, redirigiendo a /pedidos');
-          this.router.navigateByUrl('/pedidos');
-        }
+        // Verificar que el token se haya guardado correctamente
+        this.authService.checkStoredToken().then(valid => {
+          if (valid) {
+            // Redirigir según el rol del usuario
+            if (user.roles.includes('admin')) {
+              console.log('Usuario es admin, redirigiendo a /admin/dashboard');
+              this.router.navigateByUrl('/admin/dashboard');
+            } else if (user.roles.includes('cajero')) {
+              console.log('Usuario es cajero, redirigiendo a /caja');
+              this.router.navigateByUrl('/caja');
+            } else {
+              console.log('Usuario es vendedor, redirigiendo a /pedidos');
+              this.router.navigateByUrl('/pedidos');
+            }
+          } else {
+            console.error('El token no se guardó correctamente');
+            this.presentErrorAlert('Error al guardar credenciales');
+          }
+        });
       },
       error: async (error) => {
         console.error('Error de login:', error);
         loading.dismiss();
         this.isLoading = false;
-        
-        const alert = await this.alertController.create({
-          header: 'Error de inicio de sesión',
-          message: 'Usuario o contraseña incorrectos. Por favor intente nuevamente.',
-          buttons: ['OK']
-        });
-  
-        await alert.present();
+        this.presentErrorAlert('Usuario o contraseña incorrectos');
       }
     });
+  }
+
+  async presentErrorAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Error de inicio de sesión',
+      message: message,
+      buttons: ['OK']
+    });
+    await alert.present();
   }
 }
