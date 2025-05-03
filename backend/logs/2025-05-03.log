@@ -1,0 +1,4 @@
+{"timestamp":"2025-05-03T00:01:45.763Z","timestamp_local":"2/5/2025, 09:01:45","level":"info","message":"✅ Conexión a base de datos exitosa"}
+{"timestamp":"2025-05-03T00:01:46.049Z","timestamp_local":"2/5/2025, 09:01:46","level":"info","message":"✅ Modelos sincronizados"}
+{"timestamp":"2025-05-03T00:01:46.051Z","timestamp_local":"2/5/2025, 09:01:46","level":"info","message":"🚀 Servidor backend corriendo en http://localhost:3001"}
+{"timestamp":"2025-05-03T00:01:46.052Z","timestamp_local":"2/5/2025, 09:01:46","level":"info","message":"Modo: development"}
