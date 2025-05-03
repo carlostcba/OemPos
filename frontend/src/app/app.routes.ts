@@ -16,5 +16,33 @@ export const routes: Routes = [
     loadChildren: () => import('./productos/productos.routes').then(m => m.PRODUCTOS_ROUTES),
     canActivate: [AuthGuard]
   },
-  // Otras rutas...
+  {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'caja',
+    loadChildren: () => import('./caja/caja.module').then(m => m.CajaModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'pedidos',
+    loadChildren: () => import('./pedidos/pedidos.module').then(m => m.PedidosModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'inventario',
+    loadChildren: () => import('./inventario/inventario.module').then(m => m.InventarioModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'reportes',
+    loadChildren: () => import('./reportes/reportes.module').then(m => m.ReportesModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: '**',
+    redirectTo: 'login'
+  }
 ];

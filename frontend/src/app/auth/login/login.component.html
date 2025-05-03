@@ -24,16 +24,16 @@
             <ion-label position="floating">Usuario</ion-label>
             <ion-input formControlName="username" type="text"></ion-input>
           </ion-item>
-          <div *ngIf="submitted && f.username.errors" class="error-message">
-            <div *ngIf="f.username.errors.required">Usuario es requerido</div>
+          <div *ngIf="submitted && f['username'].errors" class="error-message">
+            <div *ngIf="f['username'].errors['required']">Usuario es requerido</div>
           </div>
 
           <ion-item class="ion-margin-top">
             <ion-label position="floating">Contraseña</ion-label>
             <ion-input formControlName="password" type="password"></ion-input>
           </ion-item>
-          <div *ngIf="submitted && f.password.errors" class="error-message">
-            <div *ngIf="f.password.errors.required">Contraseña es requerida</div>
+          <div *ngIf="submitted && f['password'].errors" class="error-message">
+            <div *ngIf="f['password'].errors['required']">Contraseña es requerida</div>
           </div>
 
           <ion-button expand="block" type="submit" class="ion-margin-top">

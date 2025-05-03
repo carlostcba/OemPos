@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, take, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 
 @Injectable({
@@ -17,16 +17,39 @@ export class AuthGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
+    // Primero verificamos si tenemos un usuario en el BehaviorSubject
+    return this.authService.currentUser.pipe(
+      take(1),
+      switchMap(user => {
+        if (user) {
+          console.log('AuthGuard: Usuario ya autenticado');
+          return of(true);
+        }
+        
+        // Si no hay usuario, intentamos verificar el token con el backend
+        return this.checkTokenWithBackend(state);
+      }),
+      catchError(() => {
+        this.router.navigate(['/login']);
+        return of(false);
+      })
+    );
+  }
+
+  private checkTokenWithBackend(state: RouterStateSnapshot): Observable<boolean> {
     return this.authService.verifyToken().pipe(
       map(result => {
         if (result.valid) {
+          console.log('AuthGuard: Token verificado con el backend');
           return true;
         } else {
-          this.router.navigate(['/login']);
+          console.log('AuthGuard: Token inválido, redirigiendo a login');
+          this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
           return false;
         }
       }),
       catchError(error => {
+        console.error('AuthGuard: Error al verificar token', error);
         this.router.navigate(['/login']);
         return of(false);
       })

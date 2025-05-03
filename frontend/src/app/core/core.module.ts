@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import { TokenInterceptor } from './interceptors/token.interceptor';
+import { AuthService } from './services/auth.service';
+import { Storage } from '@ionic/storage-angular';
 
 @NgModule({
   declarations: [],
@@ -16,10 +18,13 @@ import { TokenInterceptor } from './interceptors/token.interceptor';
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,
       multi: true
-    }
+    },
+    AuthService,
+    Storage
   ],
   exports: [
-    HttpClientModule
+    HttpClientModule,
+    IonicStorageModule
   ]
 })
 export class CoreModule { }

@@ -13,7 +13,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [LoginComponent],
+  declarations: [],  // Quita LoginComponent si es un componente standalone
   imports: [
     CommonModule,
     ReactiveFormsModule,

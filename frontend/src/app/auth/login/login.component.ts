@@ -1,13 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AlertController, LoadingController } from '@ionic/angular';
+import { IonicModule, AlertController, LoadingController } from '@ionic/angular';
 import { AuthService } from '../../core/services/auth.service';
+import { CoreModule } from '../../core/core.module';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    IonicModule,
+    CoreModule // Importante: importa el módulo Core
+  ]
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
@@ -37,51 +46,54 @@ export class LoginComponent implements OnInit {
 
   async onSubmit() {
     this.submitted = true;
-
+  
     // Si el formulario es inválido, detener
     if (this.loginForm.invalid) {
       return;
     }
-
+  
     this.isLoading = true;
-
+  
     const loading = await this.loadingController.create({
       message: 'Iniciando sesión...',
       spinner: 'circles'
     });
     await loading.present();
-
+  
     this.authService.login(
       this.loginForm.value.username,
       this.loginForm.value.password
-    ).subscribe(
-      (user) => {
+    ).subscribe({
+      next: (user) => {
+        console.log('Login exitoso, redirigiendo...', user);
         loading.dismiss();
         this.isLoading = false;
-
+  
         // Redirigir según el rol del usuario
         if (user.roles.includes('admin')) {
-          this.router.navigate(['/admin/dashboard']);
+          console.log('Usuario es admin, redirigiendo a /admin/dashboard');
+          this.router.navigateByUrl('/admin/dashboard');
         } else if (user.roles.includes('cajero')) {
-          this.router.navigate(['/caja']);
+          console.log('Usuario es cajero, redirigiendo a /caja');
+          this.router.navigateByUrl('/caja');
         } else {
-          this.router.navigate(['/pedidos']);
+          console.log('Usuario es vendedor, redirigiendo a /pedidos');
+          this.router.navigateByUrl('/pedidos');
         }
       },
-      async (error) => {
+      error: async (error) => {
+        console.error('Error de login:', error);
         loading.dismiss();
         this.isLoading = false;
-        
-        console.error('Error de login:', error);
         
         const alert = await this.alertController.create({
           header: 'Error de inicio de sesión',
           message: 'Usuario o contraseña incorrectos. Por favor intente nuevamente.',
           buttons: ['OK']
         });
-
+  
         await alert.present();
       }
-    );
+    });
   }
 }
