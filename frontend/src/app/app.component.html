@@ -1,5 +1,3 @@
-<!-- frontend/src/app/app.component.html -->
-
 <ion-app>
   <ion-split-pane contentId="main-content">
     <!-- Menú lateral -->
@@ -21,7 +19,6 @@
             </ion-label>
           </ion-item>
 
-          <!-- Corregido: no podemos usar routerLink y *ngIf en el mismo elemento -->
           <ng-container *ngFor="let page of appPages">
             <ion-item *ngIf="hasRoleForPage(page)"
                      [routerDirection]="'root'" 

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { ProductoService, Producto } from '../../productos/services/producto.service';
+import { UiService } from '../../core/services/ui.service';
 
 // Definir interfaz para categoría
 interface Categoria {
@@ -35,12 +36,18 @@ export class NuevoPedidoComponent implements OnInit {
   constructor(
     private productoService: ProductoService,
     private alertController: AlertController,
-    private router: Router
+    private router: Router,
+    private uiService: UiService
   ) {}
 
   ngOnInit() {
     this.cargarProductos();
     this.cargarCategorias();
+  }
+
+  toggleMenu() {
+    console.log('Toggling menu'); // Para verificar que se está ejecutando
+    this.uiService.toggleSideMenu();
   }
 
   cambiarSeccion(event: any) {

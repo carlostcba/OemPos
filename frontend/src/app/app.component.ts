@@ -1,11 +1,12 @@
-// frontend/src/app/app.component.ts
-
-import { Component, OnInit } from '@angular/core';
+// app.component.ts
+import { Component, OnInit, HostBinding, AfterViewInit } from '@angular/core';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { MenuController, Platform, IonicModule } from '@ionic/angular';
 import { AuthService } from './core/services/auth.service';
+import { UiService } from './core/services/ui.service';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { DomUtils } from './core/utils/dom-utils';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +15,7 @@ import { filter } from 'rxjs/operators';
   standalone: true,
   imports: [IonicModule, CommonModule, RouterModule]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   appPages = [
     { title: 'Inicio', url: '/dashboard', icon: 'home', roles: ['admin', 'cajero', 'vendedor'] },
     { title: 'Pedidos', url: '/pedidos', icon: 'cart', roles: ['admin', 'vendedor'] },
@@ -34,12 +35,15 @@ export class AppComponent implements OnInit {
   currentUsername: string = '';
   userRoles: string[] = [];
   isAuthenticated = false;
+  
+  @HostBinding('class.side-menu-hidden') menuHidden = false;
 
   constructor(
     private platform: Platform,
-    public router: Router,  // Hacerlo público para que la plantilla pueda acceder
+    public router: Router,
     private menu: MenuController,
-    private authService: AuthService
+    private authService: AuthService,
+    private uiService: UiService
   ) {
     this.initializeApp();
   }
@@ -57,7 +61,28 @@ export class AppComponent implements OnInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.menu.close('main-menu');
+        // Remover elementos no deseados después de cada navegación
+        this.removeUnwantedElements();
       });
+      
+    // Suscribirse al estado del menú
+    this.uiService.sideMenuOpen$.subscribe(isOpen => {
+      this.menuHidden = !isOpen;
+    });
+  }
+
+  ngAfterViewInit() {
+    // Remover elementos no deseados después de que la vista se inicialice
+    this.removeUnwantedElements();
+  }
+
+  // Método para eliminar elementos no deseados del DOM
+  removeUnwantedElements() {
+    DomUtils.removeElements([
+      'ion-toolbar[color="primary"]:has(ion-title.ion-text-center)',
+      'div[style*="background-color: #4285F4"]',
+      'div[style*="background: #4285F4"]'
+    ]);
   }
 
   initializeApp() {

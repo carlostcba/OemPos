@@ -1,50 +1,116 @@
+ion-content {
+  --background: #121212;
+  --color: #ffffff;
+}
+
 .login-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-  
-  .logo-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.logo {
+  width: 120px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 500;
+  color: #e0e0e0;
+  margin: 0;
+}
+
+ion-card {
+  background: #1e1e1e;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  margin: 0;
+}
+
+ion-card-header {
+  padding: 20px 16px 10px;
+}
+
+ion-card-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+ion-card-content {
+  padding: 16px;
+}
+
+ion-item {
+  --background: #252525;
+  --color: #e0e0e0;
+  --border-color: #333;
+  --border-radius: 6px;
+  --highlight-height: 2px;
+  margin-bottom: 10px;
+}
+
+ion-label {
+  --color: #9e9e9e;
+}
+
+ion-input {
+  --color: #ffffff;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 12px;
+  margin-left: 16px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+ion-button {
+  --background: #1a73e8;
+  --color: #ffffff;
+  --border-radius: 4px;
+  height: 48px;
+  font-weight: 500;
+  margin-top: 20px;
+}
+
+.version-info {
+  margin-top: 40px;
+  color: #757575;
+  font-size: 14px;
+}
+
+@media (max-height: 600px) {
+  .login-container {
+    justify-content: flex-start;
+    padding-top: 60px;
   }
   
   .logo {
-    width: 120px;
-    height: auto;
-    margin-bottom: 15px;
+    width: 80px;
+  }
+  
+  .logo-container {
+    margin-bottom: 20px;
   }
   
   h1 {
-    font-size: 24px;
-    font-weight: 500;
-    color: var(--ion-color-dark);
-    margin: 0;
+    font-size: 20px;
   }
-  
-  ion-card {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  }
-  
-  ion-card-title {
-    font-size: 22px;
-    font-weight: 600;
-  }
-  
-  .error-message {
-    color: var(--ion-color-danger);
-    font-size: 12px;
-    margin-left: 16px;
-    margin-top: 5px;
-  }
-  
-  .version-info {
-    margin-top: 30px;
-    color: var(--ion-color-medium);
-    font-size: 14px;
-  }
+}

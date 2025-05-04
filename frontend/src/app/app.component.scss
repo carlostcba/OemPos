@@ -1,65 +1,85 @@
 // frontend/src/app/app.component.scss
 
 ion-menu ion-content {
-    --background: var(--ion-item-background, var(--ion-background-color, #fff));
-  }
-  
-  ion-menu ion-content ion-list {
-    padding: 0;
-  }
-  
-  ion-menu ion-list#menu-list {
-    padding-top: 20px;
-    padding-bottom: 20px;
-  }
-  
-  ion-menu ion-list-header,
-  ion-menu ion-note {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-  
-  ion-menu ion-list-header {
-    margin-bottom: 4px;
-    font-size: 22px;
-    font-weight: 600;
-  }
-  
-  ion-menu ion-note {
-    margin-bottom: 16px;
-    font-size: 14px;
-    color: var(--ion-color-medium-shade);
-  }
-  
-  ion-menu ion-item {
-    --padding-start: 16px;
-    --padding-end: 16px;
-    border-radius: 4px;
-    margin: 2px 8px;
-  }
-  
-  ion-menu ion-item.selected {
-    --background: rgba(var(--ion-color-primary-rgb), 0.14);
-    --color: var(--ion-color-primary);
-    font-weight: 500;
-  }
-  
-  ion-menu ion-item ion-icon {
-    color: var(--ion-color-primary);
-  }
-  
-  .user-info {
-    margin-top: 16px;
-    margin-bottom: 16px;
-    --background: rgba(var(--ion-color-primary-rgb), 0.05);
-  }
-  
-  .user-info ion-label h2 {
-    font-weight: 600;
-  }
-  
-  ion-item-divider {
-    min-height: 1px;
-    background: var(--ion-color-light);
-    margin: 16px 0;
-  }
+  --background: var(--ion-item-background, var(--ion-background-color, #fff));
+}
+
+ion-menu ion-content ion-list {
+  padding: 0;
+}
+
+ion-menu ion-list#menu-list {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+ion-menu ion-list-header,
+ion-menu ion-note {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+ion-menu ion-list-header {
+  margin-bottom: 4px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+ion-menu ion-note {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--ion-color-medium-shade);
+}
+
+ion-menu ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  border-radius: 4px;
+  margin: 2px 8px;
+}
+
+ion-menu ion-item.selected {
+  --background: rgba(var(--ion-color-primary-rgb), 0.14);
+  --color: var(--ion-color-primary);
+  font-weight: 500;
+}
+
+ion-menu ion-item ion-icon {
+  color: var(--ion-color-primary);
+}
+
+.user-info {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  --background: rgba(var(--ion-color-primary-rgb), 0.05);
+}
+
+.user-info ion-label h2 {
+  font-weight: 600;
+}
+
+ion-item-divider {
+  min-height: 1px;
+  background: var(--ion-color-light);
+  margin: 16px 0;
+}
+
+// Ocultar Panel Lateral
+ion-split-pane {
+  --side-width: 270px;
+  --side-max-width: 270px;
+}
+
+// Asegurar que se puede ocultar en cualquier tamaño de pantalla
+.split-pane-visible > ion-menu.menu-pane-visible {
+  transform: none !important;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.side-menu-hidden ion-menu {
+  display: none !important;
+}
+
+.side-menu-hidden ion-router-outlet {
+  margin-left: 0 !important;
+}
