@@ -73,17 +73,10 @@ export class LoginComponent implements OnInit {
         // Verificar que el token se haya guardado correctamente
         this.authService.checkStoredToken().then(valid => {
           if (valid) {
-            // Redirigir según el rol del usuario
-            if (user.roles.includes('admin')) {
-              console.log('Usuario es admin, redirigiendo a /admin/dashboard');
-              this.router.navigateByUrl('/admin/dashboard');
-            } else if (user.roles.includes('cajero')) {
-              console.log('Usuario es cajero, redirigiendo a /caja');
-              this.router.navigateByUrl('/caja');
-            } else {
-              console.log('Usuario es vendedor, redirigiendo a /pedidos');
-              this.router.navigateByUrl('/pedidos');
-            }
+            // Usar la función de navegación basada en rol
+            const ruta = this.authService.navigateByRole();
+            console.log('Redirigiendo a:', ruta);
+            this.router.navigateByUrl(ruta);
           } else {
             console.error('El token no se guardó correctamente');
             this.presentErrorAlert('Error al guardar credenciales');

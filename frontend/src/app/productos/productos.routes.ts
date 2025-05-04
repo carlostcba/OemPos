@@ -1,9 +1,19 @@
+// src/app/productos/productos.routes.ts
 import { Routes } from '@angular/router';
+import { ProductosListaComponent } from './lista/productos-lista.component';
+import { ProductoFormComponent } from './formulario/producto-form.component';
 
-// Usamos una versión simplificada para que no dependa de componentes inexistentes
 export const PRODUCTOS_ROUTES: Routes = [
   {
     path: '',
-    loadChildren: () => import('./productos.module').then(m => m.ProductosModule)
+    component: ProductosListaComponent
+  },
+  {
+    path: 'crear',
+    component: ProductoFormComponent
+  },
+  {
+    path: 'editar/:id',
+    component: ProductoFormComponent
   }
 ];

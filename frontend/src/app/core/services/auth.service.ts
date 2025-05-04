@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'; // Añadir HttpHeaders
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, from, throwError } from 'rxjs';
 import { map, tap, switchMap, catchError } from 'rxjs/operators';
 import { Storage } from '@ionic/storage-angular';
@@ -197,6 +197,30 @@ export class AuthService {
   hasRole(role: string): boolean {
     const user = this.currentUserSubject.value;
     return user?.roles?.includes(role) || false;
+  }
+
+  // Método para navegar según el rol del usuario
+  navigateByRole(): string {
+    const user = this.currentUserSubject.value;
+    if (!user) return '/login';
+    
+    console.log('Determinando ruta para el rol:', user.roles);
+    
+    // Redireccionar según rol
+    if (user.roles.includes('admin')) {
+      console.log('Usuario es admin, redirigiendo a /admin/dashboard');
+      return '/admin/dashboard';
+    } else if (user.roles.includes('cajero')) {
+      console.log('Usuario es cajero, redirigiendo a /caja');
+      return '/caja';
+    } else if (user.roles.includes('vendedor')) {
+      console.log('Usuario es vendedor, redirigiendo a /pedidos');
+      return '/pedidos';
+    } else {
+      // Rol desconocido, redirigir a página por defecto
+      console.log('Rol desconocido, redirigiendo a /pedidos');
+      return '/pedidos';
+    }
   }
 
   verifyToken(): Observable<{ valid: boolean; user: Usuario }> {

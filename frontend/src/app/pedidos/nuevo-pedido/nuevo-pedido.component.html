@@ -1,0 +1,131 @@
+<ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>Sistema POS</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="cerrarSesion()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Cerrar Sesión
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-toolbar>
+      <ion-segment [(ngModel)]="seccionActual" (ionChange)="cambiarSeccion($event)">
+        <ion-segment-button value="ordenes">
+          <ion-label>Órdenes</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="nuevo">
+          <ion-label>Nuevo Pedido</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content class="ion-padding">
+    <div *ngIf="seccionActual === 'nuevo'">
+      <div class="header-bar">
+        <h2>Nuevo Pedido</h2>
+        <ion-button fill="outline" color="medium" (click)="cancelarPedido()">Cancelar</ion-button>
+      </div>
+  
+      <div class="search-container">
+        <ion-searchbar placeholder="Buscar productos..." [(ngModel)]="terminoBusqueda" (ionChange)="buscarProductos()"></ion-searchbar>
+        <ion-select [(ngModel)]="categoriaSeleccionada" (ionChange)="filtrarPorCategoria()">
+          <ion-select-option value="todas">Todas las categorías</ion-select-option>
+          <ion-select-option *ngFor="let categoria of categorias" [value]="categoria.id">{{ categoria.name }}</ion-select-option>
+        </ion-select>
+      </div>
+  
+      <div class="contenedor-principal">
+        <div class="catalogo-productos">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="6" size-md="4" size-lg="3" *ngFor="let producto of productosFiltrados">
+                <ion-card (click)="agregarAlPedido(producto)">
+                  <ion-img *ngIf="producto.product_image_id" [src]="'assets/placeholder.png'" class="producto-imagen"></ion-img>
+                  <ion-img *ngIf="!producto.product_image_id" src="assets/producto-default.png" class="producto-imagen"></ion-img>
+                  <ion-card-header>
+                    <ion-card-subtitle>{{ producto.name }}</ion-card-subtitle>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <div class="precio">${{ producto.price | number:'1.2-2' }}/{{ producto.unit_label }}</div>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+  
+        <div class="detalle-pedido">
+          <div class="cliente-datos">
+            <h3>Datos del Cliente</h3>
+            <ion-item>
+              <ion-label position="floating">Nombre del Cliente</ion-label>
+              <ion-input [(ngModel)]="nombreCliente" placeholder="Nombre del cliente"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-checkbox [(ngModel)]="esPedidoAnticipado"></ion-checkbox>
+              <ion-label class="ion-padding-start">Pedido anticipado</ion-label>
+            </ion-item>
+          </div>
+  
+          <div class="detalle-items">
+            <h3>Detalle del Pedido</h3>
+            <ion-list *ngIf="itemsPedido.length > 0">
+              <ion-item *ngFor="let item of itemsPedido; let i = index">
+                <ion-label>
+                  <h2>{{ item.producto.name }}</h2>
+                  <p>{{ item.cantidad }} x ${{ item.producto.price | number:'1.2-2' }}</p>
+                </ion-label>
+                <ion-note slot="end" color="primary">${{ item.subtotal | number:'1.2-2' }}</ion-note>
+                <ion-buttons slot="end">
+                  <ion-button color="danger" (click)="eliminarItem(i)">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-item>
+            </ion-list>
+            <div *ngIf="itemsPedido.length === 0" class="sin-items">
+              <p>No hay productos agregados</p>
+            </div>
+          </div>
+  
+          <div class="totales">
+            <div class="total-line">
+              <span>Total a pagar:</span>
+              <span class="total-amount">${{ totalPedido | number:'1.2-2' }}</span>
+            </div>
+          </div>
+  
+          <div class="metodo-pago">
+            <h3>Método de Pago</h3>
+            <ion-segment [(ngModel)]="metodoPago">
+              <ion-segment-button value="efectivo">
+                <ion-icon name="cash-outline"></ion-icon>
+                <ion-label>Efectivo</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="tarjeta">
+                <ion-icon name="card-outline"></ion-icon>
+                <ion-label>Tarjeta</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="transferencia">
+                <ion-icon name="swap-horizontal-outline"></ion-icon>
+                <ion-label>Transfer.</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+  
+          <ion-button expand="block" color="warning" [disabled]="itemsPedido.length === 0" (click)="crearPedido()">
+            Crear Pedido
+          </ion-button>
+        </div>
+      </div>
+    </div>
+  
+    <div *ngIf="seccionActual === 'ordenes'">
+      <h2>Lista de Órdenes</h2>
+      <p>Funcionalidad en desarrollo...</p>
+    </div>
+  </ion-content>

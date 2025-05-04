@@ -1,0 +1,147 @@
+:host {
+    --producto-card-height: 150px;
+  }
+  
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+  }
+  
+  .search-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  ion-searchbar {
+    flex-grow: 1;
+  }
+  
+  .contenedor-principal {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 20px;
+    height: calc(100vh - 200px);
+  }
+  
+  .catalogo-productos {
+    overflow-y: auto;
+    max-height: 100%;
+    padding-right: 10px;
+  }
+  
+  .detalle-pedido {
+    border-left: 1px solid var(--ion-color-light);
+    padding-left: 20px;
+    overflow-y: auto;
+    max-height: 100%;
+  }
+  
+  ion-card {
+    margin: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    height: var(--producto-card-height);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  ion-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .producto-imagen {
+    height: 80px;
+    object-fit: cover;
+    background-color: #f5f5f5;
+  }
+  
+  ion-card-header {
+    padding: 8px;
+  }
+  
+  ion-card-subtitle {
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  ion-card-content {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .precio {
+    font-weight: bold;
+    color: var(--ion-color-primary);
+    font-size: 1.1rem;
+  }
+  
+  .cliente-datos, .detalle-items, .metodo-pago {
+    margin-bottom: 20px;
+  }
+  
+  h3 {
+    font-size: 1.2rem;
+    color: var(--ion-color-dark);
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--ion-color-light);
+    padding-bottom: 5px;
+  }
+  
+  .sin-items {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--ion-color-medium);
+    font-style: italic;
+  }
+  
+  .total-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 10px 0;
+    margin-top: 15px;
+    border-top: 1px solid var(--ion-color-light);
+  }
+  
+  .total-amount {
+    color: var(--ion-color-success);
+    font-size: 1.5rem;
+  }
+  
+  // Responsive
+  @media (max-width: 992px) {
+    .contenedor-principal {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+    
+    .detalle-pedido {
+      border-left: none;
+      padding-left: 0;
+      border-top: 1px solid var(--ion-color-light);
+      padding-top: 16px;
+      max-height: none;
+    }
+    
+    .catalogo-productos {
+      max-height: 400px;
+    }
+  }
