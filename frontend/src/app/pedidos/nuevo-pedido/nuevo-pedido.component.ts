@@ -1,13 +1,13 @@
 // src/app/pedidos/nuevo-pedido/nuevo-pedido.component.ts
-import { Component, OnInit } from '@angular/core';
+
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule, AlertController, IonContent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { ProductoService, Producto } from '../../productos/services/producto.service';
 import { UiService } from '../../core/services/ui.service';
 
-// Definir interfaz para categoría
 interface Categoria {
   id: string;
   name: string;
@@ -20,11 +20,13 @@ interface Categoria {
   standalone: true,
   imports: [CommonModule, IonicModule, FormsModule, RouterModule]
 })
-export class NuevoPedidoComponent implements OnInit {
+export class NuevoPedidoComponent implements OnInit, AfterViewInit {
+  @ViewChild(IonContent) content!: IonContent;
+  
   seccionActual = 'nuevo';
   terminoBusqueda = '';
   categoriaSeleccionada = 'todas';
-  categorias: Categoria[] = []; // Ahora tiene tipo correcto
+  categorias: Categoria[] = [];
   productos: Producto[] = [];
   productosFiltrados: Producto[] = [];
   itemsPedido: {producto: Producto, cantidad: number, subtotal: number}[] = [];
@@ -45,18 +47,42 @@ export class NuevoPedidoComponent implements OnInit {
     this.cargarCategorias();
   }
 
+  ngAfterViewInit() {
+    // Asegurarnos de que el contenido se renderice correctamente
+    setTimeout(() => {
+      this.content.scrollToTop();
+      this.fixAriaHiddenIssues();
+    }, 100);
+  }
+
+  fixAriaHiddenIssues() {
+    setTimeout(() => {
+      // Remover aria-hidden de elementos que podrían afectar el scroll
+      const elementsWithAriaHidden = document.querySelectorAll('[aria-hidden="true"]');
+      elementsWithAriaHidden.forEach(el => {
+        // Solo remover aria-hidden de los contenedores principales que podrían afectar el scroll
+        if (el.classList.contains('catalogo-productos') || 
+            el.classList.contains('detalle-items') || 
+            el.classList.contains('ion-content') || 
+            el.parentElement?.classList.contains('ion-content')) {
+          el.removeAttribute('aria-hidden');
+          console.log('Aria-hidden removido de:', el);
+        }
+      });
+    }, 500);
+  }
+
   toggleMenu() {
-    console.log('Toggling menu'); // Para verificar que se está ejecutando
     this.uiService.toggleSideMenu();
   }
 
   cambiarSeccion(event: any) {
     this.seccionActual = event.detail.value;
-  }
-
-  cerrarSesion() {
-    // Lógica para cerrar sesión
-    this.router.navigate(['/login']);
+    // Resetear el scroll cuando se cambia de sección
+    setTimeout(() => {
+      this.content.scrollToTop();
+      this.fixAriaHiddenIssues();
+    }, 100);
   }
 
   cargarProductos() {
@@ -73,8 +99,7 @@ export class NuevoPedidoComponent implements OnInit {
   }
 
   cargarCategorias() {
-    // Aquí cargarías las categorías desde un servicio
-    // Por ahora usamos datos de ejemplo
+    // Datos de ejemplo
     this.categorias = [
       { id: 'cat1', name: 'Panadería' },
       { id: 'cat2', name: 'Pastelería' },
@@ -202,9 +227,7 @@ export class NuevoPedidoComponent implements OnInit {
       return;
     }
 
-    // Aquí iría la lógica para crear el pedido en el backend
-    // ...
-
+    // Lógica para crear el pedido en el backend
     const alert = await this.alertController.create({
       header: 'Éxito',
       message: 'Pedido creado exitosamente',

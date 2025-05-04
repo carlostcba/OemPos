@@ -1,3 +1,4 @@
+<!-- src/app/pedidos/nuevo-pedido/nuevo-pedido.component.html -->
 <ion-content>
   <div class="main-container">
     <div class="tabs-container">
@@ -17,7 +18,7 @@
           <ion-button fill="clear" (click)="toggleMenu()" class="menu-button">
             <ion-icon name="menu-outline" slot="icon-only"></ion-icon>
           </ion-button>
-          <h2>Nuevo Pedido</h2>
+          <h2>Nueva Orden</h2>
         </div>
         <ion-button fill="outline" color="medium" (click)="cancelarPedido()">Cancelar</ion-button>
       </div>
@@ -31,6 +32,7 @@
       </div>
 
       <div class="contenedor-principal">
+        <!-- Catálogo de productos con scroll -->
         <div class="catalogo-productos">
           <ion-grid>
             <ion-row>
@@ -50,7 +52,9 @@
           </ion-grid>
         </div>
 
+        <!-- Panel lateral con tres secciones -->
         <div class="detalle-pedido">
+          <!-- 1. Sección superior fija -->
           <div class="cliente-datos">
             <h3>Datos del Cliente</h3>
             <ion-item>
@@ -59,12 +63,13 @@
             </ion-item>
             <ion-item lines="none" class="checkbox-item">
               <ion-checkbox [(ngModel)]="esPedidoAnticipado"></ion-checkbox>
-              <ion-label class="ion-padding-start">Pedido anticipado</ion-label>
+              <ion-label class="ion-padding-start">Pedido</ion-label>
             </ion-item>
           </div>
 
+          <!-- 2. Sección central con scroll -->
           <div class="detalle-items">
-            <h3>Detalle del Pedido</h3>
+            <h3>Detalle de la Orden</h3>
             <ion-list *ngIf="itemsPedido.length > 0">
               <ion-item *ngFor="let item of itemsPedido; let i = index">
                 <ion-label>
@@ -73,8 +78,8 @@
                 </ion-label>
                 <ion-note slot="end" color="primary">${{ item.subtotal | number:'1.2-2' }}</ion-note>
                 <ion-buttons slot="end">
-                  <ion-button color="danger" (click)="eliminarItem(i)">
-                    <ion-icon name="trash-outline"></ion-icon>
+                  <ion-button color="danger" (click)="eliminarItem(i)" size="small">
+                    <ion-icon name="trash-outline" size="small"></ion-icon>
                   </ion-button>
                 </ion-buttons>
               </ion-item>
@@ -84,35 +89,38 @@
             </div>
           </div>
 
-          <div class="totales">
-            <div class="total-line">
-              <span>Total a pagar:</span>
-              <span class="total-amount">${{ totalPedido | number:'1.2-2' }}</span>
+          <!-- 3. Sección inferior fija -->
+          <div class="fixed-bottom">
+            <div class="totales">
+              <div class="total-line">
+                <span>Total a pagar:</span>
+                <span class="total-amount">${{ totalPedido | number:'1.2-2' }}</span>
+              </div>
             </div>
-          </div>
 
-          <div class="metodo-pago">
-            <h3>Método de Pago</h3>
-            <ion-segment [(ngModel)]="metodoPago" mode="md" class="pago-segment">
-              <ion-segment-button value="efectivo">
-                <ion-icon name="cash-outline"></ion-icon>
-                <ion-label>Efectivo</ion-label>
-              </ion-segment-button>
-              <ion-segment-button value="tarjeta">
-                <ion-icon name="card-outline"></ion-icon>
-                <ion-label>Tarjeta</ion-label>
-              </ion-segment-button>
-              <ion-segment-button value="transferencia">
-                <ion-icon name="swap-horizontal-outline"></ion-icon>
-                <ion-label>Transfer.</ion-label>
-              </ion-segment-button>
-            </ion-segment>
-          </div>
+            <div class="metodo-pago">
+              <h3>Método de Pago</h3>
+              <ion-segment [(ngModel)]="metodoPago" mode="md" class="pago-segment">
+                <ion-segment-button value="efectivo">
+                  <ion-icon name="cash-outline" size="small"></ion-icon>
+                  <ion-label>Efectivo</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="tarjeta">
+                  <ion-icon name="card-outline" size="small"></ion-icon>
+                  <ion-label>Tarjeta</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="transferencia">
+                  <ion-icon name="swap-horizontal-outline" size="small"></ion-icon>
+                  <ion-label>Transfer.</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
 
-          <div class="actions">
-            <ion-button expand="block" color="success" [disabled]="itemsPedido.length === 0" (click)="crearPedido()" class="crear-pedido-btn">
-              CREAR PEDIDO
-            </ion-button>
+            <div class="actions">
+              <ion-button expand="block" color="success" [disabled]="itemsPedido.length === 0" (click)="crearPedido()" class="crear-pedido-btn">
+                CREAR ORDEN
+              </ion-button>
+            </div>
           </div>
         </div>
       </div>

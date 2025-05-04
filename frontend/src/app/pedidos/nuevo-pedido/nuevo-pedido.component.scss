@@ -1,5 +1,7 @@
+// src/app/pedidos/nuevo-pedido/nuevo-pedido.component.scss
+
 :host {
-  --producto-card-height: 180px;
+  --producto-card-height: 120px; /* Reducido de 180px */
   display: block;
   height: 100%;
 }
@@ -7,6 +9,7 @@
 ion-content {
   --background: #121212;
   --color: #ffffff;
+  overflow: hidden;
 }
 
 .main-container {
@@ -24,14 +27,14 @@ ion-content {
 }
 
 .tabs-container {
-  padding: 16px;
-  padding-bottom: 0;
+  padding: 5px 16px 0; /* Reducido de 10px a 5px */
 }
 
 ion-segment {
   --background: #1e1e1e;
   border-radius: 8px;
   overflow: hidden;
+  height: 40px; /* Altura fija más pequeña */
 }
 
 ion-segment-button {
@@ -41,22 +44,26 @@ ion-segment-button {
   --indicator-color: transparent;
   font-weight: 500;
   letter-spacing: 0.5px;
+  min-height: 30px; /* Altura mínima reducida */
 }
 
 .pedido-container, .ordenes-container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 16px 16px 16px;
-  height: calc(100% - 70px);
+  padding: 0 16px 10px 16px; /* Padding inferior reducido */
+  height: calc(100% - 50px); /* Reducido de 70px a 50px */
+  overflow: hidden;
+  max-height: calc(100vh - 40px); /* Reducido de 120px a 100px */
 }
 
 .header-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  margin-top: 8px;
+  margin-bottom: 5px; /* Reducido de 10px a 5px */
+  margin-top: 3px; /* Reducido de 5px a 3px */
+  flex-shrink: 0;
 }
 
 .menu-title {
@@ -66,15 +73,16 @@ ion-segment-button {
 
 h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.3rem; /* Reducido de 1.5rem */
   font-weight: 600;
   color: #e0e0e0;
 }
 
 .search-container {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 5px; /* Reducido de 10px a 5px */
+  margin-bottom: 5px; /* Reducido de 10px a 5px */
+  flex-shrink: 0;
 }
 
 ion-searchbar {
@@ -86,6 +94,7 @@ ion-searchbar {
   --border-radius: 8px;
   --box-shadow: none;
   padding: 0;
+  height: 40px; /* Reducido de 40px a 36px */
 }
 
 ion-select {
@@ -95,68 +104,96 @@ ion-select {
   --border-radius: 8px;
   min-width: 160px;
   max-width: 200px;
+  height: 36px; /* Reducido de 40px a 36px */
 }
 
+/* CAMBIO IMPORTANTE: Estructura revisada para el contenedor principal */
 .contenedor-principal {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 20px;
-  height: calc(100% - 100px);
+  display: flex;
+  flex-direction: row;
+  height: calc(100% - 80px); /* Reducido de 80px a 60px */
+  overflow: hidden;
+  flex: 1;
+}
+
+/* Catálogo con scroll */
+.catalogo-productos {
+  flex: 3; /* Aumentado de 3 a 3.5 para dar más espacio al catálogo */
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Panel lateral fijo */
+.detalle-pedido {
+  flex: 1.5; /* Reducido de 2 a 1.5 para dar más espacio al catálogo */
+  border-left: 1px solid #333;
+  padding-left: 5px; /* Reducido de 10px a 5px */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
-.catalogo-productos {
+/* Estructura de tres áreas en el panel lateral */
+.cliente-datos {
+  flex-shrink: 0;
+  margin-bottom: 3px; /* Reducido de 3px a 2px */
+}
+
+.cliente-datos ion-item {
+  --min-height: 34px; /* Reducido de 38px a 34px */
+}
+
+.detalle-items {
+  flex: 1;
   overflow-y: auto;
-  max-height: 100%;
-  padding-right: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: #666 #1e1e1e;
+  margin-bottom: 2px; /* Reducido de 3px a 2px */
+  min-height: 180px;
+  max-height: calc(100% - 200px); /* Reducido de 220px a 200px */
 }
 
-.catalogo-productos::-webkit-scrollbar {
-  width: 6px;
-}
-
-.catalogo-productos::-webkit-scrollbar-track {
-  background: #1e1e1e;
-  border-radius: 4px;
-}
-
-.catalogo-productos::-webkit-scrollbar-thumb {
-  background: #666;
-  border-radius: 4px;
+.fixed-bottom {
+  flex-shrink: 0;
+  background-color: #121212;
+  padding-top: 2px; /* Reducido de 3px a 2px */
+  padding-bottom: 2px; /* Reducido de 3px a 2px */
+  border-top: 1px solid #333;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .producto-card {
-  margin: 8px;
+  margin: 4px; /* Reducido de 5px a 4px */
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   height: var(--producto-card-height);
   display: flex;
   flex-direction: column;
   background: #1e1e1e;
-  border-radius: 12px;
+  border-radius: 6px; /* Reducido de 8px a 6px */
   overflow: hidden;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .producto-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .producto-imagen {
-  height: 90px;
+  height: 70px; /* Reducido de 80px a 70px */
   object-fit: cover;
   background-color: #2a2a2a;
 }
 
 ion-card-header {
-  padding: 8px 12px;
+  padding: 4px 8px; /* Reducido de 6px 10px a 4px 8px */
 }
 
 ion-card-subtitle {
-  font-size: 0.9rem;
+  font-size: 0.8rem; /* Reducido de 0.85rem a 0.8rem */
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -165,7 +202,7 @@ ion-card-subtitle {
 }
 
 ion-card-content {
-  padding: 8px 12px;
+  padding: 4px 8px; /* Reducido de 6px 10px a 4px 8px */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -174,55 +211,44 @@ ion-card-content {
 .precio {
   font-weight: bold;
   color: #4caf50;
-  font-size: 1.1rem;
-}
-
-.detalle-pedido {
-  border-left: 1px solid #333;
-  padding-left: 20px;
-  overflow-y: auto;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.cliente-datos, .detalle-items, .metodo-pago {
-  margin-bottom: 20px;
+  font-size: 0.9rem; /* Reducido de 1rem a 0.9rem */
 }
 
 h3 {
-  font-size: 1.2rem;
+  font-size: 0.9rem; /* Reducido de 1rem a 0.9rem */
   color: #e0e0e0;
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 3px; /* Reducido de 5px a 3px */
   border-bottom: 1px solid #333;
-  padding-bottom: 5px;
+  padding-bottom: 2px;
 }
 
 .sin-items {
   text-align: center;
-  padding: 30px 0;
+  padding: 15px 0; /* Reducido de 20px a 15px */
   color: #8c8c8c;
   font-style: italic;
+  font-size: 0.85rem; /* Reducido de 0.9rem a 0.85rem */
 }
 
 .total-line {
   display: flex;
   justify-content: space-between;
-  font-size: 1.2em;
+  font-size: 1em; /* Reducido de 1.1em a 1em */
   font-weight: bold;
-  padding: 10px 0;
-  margin-top: 15px;
-  border-top: 1px solid #333;
+  padding: 3px 0; /* Reducido de 4px a 3px */
+  margin-top: 3px; /* Reducido de 5px a 3px */
 }
 
 .total-amount {
   color: #4caf50;
-  font-size: 1.5rem;
+  font-size: 1.2rem; /* Reducido de 1.3rem a 1.2rem */
 }
 
 ion-list {
   background: transparent !important;
+  margin: 0;
+  padding: 0;
 }
 
 ion-item {
@@ -230,7 +256,19 @@ ion-item {
   --color: #e0e0e0;
   --border-color: #333;
   --border-radius: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px; /* Reducido de 3px a 2px */
+  --min-height: 32px; /* Reducido de 36px a 32px */
+  font-size: 0.85rem; /* Reducido de 0.9rem a 0.85rem */
+}
+
+ion-item h2 {
+  font-size: 0.85rem; /* Reducido de 0.9rem a 0.85rem */
+  margin: 0;
+}
+
+ion-item p {
+  font-size: 0.75rem; /* Reducido de 0.8rem a 0.75rem */
+  margin: 0;
 }
 
 .checkbox-item {
@@ -238,21 +276,44 @@ ion-item {
   --padding-start: 0;
 }
 
+/* Botones de método de pago más compactos */
 .pago-segment {
-  margin-top: 10px;
+  margin-top: 2px; /* Reducido de 3px a 2px */
+}
+
+.pago-segment ion-segment-button {
+  --padding-top: 1px; /* Reducido de 2px a 1px */
+  --padding-bottom: 1px; /* Reducido de 2px a 1px */
+  --padding-start: 1px; /* Reducido de 2px a 1px */
+  --padding-end: 1px; /* Reducido de 2px a 1px */
+  --border-radius: 3px; /* Reducido de 4px a 3px */
+  font-size: 0.7rem; /* Reducido de 0.75rem a 0.7rem */
+  min-height: 26px; /* Reducido de 30px a 26px */
+}
+
+.pago-segment ion-segment-button ion-icon {
+  font-size: 14px; /* Reducido de 16px a 14px */
+  margin-bottom: 1px;
+}
+
+.pago-segment ion-segment-button ion-label {
+  margin: 0;
+  font-size: 0.7rem; /* Reducido de 0.75rem a 0.7rem */
 }
 
 .actions {
-  margin-top: auto;
-  padding-top: 20px;
+  margin-top: 2px; /* Reducido de 3px a 2px */
 }
 
 .crear-pedido-btn {
   --background: #4caf50;
   --color: #ffffff;
   font-weight: 600;
-  height: 50px;
-  margin-bottom: 10px;
+  height: 34px; /* Reducido de 36px a 34px */
+  margin-bottom: 2px; /* Reducido de 3px a 2px */
+  font-size: 0.85rem; /* Reducido de 0.9rem a 0.85rem */
+  margin-top: 2px; /* Reducido de 3px a 2px */
+  --border-radius: 4px; /* Añadido radio de borde */
 }
 
 .empty-state {
@@ -269,25 +330,65 @@ ion-item {
   margin-bottom: 16px;
 }
 
-// Estilos responsive
-@media (max-width: 992px) {
-  .contenedor-principal {
-    grid-template-columns: 1fr;
-    height: auto;
-    overflow: visible;
+/* Estilos para pantalla 1360x768 */
+@media (min-width: 1200px) and (max-height: 800px) {
+  .detalle-items {
+    min-height: 150px;
+    max-height: calc(100% - 180px); /* Reducido de 200px a 180px */
   }
   
-  .detalle-pedido {
-    border-left: none;
-    padding-left: 0;
-    border-top: 1px solid #333;
-    padding-top: 16px;
-    max-height: none;
-    margin-top: 16px;
+  ion-item {
+    --min-height: 32px; /* Reducido de 40px a 32px */
+  }
+  
+  .crear-pedido-btn {
+    height: 32px; /* Reducido de 34px a 32px */
+    margin-top: 1px; /* Reducido de 2px a 1px */
+    margin-bottom: 1px; /* Reducido de 2px a 1px */
+    font-size: 0.8rem; /* Reducido de 0.85rem a 0.8rem */
+  }
+  
+  .header-bar {
+    margin-bottom: 3px; /* Reducido de 5px a 3px */
+    margin-top: 3px;
+  }
+  
+  .search-container {
+    margin-bottom: 3px; /* Reducido de 5px a 3px */
+  }
+  
+  .tabs-container {
+    padding-top: 3px; /* Reducido de 5px a 3px */
+    padding-bottom: 0;
+  }
+  
+  .total-line {
+    padding: 2px 0; /* Reducido de 3px a 2px */
+    margin-top: 2px; /* Reducido de 3px a 2px */
+  }
+  
+  .pago-segment ion-segment-button {
+    min-height: 24px; /* Reducido de 28px a 24px */
+  }
+}
+
+/* Estilos responsive para dispositivos móviles */
+@media (max-width: 992px) {
+  .contenedor-principal {
+    flex-direction: column;
   }
   
   .catalogo-productos {
-    max-height: 500px;
+    flex: none;
+    height: 320px; /* Reducido de 350px a 320px */
+  }
+  
+  .detalle-pedido {
+    flex: none;
+    border-left: none;
+    border-top: 1px solid #333;
+    padding-left: 0;
+    padding-top: 5px; /* Reducido de 10px a 5px */
   }
   
   .search-container {
