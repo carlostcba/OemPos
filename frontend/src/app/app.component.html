@@ -1,3 +1,54 @@
+<!-- frontend/src/app/app.component.html -->
+
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-split-pane contentId="main-content">
+    <!-- Menú lateral -->
+    <ion-menu contentId="main-content" type="overlay" menuId="main-menu" *ngIf="isAuthenticated">
+      <ion-content>
+        <ion-list id="menu-list">
+          <ion-list-header>
+            <ion-label>OemPOS</ion-label>
+          </ion-list-header>
+          <ion-note>v1.0.0</ion-note>
+
+          <ion-item class="user-info" lines="none">
+            <ion-avatar slot="start">
+              <ion-icon name="person-circle" size="large"></ion-icon>
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ currentUsername }}</h2>
+              <p>{{ userRoles.join(', ') }}</p>
+            </ion-label>
+          </ion-item>
+
+          <!-- Corregido: no podemos usar routerLink y *ngIf en el mismo elemento -->
+          <ng-container *ngFor="let page of appPages">
+            <ion-item *ngIf="hasRoleForPage(page)"
+                     [routerDirection]="'root'" 
+                     [routerLink]="page.url"
+                     lines="none" 
+                     detail="false"
+                     [class.selected]="router.url === page.url">
+              <ion-icon slot="start" [name]="page.icon"></ion-icon>
+              <ion-label>{{ page.title }}</ion-label>
+            </ion-item>
+          </ng-container>
+        </ion-list>
+
+        <ion-list>
+          <ion-item-divider></ion-item-divider>
+          <ion-item *ngFor="let page of userMenuPages" 
+                    lines="none" 
+                    detail="false"
+                    (click)="navigateTo(page)">
+            <ion-icon slot="start" [name]="page.icon"></ion-icon>
+            <ion-label>{{ page.title }}</ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ion-menu>
+    
+    <!-- Contenido principal -->
+    <ion-router-outlet id="main-content"></ion-router-outlet>
+  </ion-split-pane>
 </ion-app>

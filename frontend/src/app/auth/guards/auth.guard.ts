@@ -1,3 +1,5 @@
+// frontend/src/app/auth/guards/auth.guard.ts
+
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
 import { Observable, of, from } from 'rxjs';
@@ -17,6 +19,8 @@ export class AuthGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean> {
+    console.log('AuthGuard: Verificando acceso a ruta', state.url);
+    
     // Primero verificamos si tenemos un usuario en el BehaviorSubject
     return this.authService.currentUser.pipe(
       take(1),
@@ -31,7 +35,7 @@ export class AuthGuard implements CanActivate {
       }),
       catchError(error => {
         console.error('AuthGuard: Error general', error);
-        this.router.navigate(['/login']);
+        this.redirectToLogin(state);
         return of(false);
       })
     );
@@ -42,32 +46,40 @@ export class AuthGuard implements CanActivate {
       switchMap(token => {
         if (!token) {
           console.warn('AuthGuard: No hay token almacenado, redirigiendo a login');
-          this.router.navigate(['/login']);
+          this.redirectToLogin(state);
           return of(false);
         }
         
         console.log('AuthGuard: Verificando token con backend');
         
-        // Usar método directo para verificar
-        return this.authService.verifyTokenDirectly().pipe(
+        // Usar método de verificación
+        return this.authService.verifyToken().pipe(
           map(result => {
             console.log('AuthGuard: Token verificado con éxito', result);
             return true;
           }),
           catchError(error => {
             console.error('AuthGuard: Error al verificar token', error);
-            this.authService.logout();
-            this.router.navigate(['/login']);
+            this.authService.logout().then(() => {
+              this.redirectToLogin(state);
+            });
             return of(false);
           })
         );
       }),
       catchError(error => {
         console.error('AuthGuard: Error al verificar token', error);
-        this.authService.logout();
-        this.router.navigate(['/login']);
+        this.redirectToLogin(state);
         return of(false);
       })
     );
+  }
+
+  private redirectToLogin(state: RouterStateSnapshot) {
+    this.router.navigate(['/login'], { 
+      queryParams: { 
+        returnUrl: state.url 
+      }
+    });
   }
 }

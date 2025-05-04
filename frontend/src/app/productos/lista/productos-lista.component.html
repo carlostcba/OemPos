@@ -1,0 +1,76 @@
+<!-- frontend/src/app/productos/lista/productos-lista.component.html -->
+
+<ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-menu-button></ion-menu-button>
+      </ion-buttons>
+      <ion-title>Productos</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="reloadProducts()">
+          <ion-icon slot="icon-only" name="refresh"></ion-icon>
+        </ion-button>
+        <ion-button routerLink="/productos/crear">
+          <ion-icon slot="icon-only" name="add"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-toolbar>
+      <ion-searchbar placeholder="Buscar productos" (ionChange)="buscarProductos($event)"></ion-searchbar>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content>
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+      <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+    
+    <ion-list *ngIf="productos.length > 0">
+      <ion-item-sliding *ngFor="let producto of productos">
+        <ion-item detail="true" [routerLink]="['/productos', producto.id]">
+          <ion-label>
+            <h2>{{producto.name}}</h2>
+            <p>{{producto.category?.name || 'Sin categoría'}}</p>
+          </ion-label>
+          <ion-badge slot="start" color="{{producto.is_active ? 'success' : 'medium'}}">
+            {{producto.is_active ? 'Activo' : 'Inactivo'}}
+          </ion-badge>
+          <ion-badge slot="end" color="primary">
+            Stock: {{producto.stock}}
+          </ion-badge>
+          <ion-note slot="end" color="primary">${{producto.price}}</ion-note>
+        </ion-item>
+        
+        <ion-item-options side="end">
+          <ion-item-option color="primary" (click)="editarProducto(producto)">
+            <ion-icon slot="icon-only" name="create"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="danger" (click)="eliminarProducto(producto)">
+            <ion-icon slot="icon-only" name="trash"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+    
+    <ion-list *ngIf="isLoading">
+      <ion-item *ngFor="let i of [1,2,3,4,5]">
+        <ion-label>
+          <h2><ion-skeleton-text animated style="width: 70%"></ion-skeleton-text></h2>
+          <p><ion-skeleton-text animated style="width: 50%"></ion-skeleton-text></p>
+        </ion-label>
+        <ion-skeleton-text slot="end" animated style="width: 20%"></ion-skeleton-text>
+      </ion-item>
+    </ion-list>
+    
+    <div *ngIf="productos.length === 0 && !isLoading" class="ion-padding ion-text-center">
+      <ion-icon name="cube" size="large" color="medium"></ion-icon>
+      <p>No hay productos disponibles</p>
+      <ion-button (click)="reloadProducts()">Reintentar</ion-button>
+    </div>
+    
+    <div *ngIf="error" class="ion-padding ion-text-center">
+      <ion-icon name="alert-circle" size="large" color="danger"></ion-icon>
+      <p>{{errorMessage}}</p>
+      <ion-button (click)="reloadProducts()">Reintentar</ion-button>
+    </div>
+  </ion-content>

@@ -1,96 +1,43 @@
+// frontend/src/app/productos/lista/productos-lista.component.ts
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, AlertController, LoadingController } from '@ionic/angular';
+import { IonicModule, LoadingController, ToastController, AlertController } from '@ionic/angular';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { ProductoService } from '../services/producto.service';
+import { environment } from '../../../environments/environment';
+import { catchError, finalize } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 interface Producto {
   id: string;
   name: string;
-  plu_code: string;
   price: number;
-  is_weighable: boolean;
-  unit_label: string;
   stock: number;
-  track_stock: boolean;
+  description?: string;
+  category?: any;
   is_active: boolean;
-  description: string;
-  product_image_id?: string;
 }
 
 @Component({
   selector: 'app-productos-lista',
+  templateUrl: './productos-lista.component.html',
+  styleUrls: ['./productos-lista.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterModule, FormsModule],
-  template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Productos</ion-title>
-        <ion-buttons slot="end">
-          <ion-button routerLink="/productos/crear">
-            <ion-icon slot="icon-only" name="add"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-      <ion-toolbar>
-        <ion-searchbar 
-          placeholder="Buscar producto" 
-          [(ngModel)]="searchTerm"
-          (ionChange)="buscarProductos()"
-          debounce="500"
-        ></ion-searchbar>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content>
-      <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-        <ion-refresher-content></ion-refresher-content>
-      </ion-refresher>
-
-      <ion-list>
-        <ion-item *ngFor="let producto of productos" [routerLink]="['/productos/editar', producto.id]">
-          <ion-thumbnail slot="start" *ngIf="producto.product_image_id">
-            <img src="assets/placeholder.png" alt="Producto">
-          </ion-thumbnail>
-          <ion-label>
-            <h2>{{producto.name}}</h2>
-            <p>{{producto.description || 'Sin descripción'}}</p>
-            <p *ngIf="producto.track_stock">Stock: {{producto.stock}} {{producto.unit_label}}</p>
-          </ion-label>
-          <ion-note slot="end" color="primary">{{ producto.price | currency:'ARS':'symbol':'1.2-2' }}</ion-note>
-          <ion-badge slot="end" color="success" *ngIf="producto.is_active">Activo</ion-badge>
-          <ion-badge slot="end" color="medium" *ngIf="!producto.is_active">Inactivo</ion-badge>
-        </ion-item>
-      </ion-list>
-
-      <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)">
-        <ion-infinite-scroll-content
-          loadingSpinner="circular"
-          loadingText="Cargando más productos...">
-        </ion-infinite-scroll-content>
-      </ion-infinite-scroll>
-
-      <div *ngIf="productos.length === 0" class="ion-padding ion-text-center">
-        <ion-icon name="cube" size="large" color="medium"></ion-icon>
-        <p>No hay productos para mostrar</p>
-      </div>
-    </ion-content>
-  `
+  imports: [CommonModule, IonicModule, RouterModule]
 })
 export class ProductosListaComponent implements OnInit {
   productos: Producto[] = [];
-  searchTerm: string = '';
-  page: number = 1;
-  hasMoreData: boolean = true;
+  isLoading = false;
+  error = false;
+  errorMessage = 'Error al cargar productos';
+  private apiUrl = environment.apiUrl;
 
   constructor(
-    private productoService: ProductoService,
-    private alertController: AlertController,
-    private loadingController: LoadingController,
+    private http: HttpClient,
+    private loadingCtrl: LoadingController,
+    private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
     private router: Router
   ) {}
 
@@ -98,58 +45,139 @@ export class ProductosListaComponent implements OnInit {
     this.cargarProductos();
   }
 
-  async cargarProductos(event?: any) {
-    const loading = await this.loadingController.create({
+  async cargarProductos() {
+    this.isLoading = true;
+    this.error = false;
+    
+    this.http.get<Producto[]>(`${this.apiUrl}/products`).pipe(
+      catchError(err => this.handleError(err)),
+      finalize(() => {
+        this.isLoading = false;
+      })
+    ).subscribe(data => {
+      this.productos = data;
+      console.log('Productos cargados:', this.productos.length);
+    });
+  }
+
+  handleError(error: HttpErrorResponse) {
+    this.error = true;
+    
+    if (error.status === 401) {
+      this.errorMessage = 'No autorizado. Por favor inicie sesión nuevamente.';
+      // Redireccionar al login si es un error de autenticación
+      this.router.navigate(['/login'], { queryParams: { expired: true } });
+    } else if (error.status === 403) {
+      this.errorMessage = 'No tiene permisos para acceder a esta información.';
+    } else if (error.status === 0) {
+      this.errorMessage = 'No se pudo conectar al servidor. Verifique su conexión a internet.';
+    } else {
+      this.errorMessage = `Error al cargar productos: ${error.error?.error || error.error?.message || error.message || 'Error desconocido'}`;
+    }
+    
+    console.error('Error en la solicitud:', error);
+    return throwError(() => error);
+  }
+
+  async reloadProducts() {
+    const loading = await this.loadingCtrl.create({
       message: 'Cargando productos...'
     });
-    
     await loading.present();
     
-    this.productoService.getAll().subscribe({
-      next: (data) => {
-        this.productos = data;
+    this.http.get<Producto[]>(`${this.apiUrl}/products`).pipe(
+      finalize(() => {
         loading.dismiss();
-        if (event) event.target.complete();
-      },
-      error: (error) => {
-        console.error('Error al cargar productos', error);
-        loading.dismiss();
-        if (event) event.target.complete();
-        this.mostrarError('Error al cargar productos');
-      }
+      }),
+      catchError(err => {
+        this.handleError(err);
+        this.presentToast('Error al cargar productos: ' + (err.error?.message || err.message || 'Error desconocido'));
+        return throwError(() => err);
+      })
+    ).subscribe(data => {
+      this.productos = data;
+      this.error = false;
     });
   }
 
   doRefresh(event: any) {
-    this.page = 1;
-    this.hasMoreData = true;
-    this.cargarProductos(event);
+    this.http.get<Producto[]>(`${this.apiUrl}/products`).pipe(
+      finalize(() => {
+        event.target.complete();
+      }),
+      catchError(err => {
+        this.handleError(err);
+        this.presentToast('Error al refrescar: ' + (err.error?.message || err.message || 'Error desconocido'));
+        return throwError(() => err);
+      })
+    ).subscribe(data => {
+      this.productos = data;
+      this.error = false;
+    });
   }
 
-  loadData(event: any) {
-    if (!this.hasMoreData) {
-      event.target.complete();
+  buscarProductos(event: any) {
+    const searchTerm = event.detail.value;
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.cargarProductos();
       return;
     }
     
-    this.page++;
-    // Aquí se implementaría paginación en el backend
-    // Por ahora simulamos que ya no hay más datos
-    this.hasMoreData = false;
-    event.target.complete();
-  }
-
-  buscarProductos() {
-    // Implementar búsqueda con el backend
-    console.log('Buscando:', this.searchTerm);
-  }
-
-  async mostrarError(mensaje: string) {
-    const alert = await this.alertController.create({
-      header: 'Error',
-      message: mensaje,
-      buttons: ['OK']
+    this.isLoading = true;
+    this.http.get<Producto[]>(`${this.apiUrl}/products?search=${searchTerm}`).pipe(
+      finalize(() => {
+        this.isLoading = false;
+      }),
+      catchError(err => {
+        this.handleError(err);
+        this.presentToast('Error en la búsqueda');
+        return throwError(() => err);
+      })
+    ).subscribe(data => {
+      this.productos = data;
     });
+  }
+
+  async editarProducto(producto: Producto) {
+    // Navegar a edición
+    this.router.navigate(['/productos/editar', producto.id]);
+  }
+
+  async eliminarProducto(producto: Producto) {
+    const alert = await this.alertCtrl.create({
+      header: 'Confirmar eliminación',
+      message: `¿Está seguro que desea eliminar el producto "${producto.name}"?`,
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel'
+        },
+        {
+          text: 'Eliminar',
+          handler: () => {
+            this.http.delete(`${this.apiUrl}/products/${producto.id}`).pipe(
+              catchError(err => {
+                this.presentToast('Error al eliminar: ' + (err.error?.message || err.message || 'Error desconocido'));
+                return throwError(() => err);
+              })
+            ).subscribe(() => {
+              this.presentToast('Producto eliminado con éxito');
+              this.cargarProductos(); // Recargar lista
+            });
+          }
+        }
+      ]
+    });
+    
     await alert.present();
+  }
+
+  async presentToast(message: string) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      position: 'bottom'
+    });
+    await toast.present();
   }
 }

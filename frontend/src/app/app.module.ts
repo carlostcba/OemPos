@@ -1,3 +1,5 @@
+// frontend/src/app/app.module.ts
+
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
@@ -20,7 +22,7 @@ import { RouterModule } from '@angular/router';
       backButtonText: 'Atrás',
       backButtonIcon: 'arrow-back-outline'
     }),
-    IonicStorageModule.forRoot(), // Importante: agregar este módulo aquí también
+    IonicStorageModule.forRoot(), 
     RouterModule.forRoot(routes),
     HttpClientModule,
     CoreModule,

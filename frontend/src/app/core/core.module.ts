@@ -1,3 +1,5 @@
+// frontend/src/app/core/core.module.ts
+
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -11,7 +13,10 @@ import { Storage } from '@ionic/storage-angular';
   imports: [
     CommonModule,
     HttpClientModule,
-    IonicStorageModule.forRoot()
+    IonicStorageModule.forRoot({
+      name: 'oempos_db',
+      driverOrder: ['indexeddb', 'websql', 'localstorage']
+    })
   ],
   providers: [
     {

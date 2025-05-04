@@ -1,3 +1,5 @@
+<!-- frontend/src/app/auth/login/login.component.html -->
+
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title class="ion-text-center">
@@ -22,7 +24,7 @@
         <ion-card-content>
           <ion-item>
             <ion-label position="floating">Usuario</ion-label>
-            <ion-input formControlName="username" type="text"></ion-input>
+            <ion-input formControlName="username" type="text" autocomplete="username"></ion-input>
           </ion-item>
           <div *ngIf="submitted && f['username'].errors" class="error-message">
             <div *ngIf="f['username'].errors['required']">Usuario es requerido</div>
@@ -30,10 +32,14 @@
 
           <ion-item class="ion-margin-top">
             <ion-label position="floating">Contraseña</ion-label>
-            <ion-input formControlName="password" type="password"></ion-input>
+            <ion-input formControlName="password" type="password" autocomplete="current-password"></ion-input>
           </ion-item>
           <div *ngIf="submitted && f['password'].errors" class="error-message">
             <div *ngIf="f['password'].errors['required']">Contraseña es requerida</div>
+          </div>
+
+          <div *ngIf="errorMessage" class="ion-padding ion-text-center">
+            <ion-text color="danger">{{ errorMessage }}</ion-text>
           </div>
 
           <ion-button expand="block" type="submit" class="ion-margin-top">
