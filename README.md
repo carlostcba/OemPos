@@ -1,6 +1,6 @@
 # OemPOS
 
-Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express, Sequelize y SQL Server como parte de la arquitectura del proyecto OemPos.
+Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express, Sequelize y SQL Server como backend, con Ionic Angular como frontend.
 
 ---
 
@@ -46,11 +46,44 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - Middlewares de seguridad y compresión
 - Validación de datos y herramientas de diagnóstico
 
-### Semana 11+: Frontend Ionic + Tests ⏳ EN PROGRESO (10%)
-- Preparación de API para integración con frontend
-- Definición de contratos de integración
-- Documentación completa de API endpoints
-- Configuración inicial de tests con Jest y Supertest
+### Semana 11-12: Frontend Ionic - Estructura Base ✅ COMPLETADO (40%)
+- Configuración inicial del proyecto Ionic Angular
+- Estructura modular por características implementada
+- Sistema de autenticación con JWT implementado
+- Interceptor HTTP para manejo de tokens
+- Guardias de ruta para protección de páginas
+- Módulos lazy-loading configurados
+- Componente de login funcional
+- Dashboard administrativo básico
+- Integración con backend para autenticación
+
+### Semana 13-14: Frontend Ionic - Módulos Funcionales ⏳ EN PROGRESO (10%)
+- Navegación principal y menú lateral
+- Módulo de Productos
+- Módulo de Pedidos
+- Módulo de Caja y Pagos
+- Módulo de Inventario
+- Módulo de Reportes
+- Integración con backend para datos
+
+---
+
+## 🔍 Próximas Etapas
+
+### Semana 15-16: Integración y UX
+- Completar UI/UX de todas las pantallas
+- Formularios avanzados con validación
+- Integración con cámara para escaneo de códigos
+- Gestión de usuarios y permisos desde frontend
+- Pruebas de integración entre frontend y backend
+
+### Semana 17-18: Funcionalidad Offline y Despliegue
+- Sincronización offline con IndexedDB
+- Gestión de conflictos en datos
+- Configuración de entorno de producción
+- Empaquetado para plataformas móviles (Android/iOS)
+- Empaquetado para escritorio con Electron
+- Documentación de usuario final
 
 ---
 
@@ -141,7 +174,7 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - **ORM:** Sequelize
 - **Base de Datos:** SQL Server 2022
 - **Autenticación:** JWT con sistema de roles y permisos
-- **Frontend (próximo):** Ionic Framework
+- **Frontend:** Ionic Framework (Angular)
 
 ### 🔗 Estructura de Relaciones
 - User → Role → Permissions (relación muchos a muchos)
@@ -170,7 +203,7 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 
 ---
 
-## 🚀 Nuevas mejoras implementadas
+## 🚀 Mejoras implementadas
 
 ### 📈 Sistema de Rendimiento
 - **Sistema de caché**: Implementación de caché en memoria para consultas frecuentes con invalidación inteligente por patrones
@@ -198,23 +231,34 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - **Validación de datos**: Scripts para verificar integridad de datos en la base
 - **Herramientas de testing**: Configuración de pruebas automatizadas
 
+### 🔄 Frontend - Componentes Implementados
+- **Sistema de autenticación**: Login con JWT y almacenamiento seguro de token
+- **Interceptor HTTP**: Inyección automática de token en solicitudes
+- **Guardias de ruta**: Protección de rutas según autenticación
+- **Estructura modular**: Módulos lazy-loading para optimización de carga
+- **Servicios centralizados**: Gestión de estado y comunicación con API
+
 ---
 
-## 🔍 Próximas Implementaciones
+## 📱 Frontend - Estructura Modular
 
-| Prioridad | Tarea |
-|-----------|-------|
-| 🔥 | Desarrollar frontend en Ionic Framework |
-| 🔥 | Implementar integración con impresoras térmicas |
-| 🔥 | Sistema de envío de comprobantes por email |
-| 🛠️ | Implementar tests automatizados |
-| 🛠️ | Sistema de backups y restauración |
-| 🛠️ | Integración con métodos de pago electrónicos |
+El frontend se ha organizado en módulos funcionales para facilitar el mantenimiento:
+
+- **Core**: Servicios centrales, interceptores, modelos y guardias
+- **Shared**: Componentes reutilizables y directivas
+- **Auth**: Módulo de autenticación y autorización
+- **Admin**: Dashboard y configuración administrativa
+- **Productos**: Gestión de productos y categorías
+- **Pedidos**: Creación y gestión de pedidos
+- **Caja**: Operaciones de caja y pagos
+- **Inventario**: Control de stock y movimientos
+- **Reportes**: Estadísticas y reportes generales
 
 ---
 
 ## 📚 Tecnologías Utilizadas
 
+### Backend
 - Node.js v18+
 - Express.js v5.1.0
 - Sequelize ORM v6.37.7
@@ -227,85 +271,64 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - Winston para logging avanzado
 - Jest + Supertest para pruebas automatizadas
 
+### Frontend
+- Ionic Framework v8.0
+- Angular v19.0
+- RxJS para programación reactiva
+- IonicStorage para almacenamiento local
+- JWT-decode para manejo de tokens
+- Ionic Native para acceso a funciones nativas
+
+---
+
+## 🔍 Próximas Implementaciones
+
+| Prioridad | Tarea |
+|-----------|-------|
+| 🔥 | Completar interfaces de usuario para todos los módulos |
+| 🔥 | Implementar gestión de pedidos y cola de atención |
+| 🔥 | Implementar integración con impresoras térmicas |
+| 🔥 | Sistema de envío de comprobantes por email |
+| 🛠️ | Implementar tests automatizados |
+| 🛠️ | Sistema de backups y restauración |
+| 🛠️ | Integración con métodos de pago electrónicos |
+| 🛠️ | Funcionalidad offline con sincronización |
+
 ---
 
 ## 📂 Estructura del Proyecto
 
 ```
-backend/
-├── config/
-│   ├── database.js         # Configuración de Sequelize + MSSQL
-│   ├── db.config.js        # Parámetros de conexión a la BD
-│   └── config.js           # Configuración por entorno (dev/prod/test)
-├── controllers/
-│   ├── auth.controller.js  # Autenticación y registro
-│   ├── product.controller.js
-│   ├── order.controller.js
-│   ├── coupon.controller.js
-│   ├── image.controller.js
-│   ├── orderQueue.controller.js
-│   ├── user.controller.js  # Gestión de usuarios
-│   ├── cashRegister.controller.js # Gestión de caja
-│   ├── receipt.controller.js # Comprobantes
-│   ├── inventory.controller.js # Control de inventario
-│   └── dashboard.controller.js # Estadísticas y reportes
-├── middleware/
-│   ├── authJwt.js          # Middlewares de autenticación y permisos
-│   ├── validate.js         # Validación de datos
-│   ├── rateLimiter.js      # Limitación de solicitudes
-│   ├── compression.js      # Compresión de respuestas
-│   ├── security.js         # Headers de seguridad
-│   └── errorHandler.js     # Manejo centralizado de errores
-├── models/
-│   ├── index.js            # Asociaciones entre modelos
-│   ├── product.model.js
-│   ├── order.model.js
-│   ├── orderItem.model.js
-│   ├── orderQueue.model.js
-│   ├── user.model.js
-│   ├── role.model.js
-│   ├── permission.model.js
-│   ├── category.model.js   # Categorías de productos
-│   ├── subcategory.model.js # Subcategorías de productos
-│   ├── productImage.model.js # Imágenes de productos
-│   ├── coupon.model.js     # Cupones de descuento
-│   ├── cashRegister.model.js # Cajas registradoras
-│   ├── cashTransaction.model.js # Transacciones en caja
-│   ├── receipt.model.js    # Comprobantes
-│   └── inventory.model.js  # Movimientos de inventario
-├── routes/
-│   ├── product.routes.js
-│   ├── auth.routes.js
-│   ├── order.routes.js
-│   ├── coupon.routes.js
-│   ├── orderQueue.routes.js
-│   ├── image.routes.js     # Rutas para gestión de imágenes
-│   ├── user.routes.js      # Rutas para gestión de usuarios
-│   ├── cashRegister.routes.js # Rutas para gestión de caja
-│   ├── receipt.routes.js   # Rutas para comprobantes
-│   ├── inventory.routes.js # Rutas para inventario
-│   └── dashboard.routes.js # Rutas para el dashboard
-├── sql/                    # Scripts SQL para seed de datos
-│   ├── gustados_schema_v3.sql  # Esquema de base de datos
-│   ├── insert_categories.sql   # Datos iniciales de categorías
-│   ├── insert_products.sql     # Datos iniciales de productos
-│   ├── insert_sub_categories.sql # Datos iniciales de subcategorías
-│   ├── roles_permisos_seed.sql # Datos iniciales de roles y permisos
-│   └── cash_inventory_receipts_tables.sql # Nuevas tablas
-├── utils/
-│   ├── cache.js            # Sistema de caché
-│   ├── logger.js           # Sistema de logging
-│   └── transaction.js      # Manejo de transacciones
-├── scripts/
-│   ├── seed.js             # Sembrado de datos iniciales
-│   ├── migrate.js          # Migraciones de base de datos
-│   └── validateData.js     # Validación de integridad de datos
-├── tests/
-│   ├── setup.js            # Configuración de pruebas
-│   └── fixtures/           # Datos de prueba
-├── logs/                   # Directorio de logs
-├── app.js                  # Configuración de Express
-└── server.js               # Punto de entrada
+oempos/
+├── backend/         # API REST en Node.js + Express
+│   ├── config/      # Configuración de BD y entorno
+│   ├── controllers/ # Lógica de negocio
+│   ├── middlewares/ # Middlewares de autenticación, etc.
+│   ├── models/      # Modelos Sequelize
+│   ├── routes/      # Definición de rutas API
+│   ├── utils/       # Utilidades (caché, logging, etc.)
+│   ├── scripts/     # Scripts de mantenimiento
+│   └── logs/        # Directorio de logs
+│
+├── frontend/        # Aplicación Ionic Angular
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── admin/      # Módulo de administración
+│   │   │   ├── auth/       # Autenticación y login
+│   │   │   ├── caja/       # Módulo de caja
+│   │   │   ├── core/       # Servicios centralizados
+│   │   │   ├── inventario/ # Gestión de inventario
+│   │   │   ├── pedidos/    # Gestión de pedidos
+│   │   │   ├── productos/  # Gestión de productos
+│   │   │   ├── reportes/   # Informes y estadísticas
+│   │   │   └── shared/     # Componentes compartidos
+│   │   ├── assets/         # Recursos estáticos
+│   │   ├── environments/   # Configuración por entorno
+│   │   └── theme/          # Estilo global
+│   ├── capacitor.config.ts # Configuración para móviles
+│   └── ionic.config.json   # Configuración de Ionic
+│
+└── docs/            # Documentación del proyecto
 ```
 
 ---
@@ -328,11 +351,12 @@ NODE_ENV=development
 
 ## 🚀 Instalación y Ejecución
 
+### Backend
 ```bash
 # Clonar el repositorio
 git clone https://github.com/tu-usuario/oempos.git
 
-# Instalar dependencias
+# Instalar dependencias del backend
 cd oempos/backend
 npm install
 
@@ -345,15 +369,27 @@ npm run dev
 
 # O iniciar en modo producción
 npm start
+```
 
-# Ejecutar validación de datos
-npm run validate:data
+### Frontend
+```bash
+# Instalar dependencias del frontend
+cd oempos/frontend
+npm install
 
-# Sembrar datos iniciales
-npm run db:seed
+# Iniciar servidor de desarrollo
+ionic serve
+
+# Compilar para producción
+ionic build --prod
+
+# Generar aplicación para Android
+ionic capacitor add android
+ionic capacitor build android
 ```
 
 > El backend corre en `http://localhost:3001` por defecto.
+> El frontend corre en `http://localhost:8100` por defecto.
 
 ---
 
