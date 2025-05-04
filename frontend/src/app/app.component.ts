@@ -7,6 +7,35 @@ import { UiService } from './core/services/ui.service';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { DomUtils } from './core/utils/dom-utils';
+// Importar los iconos necesarios
+import { 
+  homeOutline,
+  cartOutline,
+  cashOutline,
+  cubeOutline,
+  clipboardOutline,
+  barChartOutline,
+  settingsOutline,
+  personOutline,
+  keyOutline,
+  logOutOutline,
+  menuOutline,
+  receiptOutline,
+  swapHorizontalOutline,
+  cardOutline,
+  trashOutline,
+  addOutline,
+  refreshOutline,
+  searchOutline,
+  createOutline,
+  personCircle,
+  refresh,
+  trash,
+  create,
+  add
+} from 'ionicons/icons';
+// Importar addIcons para registrar los iconos
+import { addIcons } from 'ionicons';
 
 @Component({
   selector: 'app-root',
@@ -17,19 +46,19 @@ import { DomUtils } from './core/utils/dom-utils';
 })
 export class AppComponent implements OnInit, AfterViewInit {
   appPages = [
-    { title: 'Inicio', url: '/dashboard', icon: 'home', roles: ['admin', 'cajero', 'vendedor'] },
-    { title: 'Pedidos', url: '/pedidos', icon: 'cart', roles: ['admin', 'vendedor'] },
-    { title: 'Caja', url: '/caja', icon: 'cash', roles: ['admin', 'cajero'] },
-    { title: 'Productos', url: '/productos', icon: 'cube', roles: ['admin'] },
-    { title: 'Inventario', url: '/inventario', icon: 'clipboard', roles: ['admin'] },
-    { title: 'Reportes', url: '/reportes', icon: 'bar-chart', roles: ['admin'] },
-    { title: 'Administración', url: '/admin/dashboard', icon: 'settings', roles: ['admin'] }
+    { title: 'Inicio', url: '/dashboard', icon: 'home-outline', roles: ['admin', 'cajero', 'vendedor'] },
+    { title: 'Pedidos', url: '/pedidos', icon: 'cart-outline', roles: ['admin', 'vendedor'] },
+    { title: 'Caja', url: '/caja', icon: 'cash-outline', roles: ['admin', 'cajero'] },
+    { title: 'Productos', url: '/productos', icon: 'cube-outline', roles: ['admin'] },
+    { title: 'Inventario', url: '/inventario', icon: 'clipboard-outline', roles: ['admin'] },
+    { title: 'Reportes', url: '/reportes', icon: 'bar-chart-outline', roles: ['admin'] },
+    { title: 'Administración', url: '/admin/dashboard', icon: 'settings-outline', roles: ['admin'] }
   ];
   
   userMenuPages = [
-    { title: 'Mi perfil', url: '/profile', icon: 'person' },
-    { title: 'Cambiar contraseña', url: '/change-password', icon: 'key' },
-    { title: 'Cerrar sesión', url: '/logout', icon: 'log-out' }
+    { title: 'Mi perfil', url: '/profile', icon: 'person-outline' },
+    { title: 'Cambiar contraseña', url: '/change-password', icon: 'key-outline' },
+    { title: 'Cerrar sesión', url: '/logout', icon: 'log-out-outline' }
   ];
   
   currentUsername: string = '';
@@ -45,6 +74,34 @@ export class AppComponent implements OnInit, AfterViewInit {
     private authService: AuthService,
     private uiService: UiService
   ) {
+    // Registrar todos los iconos utilizados en la aplicación
+    addIcons({
+      'home-outline': homeOutline,
+      'cart-outline': cartOutline,
+      'cash-outline': cashOutline,
+      'cube-outline': cubeOutline,
+      'clipboard-outline': clipboardOutline,
+      'bar-chart-outline': barChartOutline,
+      'settings-outline': settingsOutline,
+      'person-outline': personOutline,
+      'key-outline': keyOutline,
+      'log-out-outline': logOutOutline,
+      'menu-outline': menuOutline,
+      'receipt-outline': receiptOutline,
+      'swap-horizontal-outline': swapHorizontalOutline,
+      'card-outline': cardOutline,
+      'trash-outline': trashOutline,
+      'add-outline': addOutline,
+      'refresh-outline': refreshOutline,
+      'search-outline': searchOutline,
+      'create-outline': createOutline,
+      'person-circle': personCircle,
+      'refresh': refresh,
+      'trash': trash,
+      'create': create,
+      'add': add
+    });
+    
     this.initializeApp();
   }
 
