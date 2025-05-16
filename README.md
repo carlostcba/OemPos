@@ -46,7 +46,7 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - Middlewares de seguridad y compresión
 - Validación de datos y herramientas de diagnóstico
 
-### Semana 11-12: Frontend Ionic - Estructura Base ✅ COMPLETADO (40%)
+### Semana 11-12: Frontend Ionic - Estructura Base ✅ COMPLETADO (100%)
 - Configuración inicial del proyecto Ionic Angular
 - Estructura modular por características implementada
 - Sistema de autenticación con JWT implementado
@@ -57,25 +57,23 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 - Dashboard administrativo básico
 - Integración con backend para autenticación
 
-### Semana 13-14: Frontend Ionic - Módulos Funcionales ⏳ EN PROGRESO (10%)
-- Navegación principal y menú lateral
-- Módulo de Productos
-- Módulo de Pedidos
-- Módulo de Caja y Pagos
-- Módulo de Inventario
-- Módulo de Reportes
-- Integración con backend para datos
+### Semana 13-14: Frontend Ionic - Módulos Funcionales ✅ COMPLETADO (70%)
+- Navegación principal y menú lateral completada
+- Módulo de Productos con funcionalidad de listado, edición y modal
+- Módulo de Pedidos con vista de creación implementada
+- Menú de navegación con accesos según roles de usuario
+- Comunicación con API y manejo de tokens
+- Sistema de carga de imágenes y visualización
+- Manejo de errores y feedback al usuario
+- Estilos y temas personalizados (modo oscuro)
+- Optimizaciones para dispositivos móviles
 
----
-
-## 🔍 Próximas Etapas
-
-### Semana 15-16: Integración y UX
-- Completar UI/UX de todas las pantallas
-- Formularios avanzados con validación
-- Integración con cámara para escaneo de códigos
-- Gestión de usuarios y permisos desde frontend
-- Pruebas de integración entre frontend y backend
+### Semana 15-16: Integración y UX ⏳ EN PROGRESO (35%)
+- Completar UI/UX de todas las pantallas - ✅ Parcialmente completado
+- Formularios avanzados con validación - ✅ Implementado en módulos existentes
+- Integración con cámara para escaneo de códigos - ⏳ Pendiente
+- Gestión de usuarios y permisos desde frontend - ⏳ Pendiente
+- Pruebas de integración entre frontend y backend - ⏳ Pendiente
 
 ### Semana 17-18: Funcionalidad Offline y Despliegue
 - Sincronización offline con IndexedDB
@@ -87,7 +85,7 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 
 ---
 
-## 🔁 Modelo de Negocio y Flujo de Trabajo
+## 🔄 Modelo de Negocio y Flujo de Trabajo
 
 ### 🧩 Modelo de Negocio
 - **Tipo**: Venta minorista presencial
@@ -240,6 +238,34 @@ Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express
 
 ---
 
+## 🔄 Frontend - Componentes Implementados
+
+### Auth
+- ✅ Login con validación y manejo de errores
+- ✅ Interceptor HTTP para inyección automática de token
+- ✅ Guardias de ruta por roles de usuario
+- ✅ Reautenticación automática
+
+### Productos
+- ✅ Listado con búsqueda y filtros
+- ✅ Modal de edición con formulario reactivo
+- ✅ Carga de imágenes mediante galería
+- ✅ Vista detalle con información completa
+
+### Pedidos
+- ✅ Pantalla de nuevo pedido con selección de productos
+- ✅ Carrito de compra con cálculo de totales
+- ✅ Selección de método de pago
+- ⏳ Cola de atención (en progreso)
+
+### Layout y Navegación
+- ✅ Menú lateral dinámico según roles
+- ✅ Estructura responsive para desktop y móvil
+- ✅ Tema oscuro completo
+- ✅ Correcciones para accesibilidad
+
+---
+
 ## 📱 Frontend - Estructura Modular
 
 El frontend se ha organizado en módulos funcionales para facilitar el mantenimiento:
@@ -281,18 +307,36 @@ El frontend se ha organizado en módulos funcionales para facilitar el mantenimi
 
 ---
 
+## 🚀 Avances Recientes
+
+### Frontend
+- ✅ Implementación del componente de nuevo pedido con interfaz intuitiva
+- ✅ Sistema de carga y visualización de imágenes para productos
+- ✅ Mejoras en el rendimiento y experiencia de usuario
+- ✅ Correcciones en el sistema de autenticación y manejo de tokens
+- ✅ Adaptación responsiva para distintos tamaños de pantalla
+
+### Backend
+- ✅ Optimización de rutas para compatibilidad mejorada con roles
+- ✅ Sistema de gestión de imágenes con múltiples estrategias de almacenamiento
+- ✅ Implementación de caché para consultas frecuentes
+- ✅ Mejoras en seguridad con middlewares especializados
+- ✅ Logs estructurados para mejor diagnóstico
+
+---
+
 ## 🔍 Próximas Implementaciones
 
-| Prioridad | Tarea |
-|-----------|-------|
-| 🔥 | Completar interfaces de usuario para todos los módulos |
-| 🔥 | Implementar gestión de pedidos y cola de atención |
-| 🔥 | Implementar integración con impresoras térmicas |
-| 🔥 | Sistema de envío de comprobantes por email |
-| 🛠️ | Implementar tests automatizados |
-| 🛠️ | Sistema de backups y restauración |
-| 🛠️ | Integración con métodos de pago electrónicos |
-| 🛠️ | Funcionalidad offline con sincronización |
+| Prioridad | Tarea | Estado |
+|-----------|-------|--------|
+| 🔥 | Completar interfaces de usuario para todos los módulos | ⏳ En progreso (60%) |
+| 🔥 | Implementar gestión de pedidos y cola de atención | ⏳ En progreso (40%) |
+| 🔥 | Implementar integración con impresoras térmicas | 📅 Pendiente |
+| 🔥 | Sistema de envío de comprobantes por email | 📅 Pendiente |
+| 🛠️ | Implementar tests automatizados | ✅ Estructura básica lista |
+| 🛠️ | Sistema de backups y restauración | 📅 Pendiente |
+| 🛠️ | Integración con métodos de pago electrónicos | 📅 Pendiente |
+| 🛠️ | Funcionalidad offline con sincronización | 📅 Pendiente |
 
 ---
 
@@ -308,6 +352,7 @@ oempos/
 │   ├── routes/      # Definición de rutas API
 │   ├── utils/       # Utilidades (caché, logging, etc.)
 │   ├── scripts/     # Scripts de mantenimiento
+│   ├── strategies/  # Estrategias para almacenamiento de imágenes
 │   └── logs/        # Directorio de logs
 │
 ├── frontend/        # Aplicación Ionic Angular
@@ -345,6 +390,7 @@ DB_DIALECT=mssql
 JWT_SECRET=tu_secreto
 PORT=3001
 NODE_ENV=development
+IMAGE_STORAGE=disk
 ```
 
 ---
