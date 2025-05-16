@@ -97,7 +97,19 @@ export class AuthService {
     }
   }
 
-  private getUserFromToken(token: string): Usuario {
+  public setCurrentUserFromToken(token: string): Usuario | null {
+    try {
+      const user = this.getUserFromToken(token);
+      this.currentUserSubject.next(user);
+      console.log('✅ Usuario restaurado en AuthService:', user);
+      return user;
+    } catch (error) {
+      console.warn('AuthService: Token inválido en setCurrentUserFromToken');
+      return null;
+    }
+  }
+
+  public getUserFromToken(token: string): Usuario {
     try {
       const decoded: any = jwtDecode(token);
       return {

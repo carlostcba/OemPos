@@ -1,10 +1,10 @@
 // src/app/productos/formulario/producto-form.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { IonicModule, AlertController, LoadingController } from '@ionic/angular';
-import { ProductoService, Producto } from '../services/producto.service';
+import { ProductoService } from '../services/producto.service';
 
 @Component({
   selector: 'app-producto-form',
@@ -16,12 +16,12 @@ import { ProductoService, Producto } from '../services/producto.service';
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/productos"></ion-back-button>
         </ion-buttons>
-        <ion-title>{{ isEditing ? 'Editar' : 'Crear' }} Producto</ion-title>
+        <ion-title>Crear Producto</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
-      <form [formGroup]="productoForm" (ngSubmit)="guardarProducto()">
+      <form [formGroup]="productoForm" (ngSubmit)="crearProducto()">
         <ion-item>
           <ion-label position="stacked">Nombre <ion-text color="danger">*</ion-text></ion-label>
           <ion-input formControlName="name" type="text"></ion-input>
@@ -81,7 +81,7 @@ import { ProductoService, Producto } from '../services/producto.service';
 
         <div class="ion-padding">
           <ion-button expand="block" type="submit" [disabled]="productoForm.invalid">
-            {{ isEditing ? 'Actualizar' : 'Crear' }} Producto
+            Crear Producto
           </ion-button>
           <ion-button expand="block" fill="outline" color="medium" (click)="cancelar()">
             Cancelar
@@ -91,15 +91,12 @@ import { ProductoService, Producto } from '../services/producto.service';
     </ion-content>
   `
 })
-export class ProductoFormComponent implements OnInit {
+export class ProductoFormComponent {
   productoForm: FormGroup;
-  isEditing: boolean = false;
-  productoId: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private productoService: ProductoService,
-    private route: ActivatedRoute,
     private router: Router,
     private alertController: AlertController,
     private loadingController: LoadingController
@@ -114,98 +111,42 @@ export class ProductoFormComponent implements OnInit {
       stock: [0],
       track_stock: [true],
       is_active: [true],
-      created_by: [''] // Se completará desde el servicio de autenticación
+      created_by: ['']
     });
   }
 
-  ngOnInit() {
-    this.productoId = this.route.snapshot.paramMap.get('id');
-    this.isEditing = !!this.productoId;
-    
-    if (this.isEditing && this.productoId) {
-      this.cargarProducto(this.productoId);
-    }
-  }
+  async crearProducto() {
+    if (this.productoForm.invalid) return;
 
-  async cargarProducto(id: string) {
     const loading = await this.loadingController.create({
-      message: 'Cargando producto...'
+      message: 'Creando producto...'
     });
-    
+
     await loading.present();
-    
-    this.productoService.getById(id).subscribe({
-      next: (producto) => {
-        this.productoForm.patchValue(producto);
+
+    const productoData = this.productoForm.value;
+
+    this.productoService.create(productoData).subscribe({
+      next: () => {
         loading.dismiss();
+        this.mostrarAlerta('Éxito', 'Producto creado exitosamente');
+        this.router.navigate(['/productos']);
       },
       error: (error) => {
-        console.error('Error al cargar producto', error);
+        console.error('Error al crear producto', error);
         loading.dismiss();
-        this.mostrarError('No se pudo cargar el producto');
-        this.router.navigate(['/productos']);
+        this.mostrarAlerta('Error', 'No se pudo crear el producto');
       }
     });
-  }
-
-  async guardarProducto() {
-    if (this.productoForm.invalid) {
-      return;
-    }
-    
-    const loading = await this.loadingController.create({
-      message: this.isEditing ? 'Actualizando producto...' : 'Creando producto...'
-    });
-    
-    await loading.present();
-    
-    const productoData = this.productoForm.value;
-    
-    if (this.isEditing && this.productoId) {
-      this.productoService.update(this.productoId, productoData).subscribe({
-        next: () => {
-          loading.dismiss();
-          this.mostrarExito('Producto actualizado exitosamente');
-          this.router.navigate(['/productos']);
-        },
-        error: (error) => {
-          console.error('Error al actualizar producto', error);
-          loading.dismiss();
-          this.mostrarError('Error al actualizar producto');
-        }
-      });
-    } else {
-      this.productoService.create(productoData).subscribe({
-        next: () => {
-          loading.dismiss();
-          this.mostrarExito('Producto creado exitosamente');
-          this.router.navigate(['/productos']);
-        },
-        error: (error) => {
-          console.error('Error al crear producto', error);
-          loading.dismiss();
-          this.mostrarError('Error al crear producto');
-        }
-      });
-    }
   }
 
   cancelar() {
     this.router.navigate(['/productos']);
   }
 
-  async mostrarExito(mensaje: string) {
+  async mostrarAlerta(titulo: string, mensaje: string) {
     const alert = await this.alertController.create({
-      header: 'Éxito',
-      message: mensaje,
-      buttons: ['OK']
-    });
-    await alert.present();
-  }
-
-  async mostrarError(mensaje: string) {
-    const alert = await this.alertController.create({
-      header: 'Error',
+      header: titulo,
       message: mensaje,
       buttons: ['OK']
     });

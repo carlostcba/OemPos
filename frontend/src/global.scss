@@ -170,4 +170,24 @@ ion-popover {
   .ion-padding {
     padding: 12px !important;
   }
+ 
 }
+
+ ion-modal.custom-centered-modal::part(content) {
+    width: 750px !important;
+    height: 750px !important;
+    max-width: unset !important;
+    max-height: unset !important;
+  
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+  
+    background: #1a1a1a !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+    overflow: hidden !important;
+    contain: none !important;
+    border-radius: 16px !important;
+    
+  }

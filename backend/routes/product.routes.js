@@ -20,5 +20,6 @@ router.get('/', verifyToken, (req, res, next) => {
 router.post('/', verifyToken, requirePermission('crear_producto'), productController.create);
 router.put('/:id', verifyToken, requirePermission('modificar_producto'), productController.update);
 router.delete('/:id', verifyToken, requirePermission('eliminar_producto'), productController.remove);
+router.get('/:id', verifyToken, requirePermission('ver_producto'), productController.getById);
 
 module.exports = router;

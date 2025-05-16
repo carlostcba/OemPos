@@ -1,0 +1,59 @@
+<!-- producto-editar.modal.html -->
+
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Editar Producto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="light" (click)="cerrarModal()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<!-- scrollY desactivado -->
+<ion-content class="ion-padding" [scrollY]="false">
+  <div class="image-container">
+    <img
+      [src]="imagenURL"
+      (error)="imagenURL = 'assets/no_image_available.png'"
+      alt="Imagen del producto"
+    />
+  </div>
+
+  <form [formGroup]="form">
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Nombre</ion-label>
+        <ion-input formControlName="name" type="text" [readonly]="!editMode"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Precio</ion-label>
+        <ion-input formControlName="price" type="number" [readonly]="!editMode"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Stock</ion-label>
+        <ion-input formControlName="stock" type="number" [readonly]="!editMode"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Descripción</ion-label>
+        <ion-textarea formControlName="description" [readonly]="!editMode"></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <ion-buttons class="button-bar ion-padding-top">
+      <ion-button fill="clear" color="medium" (click)="toggleEdit()">
+        <ion-icon [name]="editMode ? 'lock-open-outline' : 'lock-closed-outline'" slot="start"></ion-icon>
+        {{ editMode ? 'Editable' : 'Bloqueado' }}
+      </ion-button>
+
+      <ion-button color="primary" (click)="guardar()" [disabled]="!editMode">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Guardar
+      </ion-button>
+    </ion-buttons>
+  </form>
+</ion-content>

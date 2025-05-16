@@ -1,4 +1,4 @@
-// frontend/src/app/productos/lista/productos-lista.component.ts
+// frontend/src/app/productos/lista/
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -8,6 +8,10 @@ import { Router, RouterModule } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { catchError, finalize } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import { ModalController } from '@ionic/angular';
+import { ProductoEditarModal } from '../modal/producto-editar.modal';
+import { CargaImagenesModal } from 'src/app/shared/services/carga-imagen.service';
+
 
 interface Producto {
   id: string;
@@ -38,7 +42,8 @@ export class ProductosListaComponent implements OnInit {
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
-    private router: Router
+    private router: Router,
+    private modalCtrl: ModalController,
   ) {}
 
   ngOnInit() {
@@ -138,9 +143,21 @@ export class ProductosListaComponent implements OnInit {
     });
   }
 
+  // async editarProducto(producto: Producto) {
+  //   // Navegar a edición
+  //   this.router.navigate(['/productos/editar', producto.id]);
+  // }
+
   async editarProducto(producto: Producto) {
-    // Navegar a edición
-    this.router.navigate(['/productos/editar', producto.id]);
+    const modal = await this.modalCtrl.create({
+      component: ProductoEditarModal,
+      componentProps: { producto },
+      cssClass: 'custom-centered-modal',
+      backdropDismiss: true,
+      showBackdrop: true
+    });
+  
+    await modal.present();
   }
 
   async eliminarProducto(producto: Producto) {
@@ -179,5 +196,25 @@ export class ProductosListaComponent implements OnInit {
       position: 'bottom'
     });
     await toast.present();
+  }
+
+
+  async abrirCargaImagenesModal() {
+    const modal = await this.modalCtrl.create({
+      component: CargaImagenesModal,
+      componentProps: {
+        elementos: this.productos,
+        endpointBase: '/products',
+        campoAsociacion: 'name'
+      },
+      cssClass: 'custom-centered-modal'
+    });
+  
+    await modal.present();
+  
+    const { data } = await modal.onDidDismiss();
+    if (data?.recargado) {
+      this.cargarProductos();
+    }
   }
 }

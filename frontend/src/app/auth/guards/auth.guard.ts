@@ -3,7 +3,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
 import { Observable, of, from } from 'rxjs';
-import { map, catchError, take, switchMap } from 'rxjs/operators';
+import { catchError, take, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 
 @Injectable({
@@ -20,18 +20,18 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean> {
     console.log('AuthGuard: Verificando acceso a ruta', state.url);
-    
-    // Primero verificamos si tenemos un usuario en el BehaviorSubject
+
     return this.authService.currentUser.pipe(
       take(1),
       switchMap(user => {
         if (user) {
           console.log('AuthGuard: Usuario ya autenticado', user.username);
+          console.log('✅ Paso exitoso: acceso autorizado a', state.url);
           return of(true);
         }
-        
-        // Si no hay usuario, intentamos verificar el token con el backend
-        return this.checkTokenWithBackend(state);
+
+        // Si no hay usuario en memoria, verificar token local
+        return this.checkTokenLocally(state);
       }),
       catchError(error => {
         console.error('AuthGuard: Error general', error);
@@ -41,45 +41,36 @@ export class AuthGuard implements CanActivate {
     );
   }
 
-  private checkTokenWithBackend(state: RouterStateSnapshot): Observable<boolean> {
+  private checkTokenLocally(state: RouterStateSnapshot): Observable<boolean> {
     return from(this.authService.getToken()).pipe(
       switchMap(token => {
         if (!token) {
-          console.warn('AuthGuard: No hay token almacenado, redirigiendo a login');
+          console.warn('AuthGuard: No se encontró token, redirigiendo');
           this.redirectToLogin(state);
           return of(false);
         }
-        
-        console.log('AuthGuard: Verificando token con backend');
-        
-        // Usar método de verificación
-        return this.authService.verifyToken().pipe(
-          map(result => {
-            console.log('AuthGuard: Token verificado con éxito', result);
-            return true;
-          }),
-          catchError(error => {
-            console.error('AuthGuard: Error al verificar token', error);
-            this.authService.logout().then(() => {
-              this.redirectToLogin(state);
-            });
-            return of(false);
-          })
-        );
+
+        const user = this.authService.setCurrentUserFromToken(token);
+        if (user) {
+          console.log('AuthGuard: Token válido localmente. Usuario:', user.username);
+          return of(true);
+        } else {
+          console.warn('AuthGuard: Token inválido, redirigiendo');
+          this.redirectToLogin(state);
+          return of(false);
+        }
       }),
       catchError(error => {
-        console.error('AuthGuard: Error al verificar token', error);
+        console.error('AuthGuard: Error al verificar token localmente', error);
         this.redirectToLogin(state);
         return of(false);
       })
     );
   }
-
+  
   private redirectToLogin(state: RouterStateSnapshot) {
-    this.router.navigate(['/login'], { 
-      queryParams: { 
-        returnUrl: state.url 
-      }
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: state.url }
     });
   }
 }

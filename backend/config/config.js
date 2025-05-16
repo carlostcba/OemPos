@@ -1,5 +1,3 @@
-// backend/config/config.js
-
 require('dotenv').config();
 
 const config = {
@@ -38,8 +36,12 @@ const config = {
     },
     server: {
       port: process.env.PORT || 3001
+    },
+    image: {
+      storage: process.env.IMAGE_STORAGE || 'disk' // 'disk' | 'database' | 'cloud'
     }
   },
+
   production: {
     database: {
       dialect: process.env.DB_DIALECT || 'mssql',
@@ -75,8 +77,12 @@ const config = {
     },
     server: {
       port: process.env.PORT || 3001
+    },
+    image: {
+      storage: process.env.IMAGE_STORAGE || 'cloud' // ideal para producción
     }
   },
+
   test: {
     database: {
       dialect: 'sqlite',
@@ -94,6 +100,9 @@ const config = {
     },
     server: {
       port: 3002
+    },
+    image: {
+      storage: 'database' // en tests usamos base de datos para pruebas
     }
   }
 };

@@ -46,7 +46,7 @@ import { addIcons } from 'ionicons';
 })
 export class AppComponent implements OnInit, AfterViewInit {
   appPages = [
-    { title: 'Inicio', url: '/dashboard', icon: 'home-outline', roles: ['admin', 'cajero', 'vendedor'] },
+    //{ title: 'Inicio', url: '/dashboard', icon: 'home-outline', roles: ['admin', 'cajero', 'vendedor'] },
     { title: 'Pedidos', url: '/pedidos', icon: 'cart-outline', roles: ['admin', 'vendedor'] },
     { title: 'Caja', url: '/caja', icon: 'cash-outline', roles: ['admin', 'cajero'] },
     { title: 'Productos', url: '/productos', icon: 'cube-outline', roles: ['admin'] },
@@ -107,7 +107,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     // Suscribirse a cambios en el usuario actual
-    this.authService.currentUser.subscribe(user => {
+      this.reconectarUsuario();
+      this.authService.currentUser.subscribe(user => {
       this.isAuthenticated = !!user;
       this.currentUsername = user?.username || '';
       this.userRoles = user?.roles || [];
@@ -169,5 +170,19 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
     
     this.router.navigateByUrl(page.url);
+  }
+
+  private async reconectarUsuario() {
+    const token = await this.authService.getToken();
+    if (token) {
+      const user = this.authService.setCurrentUserFromToken(token);
+      if (user) {
+        console.log('✅ Usuario restaurado desde AppComponent:', user.username);
+      } else {
+        console.warn('⚠️ Token inválido al iniciar la app');
+      }
+    } else {
+      console.warn('⚠️ No se encontró token al iniciar la app');
+    }
   }
 }

@@ -1,43 +1,62 @@
-// backend/controllers/image.controller.js
+const imageService = require('../services/imageStorage.service');
 
-const { ProductImage } = require('../models');
-
-// Función para subir imágenes
+// SUBIR imágenes asociadas a una entidad
 exports.upload = async (req, res) => {
-  const { buffer, mimetype } = req.file;
-
   try {
-    const image = await ProductImage.create({
-      image: buffer,
-      mime_type: mimetype
-    });
+    const { owner_type, owner_id, tag } = req.body;
 
-    res.status(201).json({ id: image.id });
-  } catch (error) {
-    console.error('Error al subir imagen:', error);
-    res.status(500).json({ error: 'Error al procesar la imagen' });
+    if (!req.files?.length) {
+      return res.status(400).json({ error: 'No se recibieron archivos' });
+    }
+
+    if (!owner_type || !owner_id) {
+      return res.status(400).json({ error: 'owner_type y owner_id son obligatorios' });
+    }
+
+    const result = await imageService.saveMany(req.files, { owner_type, owner_id, tag });
+    res.status(201).json({ message: 'Imágenes subidas', images: result });
+  } catch (err) {
+    console.error('Error al subir imágenes:', err);
+    res.status(500).json({ error: 'Error al subir imágenes' });
   }
 };
 
-// Función para eliminar imágenes
-exports.remove = async (req, res) => {
-  const { id } = req.params;
-  
+// LISTAR imágenes por entidad
+exports.getByOwner = async (req, res) => {
   try {
-    // Buscar la imagen por ID
-    const image = await ProductImage.findByPk(id);
-    
-    // Verificar si la imagen existe
-    if (!image) {
-      return res.status(404).json({ error: 'Imagen no encontrada' });
+    const { owner_type, owner_id, tag } = req.query;
+
+    if (!owner_type || !owner_id) {
+      return res.status(400).json({ error: 'owner_type y owner_id son obligatorios' });
     }
-    
-    // Eliminar la imagen
-    await image.destroy();
-    
-    res.status(200).json({ message: `Imagen ${id} eliminada exitosamente` });
-  } catch (error) {
-    console.error('Error al eliminar imagen:', error);
-    res.status(500).json({ error: 'Error al eliminar la imagen' });
+
+    const images = await imageService.getImages(owner_type, owner_id, tag);
+    res.json(images);
+  } catch (err) {
+    console.error('Error al listar imágenes:', err);
+    res.status(500).json({ error: 'Error al listar imágenes' });
+  }
+};
+
+// VER una imagen
+exports.getById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await imageService.get(id, res);
+  } catch (err) {
+    console.error('Error al servir imagen:', err);
+    res.status(500).json({ error: 'No se pudo obtener la imagen' });
+  }
+};
+
+// ELIMINAR imagen
+exports.remove = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await imageService.remove(id);
+    res.json({ message: `Imagen ${id} eliminada correctamente` });
+  } catch (err) {
+    console.error('Error al eliminar imagen:', err);
+    res.status(500).json({ error: 'No se pudo eliminar la imagen' });
   }
 };

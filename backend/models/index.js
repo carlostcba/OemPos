@@ -16,6 +16,8 @@ const CashTransaction = require('./cashTransaction.model');
 const Receipt = require('./receipt.model');
 const InventoryMovement = require('./inventory.model');
 const Coupon = require('./coupon.model');
+const Image = require('./Image');
+const ImageLink = require('./imageLink');
 
 // 🔗 Relaciones de productos
 Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
@@ -55,6 +57,10 @@ Receipt.belongsTo(User, { foreignKey: 'voided_by', as: 'voider' });
 InventoryMovement.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 InventoryMovement.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 InventoryMovement.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
+// ✅ Relaciones de imágenes y enlaces
+Image.hasMany(ImageLink, { foreignKey: 'image_id', as: 'links' });
+ImageLink.belongsTo(Image, { foreignKey: 'image_id', as: 'image' });
 
 // ✅ Relaciones de usuarios y roles
 User.belongsTo(Role, { foreignKey: 'role_id', as: 'role' });
@@ -110,5 +116,7 @@ module.exports = {
   CashTransaction,
   Receipt,
   InventoryMovement,
-  Coupon
+  Coupon,
+  Image,
+  ImageLink
 };

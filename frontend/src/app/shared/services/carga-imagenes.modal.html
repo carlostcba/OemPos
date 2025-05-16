@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Galería de Imágenes</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrarModal()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="botonera">
+    <button class="btn-upload-gray" (click)="fileInput.click()">
+      <img src="assets/icon-upload-white.png" alt="icon" />
+      Seleccionar archivo
+    </button>
+    <input type="file" #fileInput hidden (change)="cargarImagenes($event)" multiple />
+
+    <button class="btn-upload-purple" (click)="guardarTodas()">
+      <img src="assets/save-data.png" alt="icon" />
+      Guardar en la Base
+    </button>
+  </div>
+
+  <div class="contenedor-imagenes">
+    <div *ngFor="let img of imagenes"
+         class="imagen-preview"
+         [ngClass]="{ 'seleccionada': img.seleccionado }"
+         (click)="alternarSeleccion(img)">
+      
+      <button class="btn-eliminar" (click)="eliminarImagen(img); $event.stopPropagation()">×</button>
+
+      <div class="zona-imagen">
+        <img [src]="img.base64" alt="preview" />
+      </div>
+
+      <div class="nombre-archivo">{{ img.nombre }}</div>
+    </div>
+  </div>
+</ion-content>

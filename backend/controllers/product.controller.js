@@ -89,3 +89,16 @@ exports.remove = async (req, res) => {
     res.status(500).json({ error: 'Error al eliminar producto' });
   }
 };
+
+
+exports.getById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.findByPk(id);
+    if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
+    res.json(product);
+  } catch (error) {
+    console.error('Error al obtener producto:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};
