@@ -1,3 +1,5 @@
+// backend/config/db.config.js - Actualizado por diagnóstico
+
 require('dotenv').config();
 
 module.exports = {
@@ -9,10 +11,8 @@ module.exports = {
   dialectOptions: {
     options: {
       encrypt: false,
-      trustServerCertificate: false,
-      instanceName: process.env.DB_INSTANCE || 'SQLEXPRESS',
-      connectTimeout: 60000,
-      requestTimeout: 60000
+      trustServerCertificate: true,
+      instanceName: process.env.DB_INSTANCE || 'SQLEXPRESS'
     }
   },
   pool: {

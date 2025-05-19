@@ -18,6 +18,8 @@ const InventoryMovement = require('./inventory.model');
 const Coupon = require('./coupon.model');
 const Image = require('./Image');
 const ImageLink = require('./imageLink');
+const ImageBinary = require('./ImageBinary');
+
 
 // 🔗 Relaciones de productos
 Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
@@ -118,5 +120,6 @@ module.exports = {
   InventoryMovement,
   Coupon,
   Image,
-  ImageLink
+  ImageLink,
+  ImageBinary
 };

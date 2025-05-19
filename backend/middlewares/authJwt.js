@@ -12,9 +12,6 @@ const verifyToken = async (req, res, next) => {
     // Obtener token del header
     const authHeader = req.headers['authorization'];
     
-    // Log para depuración
-    console.log('Auth Header:', authHeader);
-    
     // Verificar formato del header
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       logger.warn('Token mal formateado o no proporcionado', { 
@@ -31,9 +28,7 @@ const verifyToken = async (req, res, next) => {
       const decoded = jwt.verify(token, SECRET);
       req.user = decoded;
       
-      console.log('Token verificado para usuario:', decoded.username);
-      
-      // Cargar usuario con roles y permisos (siempre, no solo para verify-token)
+      // Cargar usuario con roles y permisos
       const user = await User.findByPk(decoded.id, {
         include: [
           {
@@ -55,6 +50,7 @@ const verifyToken = async (req, res, next) => {
       });
       
       if (!user) {
+        logger.warn('Usuario no encontrado en base de datos', { userId: decoded.id });
         return res.status(401).json({ error: 'Usuario no encontrado' });
       }
       
@@ -62,26 +58,31 @@ const verifyToken = async (req, res, next) => {
       const manyToManyPermissions = user.roles?.flatMap(role =>
         role.permissions?.map(perm => perm.name) || []
       ) || [];
-
-      // Imprimir los permisos para depuración
-      console.log('Permisos encontrados para el usuario:', manyToManyPermissions);
       
       req.user.permissions = [...new Set([...manyToManyPermissions])];
       
-      // Añadir permisos basados en roles (esto es crítico para resolver el problema)
-      if (req.user.roles.includes('vendedor')) {
-        // Añadir permisos específicos para vendedores
-        if (!req.user.permissions.includes('ver_productos')) {
-          req.user.permissions.push('ver_productos');
-        }
-      }
+      // Añadir permisos específicos basados en rol
+      const rolesToPermissions = {
+        'vendedor': ['ver_productos'],
+        'cajero': ['ver_caja', 'ver_ordenes'],
+        'supervisor': ['ver_reportes', 'ver_inventario']
+      };
       
-      console.log('Permisos finales asignados:', req.user.permissions);
+      // Agregar permisos implícitos según el rol
+      req.user.roles.forEach(rol => {
+        if (rolesToPermissions[rol]) {
+          rolesToPermissions[rol].forEach(perm => {
+            if (!req.user.permissions.includes(perm)) {
+              req.user.permissions.push(perm);
+            }
+          });
+        }
+      });
       
       logger.info('Usuario autenticado con éxito', { 
         username: user.username,
-        roles: user.roles?.map(r => r.name),
-        permissions: req.user.permissions?.length
+        roles: req.user.roles,
+        permissions: req.user.permissions.length
       });
       
       next();
@@ -110,14 +111,10 @@ const requirePermission = (permission) => (req, res, next) => {
     return next();
   }
   
-  // Casos especiales basados en rol - permiso
-  if (permission === 'ver_productos' && req.user?.roles?.includes('vendedor')) {
-    return next();
-  }
-  
   logger.warn('Acceso denegado por falta de permiso', { 
     username: req.user?.username,
-    requiredPermission: permission
+    requiredPermission: permission,
+    userPermissions: req.user?.permissions || []
   });
   return res.status(403).json({ error: `Acceso denegado: falta el permiso "${permission}"` });
 };
@@ -127,7 +124,8 @@ const requireRole = (role) => (req, res, next) => {
   if (!req.user?.roles?.includes(role)) {
     logger.warn('Acceso denegado por falta de rol', { 
       username: req.user?.username,
-      requiredRole: role
+      requiredRole: role,
+      userRoles: req.user?.roles || []
     });
     return res.status(403).json({ error: `Acceso denegado: se requiere el rol "${role}"` });
   }

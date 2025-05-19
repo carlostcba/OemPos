@@ -1,11 +1,14 @@
+// backend/controllers/image.controller.js
+
 const imageService = require('../services/imageStorage.service');
+const logger = require('../utils/logger');
 
 // SUBIR imágenes asociadas a una entidad
 exports.upload = async (req, res) => {
   try {
     const { owner_type, owner_id, tag } = req.body;
 
-    if (!req.files?.length) {
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No se recibieron archivos' });
     }
 
@@ -13,11 +16,52 @@ exports.upload = async (req, res) => {
       return res.status(400).json({ error: 'owner_type y owner_id son obligatorios' });
     }
 
+    logger.info('Solicitud de carga de imágenes recibida', {
+      owner_type,
+      owner_id,
+      tag,
+      files: req.files.length
+    });
+
+    // Para cada archivo, registrar su aceptación
+    req.files.forEach(file => {
+      logger.info('Archivo aceptado para carga', {
+        originalname: file.originalname,
+        mimetype: file.mimetype
+      });
+    });
+
+    logger.info('Iniciando carga de imágenes', {
+      files: req.files.length,
+      owner_type,
+      owner_id
+    });
+
     const result = await imageService.saveMany(req.files, { owner_type, owner_id, tag });
-    res.status(201).json({ message: 'Imágenes subidas', images: result });
+    
+    // Determinar el código de estado adecuado según los resultados
+    let statusCode = 201; // Created por defecto
+    
+    if (result.totalSuccess === 0) {
+      statusCode = 500; // Error interno del servidor
+    } else if (result.totalErrors > 0) {
+      statusCode = 207; // Multi-Status - éxitos y errores mezclados
+    }
+    
+    res.status(statusCode).json({
+      message: 'Proceso de carga de imágenes completado',
+      totalProcesadas: req.files.length,
+      exitosas: result.totalSuccess,
+      fallidas: result.totalErrors,
+      imagenes: result.results,
+      errores: result.errors
+    });
   } catch (err) {
-    console.error('Error al subir imágenes:', err);
-    res.status(500).json({ error: 'Error al subir imágenes' });
+    logger.error('Error general en carga de imágenes:', err);
+    res.status(500).json({ 
+      error: 'Error al subir imágenes',
+      message: err.message
+    });
   }
 };
 
@@ -30,10 +74,19 @@ exports.getByOwner = async (req, res) => {
       return res.status(400).json({ error: 'owner_type y owner_id son obligatorios' });
     }
 
+    logger.info(`Solicitando imágenes para ${owner_type}/${owner_id}`, { tag });
+    
     const images = await imageService.getImages(owner_type, owner_id, tag);
-    res.json(images);
+    
+    res.json({
+      owner_type,
+      owner_id,
+      tag: tag || 'all',
+      count: images.length,
+      images
+    });
   } catch (err) {
-    console.error('Error al listar imágenes:', err);
+    logger.error('Error al listar imágenes:', err);
     res.status(500).json({ error: 'Error al listar imágenes' });
   }
 };
@@ -42,10 +95,14 @@ exports.getByOwner = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
+    logger.info(`Solicitando contenido de imagen: ${id}`);
     await imageService.get(id, res);
   } catch (err) {
-    console.error('Error al servir imagen:', err);
-    res.status(500).json({ error: 'No se pudo obtener la imagen' });
+    // No respondemos aquí porque la estrategia debe encargarse de las respuestas
+    logger.error('Error no manejado al servir imagen:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'No se pudo obtener la imagen' });
+    }
   }
 };
 
@@ -53,10 +110,27 @@ exports.getById = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     const { id } = req.params;
+    logger.info(`Solicitando eliminación de imagen: ${id}`);
+    
     await imageService.remove(id);
-    res.json({ message: `Imagen ${id} eliminada correctamente` });
+    
+    res.json({ 
+      success: true,
+      message: `Imagen ${id} eliminada correctamente` 
+    });
   } catch (err) {
-    console.error('Error al eliminar imagen:', err);
+    logger.error('Error al eliminar imagen:', err);
     res.status(500).json({ error: 'No se pudo eliminar la imagen' });
+  }
+};
+
+// INFO sobre almacenamiento (ruta adicional)
+exports.getStorageInfo = (req, res) => {
+  try {
+    const info = imageService.getStorageInfo();
+    res.json(info);
+  } catch (err) {
+    logger.error('Error al obtener información de almacenamiento:', err);
+    res.status(500).json({ error: 'Error al obtener información de almacenamiento' });
   }
 };

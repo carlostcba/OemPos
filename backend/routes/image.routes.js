@@ -11,7 +11,15 @@ const upload = require('../middlewares/upload.middleware');
 router.post(
   '/',
   verifyToken,
-  requirePermission('gestionar_imagenes'),
+  (req, res, next) => {
+    // Si el usuario es vendedor o tiene el permiso gestionar_imagenes, permitir acceso
+    if (req.user?.roles?.includes('vendedor') || req.user?.permissions?.includes('gestionar_imagenes')) {
+      return next();
+    } else {
+      // En caso contrario, usar el middleware normal de permisos
+      return requirePermission('gestionar_imagenes')(req, res, next);
+    }
+  },
   upload.array('images', 10),  // key: images
   imageController.upload
 );
@@ -20,7 +28,15 @@ router.post(
 router.delete(
   '/:id',
   verifyToken,
-  requirePermission('gestionar_imagenes'),
+  (req, res, next) => {
+    // Si el usuario es vendedor o tiene el permiso gestionar_imagenes, permitir acceso
+    if (req.user?.roles?.includes('vendedor') || req.user?.permissions?.includes('gestionar_imagenes')) {
+      return next();
+    } else {
+      // En caso contrario, usar el middleware normal de permisos
+      return requirePermission('gestionar_imagenes')(req, res, next);
+    }
+  },
   imageController.remove
 );
 
@@ -28,7 +44,15 @@ router.delete(
 router.get(
   '/',
   verifyToken,
-  requirePermission('gestionar_imagenes'),
+  (req, res, next) => {
+    // Si el usuario es vendedor o tiene el permiso gestionar_imagenes, permitir acceso
+    if (req.user?.roles?.includes('vendedor') || req.user?.permissions?.includes('gestionar_imagenes')) {
+      return next();
+    } else {
+      // En caso contrario, usar el middleware normal de permisos
+      return requirePermission('gestionar_imagenes')(req, res, next);
+    }
+  },
   imageController.getByOwner
 );
 

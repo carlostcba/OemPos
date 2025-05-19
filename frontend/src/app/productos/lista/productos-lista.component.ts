@@ -10,7 +10,9 @@ import { catchError, finalize } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { ModalController } from '@ionic/angular';
 import { ProductoEditarModal } from '../modal/producto-editar.modal';
-import { CargaImagenesModal } from 'src/app/shared/services/carga-imagen.service';
+import { CargaImagenesModal } from '../../shared/services/carga-imagen.modal';
+import { ImagenService } from '../../shared/services/imagen.service';
+
 
 
 interface Producto {
@@ -44,6 +46,7 @@ export class ProductosListaComponent implements OnInit {
     private alertCtrl: AlertController,
     private router: Router,
     private modalCtrl: ModalController,
+    private imagenService: ImagenService,
   ) {}
 
   ngOnInit() {
@@ -199,22 +202,22 @@ export class ProductosListaComponent implements OnInit {
   }
 
 
-  async abrirCargaImagenesModal() {
-    const modal = await this.modalCtrl.create({
-      component: CargaImagenesModal,
-      componentProps: {
-        elementos: this.productos,
-        endpointBase: '/products',
-        campoAsociacion: 'name'
-      },
-      cssClass: 'custom-centered-modal'
-    });
-  
-    await modal.present();
-  
-    const { data } = await modal.onDidDismiss();
-    if (data?.recargado) {
-      this.cargarProductos();
-    }
+  // Método para abrir el modal
+async abrirCargaImagenesModal() {
+  const modal = await this.modalCtrl.create({
+    component: CargaImagenesModal,
+    componentProps: {
+      elementos: this.productos,
+      campoAsociacion: 'name'
+    },
+    cssClass: 'custom-centered-modal'
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+  if (data?.recargado) {
+    this.cargarProductos();
   }
+}
 }

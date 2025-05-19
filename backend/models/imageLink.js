@@ -22,12 +22,13 @@ const ImageLink = sequelize.define('ImageLink', {
     allowNull: false
   },
   owner_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING(50),  // Cambio a STRING para aceptar UUIDs
     allowNull: false
   },
   tag: {
     type: DataTypes.STRING(50),
-    allowNull: true
+    allowNull: true,
+    defaultValue: 'default'
   },
   created_at: {
     type: DataTypes.DATE,

@@ -1,6 +1,7 @@
+<!-- frontend/src/app/shared/services/carga-imagenes.modal.html -->
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Galería de Imágenes</ion-title>
+    <ion-title>{{ titulo }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cerrarModal()">
         <ion-icon name="close" slot="icon-only"></ion-icon>
@@ -15,13 +16,18 @@
       <img src="assets/icon-upload-white.png" alt="icon" />
       Seleccionar archivo
     </button>
-    <input type="file" #fileInput hidden (change)="cargarImagenes($event)" multiple />
+    <input type="file" #fileInput hidden (change)="cargarImagenes($event)" multiple accept="image/*" />
 
-    <button class="btn-upload-purple" (click)="guardarTodas()">
-      <img src="assets/save-data.png" alt="icon" />
-      Guardar en la Base
+    <button class="btn-upload-purple" (click)="guardarTodas()" [disabled]="isLoading">
+      <ion-spinner *ngIf="isLoading" name="dots" style="margin-right: 8px;"></ion-spinner>
+      <img *ngIf="!isLoading" src="assets/save-data.png" alt="icon" />
+      {{isLoading ? 'Guardando...' : 'Guardar en la Base'}}
     </button>
   </div>
+
+  <p *ngIf="imagenes.length === 0" class="ion-text-center ion-padding">
+    Selecciona imágenes para subir
+  </p>
 
   <div class="contenedor-imagenes">
     <div *ngFor="let img of imagenes"

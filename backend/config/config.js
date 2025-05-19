@@ -1,4 +1,7 @@
+// backend/config/config.js
+
 require('dotenv').config();
+const path = require('path');
 
 const config = {
   development: {
@@ -38,7 +41,21 @@ const config = {
       port: process.env.PORT || 3001
     },
     image: {
-      storage: process.env.IMAGE_STORAGE || 'disk' // 'disk' | 'database' | 'cloud'
+      storage: process.env.IMAGE_STORAGE || 'database',
+
+      limits: {
+        maxSize: 5 * 1024 * 1024, // 5 MB
+        allowedMimeTypes: [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'image/gif'
+        ]
+      },
+
+      disk: {
+        basePath: process.env.UPLOAD_PATH || path.join(__dirname, '..', '..', 'uploads', 'images')
+      }
     }
   },
 
@@ -79,7 +96,21 @@ const config = {
       port: process.env.PORT || 3001
     },
     image: {
-      storage: process.env.IMAGE_STORAGE || 'cloud' // ideal para producción
+      storage: process.env.IMAGE_STORAGE || 'cloud',
+
+      limits: {
+        maxSize: 5 * 1024 * 1024,
+        allowedMimeTypes: [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'image/gif'
+        ]
+      },
+
+      disk: {
+        basePath: process.env.UPLOAD_PATH || path.join(__dirname, '..', '..', 'uploads', 'images')
+      }
     }
   },
 
@@ -102,7 +133,21 @@ const config = {
       port: 3002
     },
     image: {
-      storage: 'database' // en tests usamos base de datos para pruebas
+      storage: 'database',
+
+      limits: {
+        maxSize: 5 * 1024 * 1024,
+        allowedMimeTypes: [
+          'image/jpeg',
+          'image/png',
+          'image/webp',
+          'image/gif'
+        ]
+      },
+
+      disk: {
+        basePath: path.join(__dirname, '..', '..', 'uploads_test', 'images')
+      }
     }
   }
 };

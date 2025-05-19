@@ -1,36 +1,102 @@
-const { Image } = require('../models');
+const { Image, ImageBinary } = require('../models');
+const logger = require('../utils/logger');
+const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
-  // Guarda la imagen en la base y devuelve el registro
   async save(file) {
-    const { buffer, mimetype } = file;
+    const id = uuidv4();
 
-    const image = await Image.create({
-      image: buffer,
-      mime_type: mimetype,
-      storage_type: 'database'
-    });
+    try {
+      logger.info(`Iniciando proceso de guardado de imagen (ID: ${id})`);
 
-    return image;
-  },
+      if (!file || !file.buffer) {
+        throw new Error('El archivo está vacío o no contiene datos en buffer');
+      }
 
-  // Devuelve el contenido de la imagen como stream al cliente
-  async get(id, res) {
-    const image = await Image.findByPk(id);
+      if (!file.originalname) {
+        throw new Error('El archivo no tiene nombre original');
+      }
 
-    if (!image || !image.image) {
-      return res.status(404).json({ error: 'Imagen no encontrada' });
+      const t = await Image.sequelize.transaction();
+
+      try {
+        // Metadatos
+        const image = await Image.create({
+          id,
+          filename: file.originalname || 'sin_nombre.png',
+          original_name: file.originalname,
+          mime_type: file.mimetype || 'application/octet-stream',
+          size: file.size || null,
+          storage_type: 'database',
+          metadata: JSON.stringify({ uploaded_at: new Date().toISOString() })
+        }, { transaction: t });
+
+        // Binario
+        await ImageBinary.create({
+          id,
+          data: file.buffer
+        }, { transaction: t });
+
+        await t.commit();
+        logger.info(`✅ Imagen guardada correctamente (ID: ${id})`);
+        return image;
+
+      } catch (innerErr) {
+        await t.rollback();
+        logger.error(`❌ Error interno al guardar imagen ${file.originalname}: ${innerErr.message}`);
+        console.error(innerErr);
+        throw innerErr;
+      }
+
+    } catch (err) {
+      logger.error(`❌ Error general al guardar imagen: ${err.message}`);
+      console.error('Detalles:', err);
+      throw err;
     }
-
-    res.setHeader('Content-Type', image.mime_type || 'image/jpeg');
-    res.send(image.image);
   },
 
-  // Elimina la imagen de la base de datos
+  async get(id, res) {
+    try {
+      const [image, binary] = await Promise.all([
+        Image.findByPk(id),
+        ImageBinary.findByPk(id)
+      ]);
+
+      if (!image) return res.status(404).json({ error: 'Imagen no encontrada' });
+      if (!binary || !binary.data) return res.status(404).json({ error: 'Contenido de imagen no disponible' });
+
+      res.setHeader('Content-Type', image.mime_type || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `inline; filename="${image.filename}"`);
+      if (image.size) res.setHeader('Content-Length', image.size);
+
+      res.send(binary.data);
+    } catch (error) {
+      logger.error(`Error al servir imagen ${id}:`, error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error al servir imagen' });
+      }
+    }
+  },
+
   async remove(id) {
-    const image = await Image.findByPk(id);
-    if (image) {
-      await image.destroy();
+    const t = await Image.sequelize.transaction();
+
+    try {
+      const binaryDeleted = await ImageBinary.destroy({ where: { id }, transaction: t });
+      const imageDeleted = await Image.destroy({ where: { id }, transaction: t });
+
+      await t.commit();
+
+      if (!binaryDeleted && !imageDeleted) {
+        logger.warn(`No se encontró imagen para eliminar: ${id}`);
+      } else {
+        logger.info(`✅ Imagen eliminada correctamente (ID: ${id})`);
+      }
+
+    } catch (error) {
+      await t.rollback();
+      logger.error(`❌ Error al eliminar imagen (ID: ${id})`, error);
+      throw error;
     }
   }
 };
