@@ -390,7 +390,7 @@ DB_DIALECT=mssql
 JWT_SECRET=tu_secreto
 PORT=3001
 NODE_ENV=development
-IMAGE_STORAGE=disk
+IMAGE_STORAGE=database
 ```
 
 ---
