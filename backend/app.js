@@ -1,9 +1,9 @@
-// backend/app.js (actualizado)
+// backend/app.js
 
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const config = require('./config/config');
+const corsConfig = require('./config/cors');
 const logger = require('./utils/logger');
 const securityMiddleware = require('./middlewares/security');
 const compressionMiddleware = require('./middlewares/compression');
@@ -21,12 +21,15 @@ const cashRegisterRoutes = require('./routes/cashRegister.routes');
 const receiptRoutes = require('./routes/receipt.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const auditRoutes = require('./routes/audit.routes');
+
 
 const app = express();
 
 // Middlewares básicos
 app.use(helmet());
-app.use(cors(config.cors));
+app.use(cors(corsConfig));
+app.options('*', cors(corsConfig));
 app.use(securityMiddleware);
 app.use(compressionMiddleware);
 app.use(express.json({ limit: '10mb' }));
@@ -50,19 +53,26 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Endpoints API
-app.use('/api/products', productRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/images', imageRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/order-queue', orderQueueRoutes);
-app.use('/api/coupons', couponRoutes);
-app.use('/api/cash-register', cashRegisterRoutes);
-app.use('/api/receipts', receiptRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-
+try {
+  // Endpoints API
+  app.use('/api/products', productRoutes);
+  app.use('/api/users', userRoutes);
+  app.use('/api/images', imageRoutes);
+  app.use('/api/auth', authRoutes);
+  app.use('/api/orders', orderRoutes);
+  app.use('/api/order-queue', orderQueueRoutes);
+  app.use('/api/coupons', couponRoutes);
+  app.use('/api/cash-register', cashRegisterRoutes);
+  app.use('/api/receipts', receiptRoutes);
+  app.use('/api/inventory', inventoryRoutes);
+  app.use('/api/dashboard', dashboardRoutes);
+  app.use('/api/audit', auditRoutes);
+} catch (e) {
+  console.error('🔥 ERROR cargando rutas:');
+  console.error(e.message);
+  console.trace(e);
+  process.exit(1);
+}
 // Manejo de rutas no encontradas
 app.use((req, res, next) => {
   res.status(404).json({

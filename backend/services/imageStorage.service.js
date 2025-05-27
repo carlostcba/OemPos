@@ -134,22 +134,24 @@ class ImageStorageService {
     try {
       const where = { owner_type, owner_id };
       if (tag) where.tag = tag;
-
+  
       const links = await ImageLink.findAll({
         where,
         include: [{ model: Image, as: 'image' }],
         order: [['created_at', 'DESC']]
       });
-
-      // Transformar resultado para tener una estructura más limpia
+  
+      const baseUrl = config.server.baseUrl;
+  
       return links.map(link => ({
         id: link.image?.id,
         link_id: link.id,
         filename: link.image?.filename || link.image?.original_name,
         mime_type: link.image?.mime_type,
-        url: link.image?.url || `/api/images/${link.image?.id}`,
+        url: link.image?.url || `${baseUrl}/api/images/${link.image?.id}`, // ✅ URL absoluta
         size: link.image?.size,
         tag: link.tag,
+        storage: link.image?.storage_type || 'unknown',
         created_at: link.created_at
       }));
     } catch (error) {

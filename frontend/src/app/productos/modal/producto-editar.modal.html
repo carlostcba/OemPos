@@ -1,5 +1,3 @@
-<!-- producto-editar.modal.html -->
-
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Editar Producto</ion-title>
@@ -11,45 +9,100 @@
   </ion-toolbar>
 </ion-header>
 
-<!-- scrollY desactivado -->
 <ion-content class="ion-padding" [scrollY]="false">
   <div class="image-container">
     <img
       [src]="imagenURL"
       (error)="imagenURL = 'assets/no_image_available.png'"
       alt="Imagen del producto"
+      class="product-image"
     />
+    <button class="edit-icon-button" (click)="abrirGaleriaImagenes()">
+      <img src="assets/edit-icon-white.png" alt="Editar imagen" />
+    </button>
   </div>
 
   <form [formGroup]="form">
     <ion-list>
-      <ion-item>
+      <!-- Nombre -->
+      <ion-item [class.modo-bloqueado]="!editMode">
         <ion-label position="stacked">Nombre</ion-label>
         <ion-input formControlName="name" type="text" [readonly]="!editMode"></ion-input>
       </ion-item>
+      <ion-note slot="error" color="danger" *ngIf="form.get('name')?.hasError('required') && form.get('name')?.touched">
+        El nombre es obligatorio
+      </ion-note>
 
-      <ion-item>
-        <ion-label position="stacked">Precio</ion-label>
-        <ion-input formControlName="price" type="number" [readonly]="!editMode"></ion-input>
-      </ion-item>
+      <!-- PLU y Precio -->
+      <div style="display: flex; gap: 16px;">
+        <ion-item [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label position="stacked">Código PLU</ion-label>
+          <ion-input formControlName="plu_code" type="text" maxlength="4" [readonly]="!editMode"></ion-input>
+        </ion-item>
+        <ion-item [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label position="stacked">Precio</ion-label>
+          <ion-input formControlName="price" type="number" min="0" [readonly]="!editMode"></ion-input>
+        </ion-item>
+      </div>
 
-      <ion-item>
-        <ion-label position="stacked">Stock</ion-label>
-        <ion-input formControlName="stock" type="number" [readonly]="!editMode"></ion-input>
-      </ion-item>
+      <ion-note slot="error" color="danger" *ngIf="form.get('plu_code')?.hasError('pattern') && form.get('plu_code')?.touched">
+        El código PLU debe ser numérico
+      </ion-note>
+      <ion-note slot="error" color="danger" *ngIf="form.get('price')?.hasError('min') && form.get('price')?.touched">
+        El precio debe ser mayor a 0
+      </ion-note>
 
-      <ion-item>
+      <!-- Descripción -->
+      <ion-item [class.modo-bloqueado]="!editMode">
         <ion-label position="stacked">Descripción</ion-label>
         <ion-textarea formControlName="description" [readonly]="!editMode"></ion-textarea>
       </ion-item>
+
+      <!-- Seguimiento de stock y Stock -->
+      <div style="display: flex; gap: 16px; align-items: center;">
+        <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label>Seguimiento de stock</ion-label>
+          <ion-toggle formControlName="track_stock" [disabled]="!editMode"></ion-toggle>
+        </ion-item>
+        <ion-item *ngIf="form.get('track_stock')?.value" [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label position="stacked">Stock</ion-label>
+          <ion-input formControlName="stock" type="number" min="0" [readonly]="!editMode"></ion-input>
+        </ion-item>
+      </div>
+
+      <!-- Pesable y Unidad -->
+      <div style="display: flex; gap: 16px; align-items: center;">
+        <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label>Es pesable</ion-label>
+          <ion-toggle formControlName="is_weighable" [disabled]="!editMode"></ion-toggle>
+        </ion-item>
+        <ion-item [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label position="stacked">Unidad de medida</ion-label>
+          <ion-select formControlName="unit_label" [disabled]="!editMode">
+            <ion-select-option value="unidad">Unidad</ion-select-option>
+            <ion-select-option value="kg">Kilogramo</ion-select-option>
+            <ion-select-option value="g">Gramo</ion-select-option>
+            <ion-select-option value="l">Litro</ion-select-option>
+            <ion-select-option value="ml">Mililitro</ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Activo -->
+      <div style="display: flex;">
+        <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label>Activo</ion-label>
+          <ion-toggle formControlName="is_active" [disabled]="!editMode"></ion-toggle>
+        </ion-item>
+      </div>
     </ion-list>
 
+    <!-- Botones -->
     <ion-buttons class="button-bar ion-padding-top">
       <ion-button fill="clear" color="medium" (click)="toggleEdit()">
         <ion-icon [name]="editMode ? 'lock-open-outline' : 'lock-closed-outline'" slot="start"></ion-icon>
         {{ editMode ? 'Editable' : 'Bloqueado' }}
       </ion-button>
-
       <ion-button color="primary" (click)="guardar()" [disabled]="!editMode">
         <ion-icon name="save-outline" slot="start"></ion-icon>
         Guardar

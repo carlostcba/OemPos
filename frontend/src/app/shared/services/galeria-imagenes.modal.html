@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Seleccionar imagen</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrar()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content *ngIf="!cargando">
+  <!-- Mostrar errores si ocurren -->
+  <div *ngIf="error">{{ error }}</div>
+
+  <!-- Mostrar mensaje si no hay imágenes -->
+  <div *ngIf="imagenes.length === 0 && !error" class="sin-imagenes">
+    No hay imágenes disponibles.
+  </div>
+
+  <!-- Galería de imágenes -->
+  <div class="galeria">
+    <div
+      class="imagen-item"
+      *ngFor="let img of imagenes"
+      (dblclick)="seleccionar(img)"
+    >
+      <!-- ✅ Usar ruta relativa que pasa por el proxy -->
+      <img [src]="img.url" [alt]="img.filename" />
+      <div class="nombre">{{ img.filename }}</div>
+      <div class="origen">[{{ img.storage }}]</div>
+    </div>
+  </div>
+</ion-content>
+
+<!-- Indicador de carga -->
+<ion-spinner *ngIf="cargando" class="cargando"></ion-spinner>

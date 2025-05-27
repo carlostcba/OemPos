@@ -27,18 +27,50 @@
 
   .image-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     margin: 24px 0;
-  }
 
-  img {
-    width: 220px;
-    height: auto;
-    max-width: 100%;
-    object-fit: contain;
-    border-radius: 10px;
-    background-color: #1a1a1a;
-    border: 1px solid #555;
+    img {
+      width: 220px;
+      height: auto;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+      background-color: #1a1a1a;
+      border: 1px solid #555;
+    }
+
+    .edit-icon-button {
+      margin-top: -5px;
+      margin-left: auto;
+      margin-left: calc((100% - 220px) / 2);
+      background: transparent;
+      border: none;
+      padding: 0px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 32px; /* Ícono más grande */
+        height: 32px;
+        pointer-events: none;
+        transition: filter 0.2s ease;
+      }
+
+      &:hover,
+      &:focus {
+        background-color: rgba(255, 255, 255, 0.08); /* sombra suave clara */
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.2); /* sombra más pequeña */
+        img {
+          filter: brightness(1.3); /* ilumina el interior del ícono */
+        }
+      }
+    }
   }
 
   ion-item {
@@ -66,4 +98,42 @@
     flex: 1;
     margin: 8px 4px 0;
   }
-}
+
+  /* Estilo para los toggles tipo inline */
+  ion-item.modo-bloqueado {
+    --background: #2a2a2a;
+    --color: #999;
+    opacity: 0.6;
+  }
+  
+  ion-item.modo-bloqueado ion-label,
+  ion-item.modo-bloqueado ion-input,
+  ion-item.modo-bloqueado ion-select,
+  ion-item.modo-bloqueado ion-textarea {
+    color: #999 !important;
+  }
+  
+  ion-item.toggle-derecha {
+    --inner-padding-end: 0px;
+    display: flex;
+    align-items: center; /* ← Corregido */
+    justify-content: space-between;
+    width: 100%;
+  
+    ion-label {
+      flex: 1;
+      margin: 0;
+      padding-right: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    ion-toggle {
+      margin-left: auto !important;
+      margin-right: 12px !important; /* ← Agregado: margen derecho consistente */
+      padding: 0 !important;
+    }
+  }  
+
+}  

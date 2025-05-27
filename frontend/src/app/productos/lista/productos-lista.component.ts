@@ -146,11 +146,6 @@ export class ProductosListaComponent implements OnInit {
     });
   }
 
-  // async editarProducto(producto: Producto) {
-  //   // Navegar a edición
-  //   this.router.navigate(['/productos/editar', producto.id]);
-  // }
-
   async editarProducto(producto: Producto) {
     const modal = await this.modalCtrl.create({
       component: ProductoEditarModal,
@@ -161,7 +156,18 @@ export class ProductosListaComponent implements OnInit {
     });
   
     await modal.present();
+  
+    const { data } = await modal.onDidDismiss();
+  
+    if (data?.actualizado) {
+      // Actualizar directamente el producto en el array sin recargar toda la lista
+      const index = this.productos.findIndex(p => p.id === data.actualizado.id);
+      if (index !== -1) {
+        this.productos[index] = data.actualizado;
+      }
+    }
   }
+  
 
   async eliminarProducto(producto: Producto) {
     const alert = await this.alertCtrl.create({

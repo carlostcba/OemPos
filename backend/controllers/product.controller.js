@@ -1,5 +1,7 @@
 // backend/controllers/product.controller.js
 const { Product, Category, Subcategory, ProductImage, User } = require('../models');
+const { Op } = require('sequelize');
+
 
 // ✅ Obtener todos los productos con relaciones
 exports.getAll = async (req, res) => {
@@ -58,21 +60,82 @@ exports.create = async (req, res) => {
 };
 
 // ✅ Actualizar producto con validación de existencia
+// ✅ Actualizar producto con validación y auditoría
 exports.update = async (req, res) => {
   try {
-    const [updatedCount] = await Product.update(req.body, { where: { id: req.params.id } });
+    const id = req.params.id;
+    const userId = req.user?.id || req.body.updated_by || null;
 
-    if (updatedCount === 0) {
-      return res.status(404).json({ error: 'Producto no encontrado' });
+    const anterior = await Product.findByPk(id);
+    if (!anterior) return res.status(404).json({ error: 'Producto no encontrado' });
+
+    const { plu_code, price } = req.body;
+
+    if (price !== undefined && price <= 0) {
+      return res.status(400).json({ error: 'El precio debe ser mayor a 0' });
     }
 
-    const updatedProduct = await Product.findByPk(req.params.id);
-    res.status(200).json(updatedProduct);
+    if (plu_code && Number(plu_code) <= 0) {
+      return res.status(400).json({ error: 'El código PLU debe ser mayor a 0' });
+    }
+
+    if (plu_code && !/^\d+$/.test(plu_code)) {
+      return res.status(400).json({ error: 'El código PLU debe contener solo números' });
+    }
+
+    if (plu_code) {
+      const existente = await Product.findOne({
+        where: { plu_code, id: { [Op.ne]: id } }
+      });
+      if (existente) {
+        return res.status(409).json({ error: 'El código PLU ya está en uso' });
+      }
+    }
+
+    // Actualizar producto
+    req.body.updated_at = new Date();
+    const [updatedCount] = await Product.update(req.body, { where: { id } });
+
+    if (updatedCount === 0) {
+      return res.status(400).json({ error: 'No se realizaron cambios' });
+    }
+
+    const actualizado = await Product.findByPk(id);
+
+    // Auditoría de cambios (comentada temporalmente hasta ajustar esquema)
+    /*
+    const changes = {};
+    for (const campo in req.body) {
+      if (anterior[campo] !== undefined && anterior[campo] !== req.body[campo]) {
+        changes[campo] = {
+          before: anterior[campo],
+          after: req.body[campo]
+        };
+      }
+    }
+
+    if (Object.keys(changes).length > 0) {
+      await AuditLog.create({
+        entity_type: 'Product',
+        entity_id: id,
+        action: 'update',
+        // 🔧 TODO: guardar como JSON o usar campo tipo JSON en el modelo
+        changes: JSON.stringify(changes),
+        previous_values: JSON.stringify(anterior),
+        performed_by: userId,
+        source: 'backend'
+      });
+    }
+    */
+
+    res.status(200).json(actualizado);
   } catch (error) {
     console.error('❌ Error al actualizar producto:', error);
     res.status(500).json({ error: 'Error al actualizar producto' });
   }
 };
+
+
 
 // ✅ Eliminar producto con validación
 exports.remove = async (req, res) => {

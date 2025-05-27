@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     
     // Política de contenido seguro
-    res.setHeader('Content-Security-Policy', "default-src 'self'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: blob:;");
     
     // Prevenir MIME sniffing
     res.setHeader('X-Content-Type-Options', 'nosniff');

@@ -61,20 +61,22 @@ module.exports = {
         Image.findByPk(id),
         ImageBinary.findByPk(id)
       ]);
-
-      if (!image) return res.status(404).json({ error: 'Imagen no encontrada' });
-      if (!binary || !binary.data) return res.status(404).json({ error: 'Contenido de imagen no disponible' });
-
+  
+      if (!image || !binary || !binary.data) return false;
+  
       res.setHeader('Content-Type', image.mime_type || 'application/octet-stream');
       res.setHeader('Content-Disposition', `inline; filename="${image.filename}"`);
       if (image.size) res.setHeader('Content-Length', image.size);
-
+  
       res.send(binary.data);
+      return true; // ✅ Devuelve true si la imagen fue servida correctamente
+  
     } catch (error) {
       logger.error(`Error al servir imagen ${id}:`, error);
       if (!res.headersSent) {
         res.status(500).json({ error: 'Error al servir imagen' });
       }
+      return false; // ✅ Importante para que el controller no siga procesando
     }
   },
 

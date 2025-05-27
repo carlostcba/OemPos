@@ -92,19 +92,27 @@ exports.getByOwner = async (req, res) => {
 };
 
 // VER una imagen
+// controllers/image.controller.js
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
     logger.info(`Solicitando contenido de imagen: ${id}`);
-    await imageService.get(id, res);
+
+    const found = await imageService.get(id, res);
+
+    if (!found && !res.headersSent) {
+      return res.status(404).json({ error: 'Imagen no encontrada' });
+    }
+
   } catch (err) {
-    // No respondemos aquí porque la estrategia debe encargarse de las respuestas
-    logger.error('Error no manejado al servir imagen:', err);
+    logger.error('Error inesperado al servir imagen:', err);
     if (!res.headersSent) {
       res.status(500).json({ error: 'No se pudo obtener la imagen' });
     }
   }
 };
+
+
 
 // ELIMINAR imagen
 exports.remove = async (req, res) => {
@@ -132,5 +140,35 @@ exports.getStorageInfo = (req, res) => {
   } catch (err) {
     logger.error('Error al obtener información de almacenamiento:', err);
     res.status(500).json({ error: 'Error al obtener información de almacenamiento' });
+  }
+};
+
+exports.updateImageLink = async (req, res) => {
+  const { owner_type, owner_id, image_id, tag = 'default' } = req.body;
+
+  if (!owner_type || !owner_id || !image_id) {
+    return res.status(400).json({ error: 'Faltan parámetros requeridos (owner_type, owner_id, image_id)' });
+  }
+
+  try {
+    // Eliminar vínculos previos del mismo tipo y entidad
+    await ImageLink.destroy({ where: { owner_type, owner_id } });
+
+    // Crear nuevo vínculo
+    const newLink = await ImageLink.create({
+      image_id,
+      owner_type,
+      owner_id,
+      tag
+    });
+
+    res.json({
+      success: true,
+      message: 'Vínculo actualizado correctamente',
+      link: newLink
+    });
+  } catch (err) {
+    logger.error('Error al actualizar vínculo de imagen:', err);
+    res.status(500).json({ error: 'No se pudo actualizar el vínculo' });
   }
 };

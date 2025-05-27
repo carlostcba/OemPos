@@ -34,7 +34,7 @@ ion-menu ion-note {
 ion-menu ion-item {
   --padding-start: 16px;
   --padding-end: 16px;
-  border-radius: 4px;
+  border-radius: 14px;
   margin: 2px 8px;
 }
 
@@ -82,4 +82,17 @@ ion-split-pane {
 
 .side-menu-hidden ion-router-outlet {
   margin-left: 0 !important;
+}
+
+ion-modal.modal-elevado::part(content) {
+  border-radius: 16px;
+  background-color: #1a1a1a;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+ion-modal.modal-elevado::part(backdrop) {
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }

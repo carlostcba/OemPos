@@ -33,26 +33,16 @@ const config = {
       secret: process.env.JWT_SECRET || 'secreto-desarrollo',
       expiresIn: '8h'
     },
-    cors: {
-      origin: process.env.CORS_ORIGIN || '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE']
-    },
     server: {
-      port: process.env.PORT || 3001
+      port: process.env.PORT || 3001,
+      baseUrl: process.env.BASE_URL || 'http://localhost:3001'
     },
     image: {
       storage: process.env.IMAGE_STORAGE || 'database',
-
       limits: {
-        maxSize: 5 * 1024 * 1024, // 5 MB
-        allowedMimeTypes: [
-          'image/jpeg',
-          'image/png',
-          'image/webp',
-          'image/gif'
-        ]
+        maxSize: 5 * 1024 * 1024,
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       },
-
       disk: {
         basePath: process.env.UPLOAD_PATH || path.join(__dirname, '..', '..', 'uploads', 'images')
       }
@@ -88,26 +78,16 @@ const config = {
       secret: process.env.JWT_SECRET,
       expiresIn: '4h'
     },
-    cors: {
-      origin: process.env.CORS_ORIGIN,
-      methods: ['GET', 'POST', 'PUT', 'DELETE']
-    },
     server: {
-      port: process.env.PORT || 3001
+      port: process.env.PORT || 3001,
+      baseUrl: process.env.BASE_URL || 'https://miapp.com'
     },
     image: {
       storage: process.env.IMAGE_STORAGE || 'cloud',
-
       limits: {
         maxSize: 5 * 1024 * 1024,
-        allowedMimeTypes: [
-          'image/jpeg',
-          'image/png',
-          'image/webp',
-          'image/gif'
-        ]
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       },
-
       disk: {
         basePath: process.env.UPLOAD_PATH || path.join(__dirname, '..', '..', 'uploads', 'images')
       }
@@ -125,26 +105,16 @@ const config = {
       secret: 'secreto-test',
       expiresIn: '1h'
     },
-    cors: {
-      origin: '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE']
-    },
     server: {
-      port: 3002
+      port: 3002,
+      baseUrl: process.env.BASE_URL || 'http://localhost:3002'
     },
     image: {
       storage: 'database',
-
       limits: {
         maxSize: 5 * 1024 * 1024,
-        allowedMimeTypes: [
-          'image/jpeg',
-          'image/png',
-          'image/webp',
-          'image/gif'
-        ]
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
       },
-
       disk: {
         basePath: path.join(__dirname, '..', '..', 'uploads_test', 'images')
       }
