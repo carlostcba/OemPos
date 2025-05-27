@@ -421,6 +421,9 @@ npm start
 ```bash
 # Instalar dependencias del frontend
 cd oempos/frontend
+
+npm install -g @ionic/cli
+
 npm install
 
 # Iniciar servidor de desarrollo
