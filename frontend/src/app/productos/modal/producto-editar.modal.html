@@ -17,9 +17,15 @@
       alt="Imagen del producto"
       class="product-image"
     />
-    <button class="edit-icon-button" (click)="abrirGaleriaImagenes()">
-      <img src="assets/edit-icon-white.png" alt="Editar imagen" />
-    </button>
+    <ion-button
+      class="edit-icon-button"
+      fill="clear"
+      (click)="abrirGaleriaImagenes()"
+      type="button"
+      tabindex="-1"
+  >
+    <ion-icon name="images" aria-hidden="true"></ion-icon>
+  </ion-button>
   </div>
 
   <form [formGroup]="form">
@@ -62,7 +68,7 @@
       <div style="display: flex; gap: 16px; align-items: center;">
         <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label>Seguimiento de stock</ion-label>
-          <ion-toggle formControlName="track_stock" [disabled]="!editMode"></ion-toggle>
+          <ion-toggle formControlName="track_stock"></ion-toggle>
         </ion-item>
         <ion-item *ngIf="form.get('track_stock')?.value" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label position="stacked">Stock</ion-label>
@@ -74,11 +80,11 @@
       <div style="display: flex; gap: 16px; align-items: center;">
         <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label>Es pesable</ion-label>
-          <ion-toggle formControlName="is_weighable" [disabled]="!editMode"></ion-toggle>
+          <ion-toggle formControlName="is_weighable"></ion-toggle>
         </ion-item>
         <ion-item [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label position="stacked">Unidad de medida</ion-label>
-          <ion-select formControlName="unit_label" [disabled]="!editMode">
+          <ion-select formControlName="unit_label">
             <ion-select-option value="unidad">Unidad</ion-select-option>
             <ion-select-option value="kg">Kilogramo</ion-select-option>
             <ion-select-option value="g">Gramo</ion-select-option>
@@ -92,7 +98,7 @@
       <div style="display: flex;">
         <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label>Activo</ion-label>
-          <ion-toggle formControlName="is_active" [disabled]="!editMode"></ion-toggle>
+          <ion-toggle formControlName="is_active"></ion-toggle>
         </ion-item>
       </div>
     </ion-list>

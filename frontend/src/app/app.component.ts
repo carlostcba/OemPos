@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { DomUtils } from './core/utils/dom-utils';
 // Importar los iconos necesarios
-import { 
+import {
   homeOutline,
   cartOutline,
   cashOutline,
@@ -32,7 +32,14 @@ import {
   refresh,
   trash,
   create,
-  add
+  add,
+  close,
+  saveOutline,
+  lockOpenOutline,
+  imageOutline,
+  imagesOutline,
+  images
+
 } from 'ionicons/icons';
 // Importar addIcons para registrar los iconos
 import { addIcons } from 'ionicons';
@@ -99,7 +106,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       'refresh': refresh,
       'trash': trash,
       'create': create,
-      'add': add
+      'add': add,
+      'close': close,
+      'save-outline': saveOutline,
+      'lock-open-outline': lockOpenOutline,
+      'image-outline': imageOutline,
+      'images-outline': imagesOutline,
+      'images': images
     });
     
     this.initializeApp();

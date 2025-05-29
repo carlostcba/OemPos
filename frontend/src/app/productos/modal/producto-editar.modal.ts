@@ -112,8 +112,14 @@ export class ProductoEditarModal implements OnInit {
   }
 
   toggleEdit() {
-    this.editMode = !this.editMode;
+  this.editMode = !this.editMode;
+
+  if (this.editMode) {
+    this.form.enable(); // habilita todo el form
+  } else {
+    this.form.disable(); // deshabilita todo el form
   }
+}
 
   cerrarModal() {
     this.modalCtrl.dismiss();
