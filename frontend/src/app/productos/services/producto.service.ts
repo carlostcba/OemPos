@@ -18,6 +18,7 @@ export interface Producto {
   category_id?: string;
   subcategory_id?: string;
   product_image_id?: string;
+  image_url?: string; // ← Agregar este campo
 }
 
 @Injectable({
@@ -46,6 +47,10 @@ export class ProductoService {
 
   actualizarProducto(producto: Producto): Observable<Producto> {
     return this.update(producto.id, producto);
+  }
+
+  obtenerImagenProducto(productId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/images?owner_type=products&owner_id=${productId}`);
   }
 
   delete(id: string): Observable<any> {

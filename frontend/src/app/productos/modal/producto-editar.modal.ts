@@ -34,23 +34,37 @@ export class ProductoEditarModal implements OnInit {
     private http: HttpClient
   ) {}
 
-  ngOnInit() {
-    this.form = this.fb.group({
-      name: [this.producto?.name || '', Validators.required],
-      plu_code: [this.producto?.plu_code || '', [Validators.pattern(/^[0-9]+$/)]],
-      price: [this.producto?.price || 0, [Validators.required, Validators.min(0.01)]],
-      stock: [this.producto?.stock || 0],
-      description: [this.producto?.description || ''],
-      is_weighable: [this.producto?.is_weighable || false],
-      unit_label: [this.producto?.unit_label || 'unidad'],
-      track_stock: [this.producto?.track_stock ?? true],
-      is_active: [this.producto?.is_active ?? true],
-    });
+ ngOnInit() {
+  this.form = this.fb.group({
+    name: [this.producto?.name || '', Validators.required],
+    plu_code: [this.producto?.plu_code || '', [Validators.pattern(/^[0-9]+$/)]],
+    price: [this.producto?.price || 0, [Validators.required, Validators.min(0.01)]],
+    stock: [this.producto?.stock || 0],
+    description: [this.producto?.description || ''],
+    is_weighable: [this.producto?.is_weighable || false],
+    unit_label: [this.producto?.unit_label || 'unidad'],
+    track_stock: [this.producto?.track_stock ?? true],
+    is_active: [this.producto?.is_active ?? true],
+  });
 
-    if (this.producto?.product_image_id) {
-      this.imagenURL = this.producto.product_image_id;
+  // Cargar imagen existente
+  this.cargarImagenProducto();
+}
+
+// Agregar método para cargar imagen
+async cargarImagenProducto() {
+  if (this.producto?.id) {
+    try {
+      const response = await this.http.get(`${environment.apiUrl}/images?owner_type=products&owner_id=${this.producto.id}`).toPromise() as any;
+      if (response?.images && response.images.length > 0) {
+        this.imagenURL = response.images[0].url;
+        this.imagenSeleccionadaId = response.images[0].id;
+      }
+    } catch (error) {
+      console.error('Error al cargar imagen del producto:', error);
     }
   }
+}
 
   async abrirGaleriaImagenes() {
     const modal = await this.modalCtrl.create({
