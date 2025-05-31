@@ -38,7 +38,9 @@ import {
   lockOpenOutline,
   imageOutline,
   imagesOutline,
-  images
+  images,
+  save,
+  cloudUpload
 
 } from 'ionicons/icons';
 // Importar addIcons para registrar los iconos
@@ -112,7 +114,9 @@ export class AppComponent implements OnInit, AfterViewInit {
       'lock-open-outline': lockOpenOutline,
       'image-outline': imageOutline,
       'images-outline': imagesOutline,
-      'images': images
+      'images': images,
+      'save': save,
+      'cloud-upload': cloudUpload
     });
     
     this.initializeApp();

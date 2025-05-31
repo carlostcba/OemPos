@@ -173,21 +173,29 @@ ion-popover {
  
 }
 
- ion-modal.custom-centered-modal::part(content) {
-    width: 750px !important;
-    height: 900px !important;
-    max-width: unset !important;
-    max-height: unset !important;
-  
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-    border-bottom-left-radius: 16px !important;
-    border-bottom-right-radius: 16px !important;
-  
-    background: #1a1a1a !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
-    overflow: hidden !important;
-    contain: none !important;
-    border-radius: 16px !important;
-    
+ // Actualizar la configuración del modal
+ion-modal.custom-centered-modal {
+  --width: 750px !important;
+  --height: 900px !important;
+  --max-width: unset !important;
+  --max-height: unset !important;
+  --border-radius: 16px !important;
+  --background: #1a1a1a !important;
+  --box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+// ✅ Quitar el ::part(content) que puede estar causando problemas
+// ion-modal.custom-centered-modal::part(content) {
+//   // Comentar o eliminar este bloque
+// }
+
+// ✅ Agregar estilos de accesibilidad
+ion-modal.custom-centered-modal {
+  &[aria-hidden="false"] {
+    pointer-events: auto;
   }
+  
+  &[aria-hidden="true"] {
+    pointer-events: none;
+  }
+}

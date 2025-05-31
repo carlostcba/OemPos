@@ -146,27 +146,34 @@ export class ProductosListaComponent implements OnInit {
     });
   }
 
-  async editarProducto(producto: Producto) {
-    const modal = await this.modalCtrl.create({
-      component: ProductoEditarModal,
-      componentProps: { producto },
-      cssClass: 'custom-centered-modal',
-      backdropDismiss: true,
-      showBackdrop: true
-    });
-  
-    await modal.present();
-  
-    const { data } = await modal.onDidDismiss();
-  
-    if (data?.actualizado) {
-      // Actualizar directamente el producto en el array sin recargar toda la lista
-      const index = this.productos.findIndex(p => p.id === data.actualizado.id);
-      if (index !== -1) {
-        this.productos[index] = data.actualizado;
-      }
+ async editarProducto(producto: Producto) {
+  const modal = await this.modalCtrl.create({
+    component: ProductoEditarModal,
+    componentProps: { producto },
+    cssClass: 'custom-centered-modal',
+    backdropDismiss: true,
+    showBackdrop: true,
+    // ✅ Agregar estas propiedades de accesibilidad:
+    keyboardClose: true,
+    id: 'producto-edit-modal',
+    htmlAttributes: {
+      'aria-modal': 'true',
+      'aria-labelledby': 'modal-title',
+      'role': 'dialog'
+    }
+  });
+
+  await modal.present();
+
+  const { data } = await modal.onDidDismiss();
+
+  if (data?.actualizado) {
+    const index = this.productos.findIndex(p => p.id === data.actualizado.id);
+    if (index !== -1) {
+      this.productos[index] = data.actualizado;
     }
   }
+}
   
 
   async eliminarProducto(producto: Producto) {
