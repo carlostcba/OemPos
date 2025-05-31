@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { IonicModule, AlertController, LoadingController } from '@ionic/angular';
 import { ProductoService } from '../services/producto.service';
+import { CategoriaService, Categoria, Subcategoria } from '../../shared/services/categoria.service';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -51,6 +52,55 @@ import { AuthService } from '../../core/services/auth.service';
           </ion-note>
         </ion-item>
 
+        <!-- ✅ Categoría y Subcategoría -->
+        <div style="display: flex; gap: 16px;">
+          <ion-item style="flex: 1;">
+            <ion-label position="stacked">Categoría</ion-label>
+            <ion-select 
+              formControlName="category_id" 
+              placeholder="Seleccionar categoría"
+              interface="popover"
+            >
+              <ion-select-option value="">Sin categoría</ion-select-option>
+              <ion-select-option 
+                *ngFor="let categoria of categorias" 
+                [value]="categoria.id"
+              >
+                {{ categoria.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+          
+          <ion-item 
+            style="flex: 1;"
+            [class.disabled]="!productoForm.get('category_id')?.value"
+          >
+            <ion-label position="stacked">Subcategoría</ion-label>
+            <ion-select 
+              formControlName="subcategory_id" 
+              [disabled]="!productoForm.get('category_id')?.value"
+              placeholder="Seleccionar subcategoría"
+              interface="popover"
+            >
+              <ion-select-option value="">Sin subcategoría</ion-select-option>
+              <ion-select-option 
+                *ngFor="let subcategoria of subcategoriasDisponibles" 
+                [value]="subcategoria.id"
+              >
+                {{ subcategoria.name }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </div>
+
+        <!-- Mostrar loading de categorías -->
+        <ion-item *ngIf="cargandoCategorias">
+          <ion-label>
+            <ion-spinner name="dots"></ion-spinner>
+            Cargando categorías...
+          </ion-label>
+        </ion-item>
+
         <ion-item>
           <ion-label position="stacked">Descripción</ion-label>
           <ion-textarea formControlName="description" rows="3"></ion-textarea>
@@ -73,7 +123,7 @@ import { AuthService } from '../../core/services/auth.service';
 
         <ion-item>
           <ion-label position="stacked">Unidad de medida</ion-label>
-          <ion-select formControlName="unit_label">
+          <ion-select formControlName="unit_label" interface="popover">
             <ion-select-option value="unidad">Unidad</ion-select-option>
             <ion-select-option value="kg">Kilogramo</ion-select-option>
             <ion-select-option value="g">Gramo</ion-select-option>
@@ -116,9 +166,16 @@ export class ProductoFormComponent implements OnInit {
   currentUser: any = null;
   debugInfo: any = null;
 
+  // ✅ Datos para categorías y subcategorías
+  categorias: Categoria[] = [];
+  subcategorias: Subcategoria[] = [];
+  subcategoriasDisponibles: Subcategoria[] = [];
+  cargandoCategorias = false;
+
   constructor(
     private fb: FormBuilder,
     private productoService: ProductoService,
+    private categoriaService: CategoriaService,
     private authService: AuthService,
     private router: Router,
     private alertController: AlertController,
@@ -133,7 +190,10 @@ export class ProductoFormComponent implements OnInit {
       unit_label: ['unidad'],
       stock: [0, [Validators.min(0)]],
       track_stock: [true],
-      is_active: [true]
+      is_active: [true],
+      // ✅ Agregar campos de categoría
+      category_id: [''],
+      subcategory_id: ['']
     });
   }
 
@@ -149,6 +209,11 @@ export class ProductoFormComponent implements OnInit {
       }
     });
 
+    // ✅ Configurar listener para cambios de categoría
+    this.productoForm.get('category_id')?.valueChanges.subscribe(categoryId => {
+      this.onCategoriaChange(categoryId);
+    });
+
     // Configurar validaciones dinámicas para stock
     this.productoForm.get('track_stock')?.valueChanges.subscribe(trackStock => {
       const stockControl = this.productoForm.get('stock');
@@ -160,6 +225,60 @@ export class ProductoFormComponent implements OnInit {
       }
       stockControl?.updateValueAndValidity();
     });
+
+    // ✅ Cargar categorías y subcategorías
+    this.cargarCategorias();
+  }
+
+  // ✅ Cargar categorías desde el backend
+  async cargarCategorias() {
+    this.cargandoCategorias = true;
+    try {
+      // Cargar categorías y subcategorías en paralelo
+      const [categorias, subcategorias] = await Promise.all([
+        this.categoriaService.getCategorias().toPromise(),
+        this.categoriaService.getSubcategorias().toPromise()
+      ]);
+
+      this.categorias = categorias || [];
+      this.subcategorias = subcategorias || [];
+
+      console.log('✅ Categorías cargadas:', this.categorias.length);
+      console.log('✅ Subcategorías cargadas:', this.subcategorias.length);
+    } catch (error) {
+      console.error('❌ Error al cargar categorías:', error);
+      const alert = await this.alertController.create({
+        header: 'Error',
+        message: 'No se pudieron cargar las categorías. Verifique su conexión.',
+        buttons: ['OK']
+      });
+      await alert.present();
+    } finally {
+      this.cargandoCategorias = false;
+    }
+  }
+
+  // ✅ Manejar cambio de categoría
+  onCategoriaChange(categoryId: string) {
+    console.log('📂 Categoría seleccionada:', categoryId);
+    
+    // Limpiar subcategoría seleccionada
+    this.productoForm.patchValue({ subcategory_id: '' });
+    
+    // Filtrar subcategorías disponibles
+    this.filtrarSubcategorias(categoryId);
+  }
+
+  // ✅ Filtrar subcategorías por categoría
+  filtrarSubcategorias(categoryId: string) {
+    if (categoryId) {
+      this.subcategoriasDisponibles = this.subcategorias.filter(
+        sub => sub.category_id === categoryId
+      );
+      console.log('📋 Subcategorías disponibles:', this.subcategoriasDisponibles.length);
+    } else {
+      this.subcategoriasDisponibles = [];
+    }
   }
 
   async crearProducto() {
@@ -197,7 +316,10 @@ export class ProductoFormComponent implements OnInit {
         stock: formData.track_stock ? parseFloat(formData.stock || 0) : 0,
         track_stock: formData.track_stock !== false,
         is_active: formData.is_active !== false,
-        created_by: this.currentUser.id
+        created_by: this.currentUser.id,
+        // ✅ Incluir categoría y subcategoría
+        category_id: formData.category_id || null,
+        subcategory_id: formData.subcategory_id || null
       };
 
       console.log('📝 Datos a enviar al servidor:', productoData);

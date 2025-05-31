@@ -9,7 +9,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" [scrollY]="false">
+<ion-content class="ion-padding" [scrollY]="true">
   <div class="image-container">
     <img
       [src]="imagenURL"
@@ -23,9 +23,9 @@
       (click)="abrirGaleriaImagenes()"
       type="button"
       tabindex="-1"
-  >
-    <ion-icon name="images" aria-hidden="true"></ion-icon>
-  </ion-button>
+    >
+      <ion-icon name="images" aria-hidden="true"></ion-icon>
+    </ion-button>
   </div>
 
   <form [formGroup]="form">
@@ -51,12 +51,55 @@
         </ion-item>
       </div>
 
-      <ion-note slot="error" color="danger" *ngIf="form.get('plu_code')?.hasError('pattern') && form.get('plu_code')?.touched">
-        El código PLU debe ser numérico
-      </ion-note>
-      <ion-note slot="error" color="danger" *ngIf="form.get('price')?.hasError('min') && form.get('price')?.touched">
-        El precio debe ser mayor a 0
-      </ion-note>
+      <!-- ✅ Categoría y Subcategoría -->
+      <div style="display: flex; gap: 16px;">
+        <ion-item [class.modo-bloqueado]="!editMode" style="flex: 1;">
+          <ion-label position="stacked">Categoría</ion-label>
+          <ion-select 
+            formControlName="category_id" 
+            [disabled]="!editMode"
+            placeholder="Seleccionar categoría"
+            interface="popover"
+          >
+            <ion-select-option value="">Sin categoría</ion-select-option>
+            <ion-select-option 
+              *ngFor="let categoria of categorias" 
+              [value]="categoria.id"
+            >
+              {{ categoria.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+        <ion-item 
+          [class.modo-bloqueado]="!editMode || !form.get('category_id')?.value" 
+          style="flex: 1;"
+        >
+          <ion-label position="stacked">Subcategoría</ion-label>
+          <ion-select 
+            formControlName="subcategory_id" 
+            [disabled]="!editMode || !form.get('category_id')?.value"
+            placeholder="Seleccionar subcategoría"
+            interface="popover"
+          >
+            <ion-select-option value="">Sin subcategoría</ion-select-option>
+            <ion-select-option 
+              *ngFor="let subcategoria of subcategoriasDisponibles" 
+              [value]="subcategoria.id"
+            >
+              {{ subcategoria.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Mostrar loading de categorías -->
+      <ion-item *ngIf="cargandoCategorias">
+        <ion-label>
+          <ion-spinner name="dots"></ion-spinner>
+          Cargando categorías...
+        </ion-label>
+      </ion-item>
 
       <!-- Descripción -->
       <ion-item [class.modo-bloqueado]="!editMode">
@@ -68,7 +111,7 @@
       <div style="display: flex; gap: 16px; align-items: center;">
         <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label>Seguimiento de stock</ion-label>
-          <ion-toggle formControlName="track_stock"></ion-toggle>
+          <ion-toggle formControlName="track_stock" [disabled]="!editMode"></ion-toggle>
         </ion-item>
         <ion-item *ngIf="form.get('track_stock')?.value" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label position="stacked">Stock</ion-label>
@@ -80,11 +123,11 @@
       <div style="display: flex; gap: 16px; align-items: center;">
         <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label>Es pesable</ion-label>
-          <ion-toggle formControlName="is_weighable"></ion-toggle>
+          <ion-toggle formControlName="is_weighable" [disabled]="!editMode"></ion-toggle>
         </ion-item>
         <ion-item [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label position="stacked">Unidad de medida</ion-label>
-          <ion-select formControlName="unit_label">
+          <ion-select formControlName="unit_label" [disabled]="!editMode" interface="popover">
             <ion-select-option value="unidad">Unidad</ion-select-option>
             <ion-select-option value="kg">Kilogramo</ion-select-option>
             <ion-select-option value="g">Gramo</ion-select-option>
@@ -98,7 +141,7 @@
       <div style="display: flex;">
         <ion-item class="toggle-derecha" [class.modo-bloqueado]="!editMode" style="flex: 1;">
           <ion-label>Activo</ion-label>
-          <ion-toggle formControlName="is_active"></ion-toggle>
+          <ion-toggle formControlName="is_active" [disabled]="!editMode"></ion-toggle>
         </ion-item>
       </div>
     </ion-list>

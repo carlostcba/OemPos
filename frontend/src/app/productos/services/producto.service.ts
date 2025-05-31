@@ -18,7 +18,10 @@ export interface Producto {
   category_id?: string;
   subcategory_id?: string;
   product_image_id?: string;
-  image_url?: string; // ← Agregar este campo
+  image_url?: string;
+  // ✅ Agregar relaciones para mostrar nombres
+  category?: { id: string; name: string };
+  subcategory?: { id: string; name: string };
 }
 
 @Injectable({

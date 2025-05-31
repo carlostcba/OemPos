@@ -20,6 +20,9 @@ const Image = require('./Image');
 const ImageLink = require('./imageLink');
 const ImageBinary = require('./ImageBinary');
 
+// 🔗 Relaciones de categorías y subcategorías
+Category.hasMany(Subcategory, { foreignKey: 'category_id', as: 'subcategories' });
+Subcategory.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
 
 // 🔗 Relaciones de productos
 Product.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
@@ -27,6 +30,10 @@ Product.belongsTo(Subcategory, { foreignKey: 'subcategory_id', as: 'subcategory'
 Product.belongsTo(ProductImage, { foreignKey: 'product_image_id', as: 'image' });
 Product.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
 Product.hasMany(InventoryMovement, { foreignKey: 'product_id', as: 'inventory_movements' });
+
+// Relaciones inversas para categorías
+Category.hasMany(Product, { foreignKey: 'category_id', as: 'products' });
+Subcategory.hasMany(Product, { foreignKey: 'subcategory_id', as: 'products' });
 
 // 🔗 Relaciones de órdenes
 Order.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });

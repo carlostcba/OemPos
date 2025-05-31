@@ -11,6 +11,8 @@ const errorHandler = require('./middlewares/errorHandler');
 
 // Rutas
 const productRoutes = require('./routes/product.routes');
+const categoryRoutes = require('./routes/category.routes');
+const subcategoryRoutes = require('./routes/subcategory.routes');
 const userRoutes = require('./routes/user.routes');
 const authRoutes = require('./routes/auth.routes');
 const imageRoutes = require('./routes/image.routes');
@@ -22,7 +24,6 @@ const receiptRoutes = require('./routes/receipt.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const auditRoutes = require('./routes/audit.routes');
-
 
 const app = express();
 
@@ -62,6 +63,8 @@ app.get('/api/status', (req, res) => {
 try {
   // Endpoints API
   app.use('/api/products', productRoutes);
+  app.use('/api/categories', categoryRoutes);
+  app.use('/api/subcategories', subcategoryRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/images', imageRoutes);
   app.use('/api/auth', authRoutes);
@@ -79,6 +82,7 @@ try {
   console.trace(e);
   process.exit(1);
 }
+
 // Manejo de rutas no encontradas
 app.use((req, res, next) => {
   res.status(404).json({
