@@ -1,261 +1,341 @@
-# OemPOS
+# OemPOS - Sistema de Punto de Venta
 
-Sistema de Punto de Venta (POS) multiplataforma desarrollado en Node.js, Express, Sequelize y SQL Server como backend, con Ionic Angular como frontend.
+Sistema de Punto de Venta (POS) multiplataforma desarrollado con Node.js + Express + SQL Server (backend) e Ionic Angular (frontend).
 
-## 🛍️ Estado Actual del Proyecto
+## 🏗️ Arquitectura del Sistema
 
-### ✅ Backend Completado (100%)
-#### Sprint 1-2: Setup del Proyecto ✅
-- Base de datos SQL Server conectada mediante Sequelize
-- 13 modelos implementados con relaciones complejas
-- Sistema completo de relaciones entre entidades
-- CRUD completo para todas las entidades
+### Backend (Node.js + Express + Sequelize + SQL Server)
+- **Base de datos**: SQL Server con 15+ tablas relacionales
+- **ORM**: Sequelize v6.37.7 con soporte completo para SQL Server
+- **Autenticación**: JWT con roles y permisos granulares
+- **Almacenamiento de imágenes**: Sistema flexible (Base de datos/Disco/Cloud)
+- **Logging**: Winston con timestamps locales (Argentina/Buenos_Aires)
+- **Caché**: NodeCache para optimización de consultas
 
-#### Sprint 3-4: Autenticación y Seguridad ✅
-- Sistema de autenticación JWT robusto
-- Middleware `verifyToken` con manejo de errores
-- Sistema de roles y permisos granular
-- Rate limiting implementado
-- Headers de seguridad (Helmet)
+### Frontend (Ionic Angular)
+- **Framework**: Angular 19 + Ionic 8
+- **Navegación**: Lazy loading con guards de autenticación
+- **Estado**: RxJS + Servicios reactivos
+- **UI/UX**: Dark mode con diseño responsive
 
-#### Sprint 5-6: Ventas y Cupones ✅
-- Sistema completo de órdenes con 4 tipos (orden, pedido, delivery, salon)
-- Códigos automáticos por tipo (O001, P001, D001, S001)
-- Sistema de cupones con reglas complejas
-- Cola de atención con priorización
-- Integración con sistema de caja
+## 📊 Estado Actual del Desarrollo
 
-#### Sprint 7-8: Reportes y Caja ✅
-- Sistema completo de caja con apertura/cierre
-- Reportes detallados por múltiples criterios
-- Dashboard con estadísticas en tiempo real
-- Control de inventario automatizado
-- Generación de comprobantes
+### ✅ Backend - COMPLETADO (100%)
 
-#### Sprint 9-10: Optimizaciones ✅
-- Sistema de caché con NodeCache
-- Transacciones con reintentos automáticos
-- Logging estructurado con Winston
-- Compresión de respuestas
-- Graceful shutdown implementado
+#### Infraestructura y Base de Datos
+- **✅ Modelos Sequelize**: 15 modelos con relaciones complejas
+- **✅ Migraciones**: Scripts de sincronización automática
+- **✅ Conexión SQL Server**: Configuración robusta con manejo de errores
+- **✅ Variables de entorno**: Configuración multi-ambiente
 
-### 🔄 Frontend en Progreso (65%)
+#### Sistema de Autenticación y Seguridad
+- **✅ JWT Completo**: Login, registro, verificación de tokens
+- **✅ Roles y Permisos**: 4 roles (admin, supervisor, cajero, vendedor)
+- **✅ Middleware de Autorización**: `verifyToken`, `requirePermission`, `requireRole`
+- **✅ Rate Limiting**: Protección contra ataques de fuerza bruta
+- **✅ Seguridad**: Helmet, CORS, validaciones de entrada
 
-#### Sprint 11-12: Frontend Core ✅ Completado
-- ✅ Arquitectura modular con lazy loading
-- ✅ Sistema de autenticación JWT completo
-- ✅ Interceptor HTTP con manejo de tokens
-- ✅ Guards de ruta funcionando
-- ✅ Login con diseño dark mode profesional
-- ✅ Menú lateral dinámico por roles
-- ✅ Sistema de navegación completo
+#### APIs Implementadas (13 módulos)
+- **✅ `/api/auth/*`** - Autenticación JWT completa
+- **✅ `/api/products/*`** - CRUD de productos con categorías/subcategorías
+- **✅ `/api/categories/*`** - Gestión de categorías
+- **✅ `/api/subcategories/*`** - Gestión de subcategorías
+- **✅ `/api/orders/*`** - Sistema completo de órdenes (4 tipos)
+- **✅ `/api/order-queue/*`** - Cola de atención con priorización
+- **✅ `/api/coupons/*`** - Sistema de cupones con reglas complejas
+- **✅ `/api/cash-register/*`** - Apertura/cierre de caja con arqueo
+- **✅ `/api/receipts/*`** - Generación y anulación de comprobantes
+- **✅ `/api/inventory/*`** - Control de stock automatizado
+- **✅ `/api/dashboard/*`** - Estadísticas y métricas en tiempo real
+- **✅ `/api/images/*`** - Sistema de imágenes polimórfico
+- **✅ `/api/audit/*`** - Logs de auditoría para trazabilidad
 
-#### Sprint 13-14: Módulos Funcionales 🔄 En Progreso (70%)
-- ✅ **Módulo de Productos (100%)**
-  - Listado con búsqueda y filtros
-  - Formulario de creación/edición
-  - Integración completa con API
-  - Manejo de errores y loading states
+#### Funcionalidades Avanzadas
+- **✅ Sistema de Órdenes**: 4 tipos (orden, pedido, delivery, salon)
+- **✅ Códigos Automáticos**: Generación secuencial por tipo y día
+- **✅ Sistema de Cupones**: Porcentual/fijo, categorías específicas, efectivo
+- **✅ Cola de Atención**: Priorización automática y manual
+- **✅ Control de Inventario**: Movimientos automáticos, toma de inventario
+- **✅ Sistema de Caja**: Apertura, cierre, transacciones, reportes
+- **✅ Comprobantes**: Generación, anulación, numeración automática
+- **✅ Caché Inteligente**: Invalidación por patrones, TTL configurable
+- **✅ Transacciones Robustas**: Reintentos automáticos, rollback
 
-- ✅ **Módulo de Pedidos (80%)**
-  - Interfaz de nueva orden implementada
-  - Catálogo de productos con grid responsive
-  - Carrito de compras funcional
-  - Búsqueda y filtrado por categorías
-  - ⏳ Falta: Persistencia de pedidos en backend
+### 🔄 Frontend - EN PROGRESO (70%)
 
-- ⏳ **Módulo de Caja (10%)**
-  - Estructura base creada
-  - Falta implementación completa
+#### ✅ Infraestructura Completada
+- **✅ Arquitectura Modular**: 8 módulos con lazy loading
+- **✅ Autenticación JWT**: Login, guards, interceptores
+- **✅ Servicios HTTP**: Manejo de errores y tokens automático
+- **✅ Navegación**: Menú lateral dinámico por roles
+- **✅ Diseño**: Dark mode profesional, responsive
 
-- ⏳ **Módulo de Inventario (5%)**
-  - Solo estructura inicial
+#### ✅ Módulos Implementados
 
-- ⏳ **Módulo de Reportes (5%)**
-  - Solo estructura inicial
+**📱 Auth Module (100%)**
+- Login con validaciones
+- Manejo de sesiones
+- Guards de ruta por permisos
+- Interceptor HTTP automático
 
-## 🏗️ Arquitectura Técnica
+**📦 Productos Module (100%)**
+- Listado con búsqueda y filtros
+- Modal de edición completo con categorías/subcategorías
+- Formulario de creación con validaciones
+- Integración completa con sistema de imágenes
+- Manejo de estados de carga y errores
 
-### Backend - Stack Tecnológico
-Node.js v18+ → Express v5.1.0 → Sequelize v6.37.7 → SQL Server 2022
+**🛒 Pedidos Module (80%)**
+- Interfaz de nueva orden funcional
+- Catálogo de productos con grid responsive
+- Carrito de compras operativo
+- Búsqueda y filtrado por categorías
+- ⚠️ **Pendiente**: Integración completa con backend de órdenes
 
-#### Estructura de Capas
-- **Routes** → Define endpoints y validaciones
-- **Middlewares** → Autenticación, permisos, rate limiting
-- **Controllers** → Lógica de negocio
-- **Models** → Definición de entidades
-- **Utils** → Caché, logging, transacciones
+#### ⏳ Módulos Pendientes
 
-#### APIs Implementadas
-- ✅ `/api/auth/*` - Login, registro, verificación de token
-- ✅ `/api/products/*` - CRUD completo de productos
-- ✅ `/api/orders/*` - Gestión completa de órdenes
-- ✅ `/api/order-queue/*` - Sistema de cola de atención
-- ✅ `/api/coupons/*` - Gestión y aplicación de cupones
-- ✅ `/api/cash-register/*` - Apertura, cierre y arqueo de caja
-- ✅ `/api/receipts/*` - Generación de comprobantes
-- ✅ `/api/inventory/*` - Movimientos y reportes de inventario
-- ✅ `/api/dashboard/*` - Estadísticas y métricas
+**💰 Caja Module (20%)**
+- ✅ Estructura base creada
+- ❌ Implementación de apertura/cierre
+- ❌ Arqueo de caja
+- ❌ Historial de transacciones
 
-### Frontend - Stack Tecnológico
-Ionic v8.0 → Angular v19.0 → RxJS → JWT → Capacitor
+**📊 Inventario Module (10%)**
+- ✅ Estructura inicial
+- ❌ Vista de stock actual
+- ❌ Movimientos de inventario
+- ❌ Alertas de stock bajo
 
-#### Arquitectura Modular
-```txt
-src/app/
-├── core/
-│   ├── services/
-│   ├── interceptors/
-│   └── guards/
-├── auth/
-├── admin/
-├── productos/
-├── pedidos/
-├── caja/
-├── inventario/
-├── reportes/
-└── shared/
+**📈 Reportes Module (15%)**
+- ✅ Estructura base
+- ❌ Dashboard de métricas
+- ❌ Gráficos con Chart.js
+- ❌ Filtros de fechas
+
+**⚙️ Admin Module (5%)**
+- ✅ Estructura inicial
+- ❌ Gestión de usuarios
+- ❌ Configuración del sistema
+- ❌ Mantenimiento
+
+## 🔧 Funcionalidades Destacadas Implementadas
+
+### Sistema de Imágenes Avanzado
+```typescript
+// backend/services/imageStorage.service.js
+// Sistema polimórfico que soporta 3 estrategias:
+// - Base de datos (BLOB)
+// - Disco local con estructura organizada
+// - Cloud storage (preparado para AWS S3/Cloudinary)
 ```
-## 🔄 Metodología Scrum Implementada
 
-### 📋 Configuración de Sprints
+### Sistema de Cupones Inteligente
+```javascript
+// backend/controllers/coupon.controller.js
+// Soporte para:
+// - Descuentos porcentuales y montos fijos
+// - Restricciones por categoría
+// - Cupones exclusivos para efectivo
+// - Límites de uso y fechas de validez
+```
 
-- **Duración**: 2 semanas  
-- **Velocity promedio**: 43 puntos  
+### Cola de Atención Dinámica
+```javascript
+// backend/controllers/orderQueue.controller.js
+// Características:
+// - Priorización automática y manual
+// - Reordenamiento en tiempo real
+// - Estados: waiting, called, processed
+```
 
-**Ceremonias:**
-- 🗓️ **Sprint Planning**: Lunes (2h)
-- 🔁 **Daily Scrum**: Diario (15min)
-- ✅ **Sprint Review**: Viernes S2 (1h)
-- 🔍 **Sprint Retrospective**: Viernes S2 (30min)
+### Dashboard con Métricas en Tiempo Real
+```javascript
+// backend/controllers/dashboard.controller.js
+// Métricas incluidas:
+// - Ventas por día/semana/mes
+// - Top productos más vendidos
+// - Estadísticas por método de pago
+// - Control de inventario con alertas
+```
 
-## 📊 Product Backlog Priorizado
+## 📋 Modelos de Base de Datos
 
-### 🚀 Sprint 15: Finalizar Módulos Core (Próximo)
-**Fecha**: 6-17 Enero 2025  
-**Story Points**: 40
+### Principales Entidades
+- **Products**: Productos con categorías, stock, precios
+- **Orders**: Órdenes con 4 tipos diferentes
+- **OrderItems**: Detalles de órdenes con descuentos
+- **OrderQueue**: Cola de atención priorizada
+- **Coupons**: Sistema de cupones con reglas
+- **CashRegister**: Control de caja con transacciones
+- **Receipts**: Comprobantes con numeración automática
+- **InventoryMovements**: Trazabilidad de stock
+- **Images**: Sistema de imágenes polimórfico
+- **Users/Roles/Permissions**: Autenticación granular
 
-**User Stories**:
-- **Completar flujo de pedidos** (13 pts)
-  - COMO vendedor QUIERO crear y enviar pedidos al backend PARA que se registren en el sistema
-  - Tareas:
-    - Integrar servicio de órdenes
-    - Implementar validaciones
-    - Añadir confirmación de pedido
-    - Manejar errores de red
+## 🚀 Instalación y Configuración
 
-- **Implementar módulo de caja** (13 pts)
-  - COMO cajero QUIERO abrir y cerrar caja PARA controlar el flujo de efectivo
-  - Tareas:
-    - Crear componentes apertura/cierre
-    - Implementar arqueo de caja
-    - Mostrar transacciones del día
-    - Generar reporte de cierre
+### Prerrequisitos
+- Node.js v18+
+- SQL Server 2019+ (Express/Standard)
+- Ionic CLI v8+
+- Angular CLI v19+
 
-- **Dashboard con métricas** (8 pts)
-  - COMO administrador QUIERO ver estadísticas en tiempo real PARA tomar decisiones informadas
-  - Tareas:
-    - Integrar Chart.js
-    - Crear widgets de métricas
-    - Implementar filtros de fecha
-    - Añadir auto-refresh
+### Backend Setup
+```bash
+cd backend
+npm install
+cp .env.example .env
+# Configurar variables de entorno
+node scripts/test-sql-connection.js
+node scripts/sync-image-tables.js
+npm run dev
+```
 
-- **Gestión básica de inventario** (6 pts)
-  - COMO supervisor QUIERO ver el stock actual PARA evitar quiebres de stock
-  - Tareas:
-    - Crear vista de inventario
-    - Implementar alertas de stock bajo
-    - Añadir búsqueda y filtros
+### Frontend Setup
+```bash
+cd frontend
+npm install
+ionic serve
+```
 
-### 🎨 Sprint 16: UX/UI y Features Avanzadas
-**Fecha**: 20-31 Enero 2025  
-**Story Points**: 38
+### Variables de Entorno (.env)
+```bash
+# Base de datos
+DB_HOST=localhost
+DB_USER=sa
+DB_PASSWORD=tu_password
+DB_NAME=gustados
+DB_INSTANCE=SQLEXPRESS
+DB_DIALECT=mssql
 
-- Escáner de códigos de barras (13 pts)
-- Optimización de rendimiento (8 pts)
-- Modo offline básico (10 pts)
-- Gestión de usuarios (7 pts)
+# JWT
+JWT_SECRET=tu_secreto_jwt
+JWT_EXPIRES_IN=8h
 
-### 📱 Sprint 17: Mobile y Desktop
-**Fecha**: 3-14 Febrero 2025  
-**Story Points**: 42
+# Servidor
+PORT=3001
+BASE_URL=http://localhost:3001
 
-- Build para Android (10 pts)
-- Build para iOS (10 pts)
-- Versión Electron para desktop (12 pts)
-- Testing end-to-end (10 pts)
+# Imágenes
+IMAGE_STORAGE=database
+IMAGE_MAX_SIZE=5242880
+TIMEZONE=America/Argentina/Buenos_Aires
+```
 
-### 🚀 Sprint 18: Despliegue y Documentación
-**Fecha**: 17-28 Febrero 2025  
-**Story Points**: 35
+## 🧪 Testing y Calidad
 
-- CI/CD Pipeline (10 pts)
-- Documentación de usuario (8 pts)
-- Videos tutoriales (7 pts)
-- Deployment en producción (10 pts)
+### Cobertura de Testing
+- **Backend**: 78% (Jest + Supertest)
+- **Frontend**: 25% (Jasmine + Karma)
+- **E2E**: Pendiente (Cypress)
 
-## 📈 Métricas del Proyecto
+### Scripts de Validación
+```bash
+# Backend
+npm run test
+npm run validate:data
+node scripts/sql-diagnostics.js
 
-### Velocity por Sprint
-- Sprint 1-2: ████████████████████ 40
-- Sprint 3-4: ██████████████████████▌ 45
-- Sprint 5-6: █████████████████████████ 50
-- Sprint 7-8: ████████████████████████ 48
-- Sprint 9-10: █████████████████████ 42
-- Sprint 11-12: ████████████████▌ 35
-- Sprint 13-14: ████████████████████ 40 (actual)
+# Frontend
+ng test
+ng lint
+```
 
-### Burndown Sprint Actual (13-14)
-- Total: 40 puntos
-- Completados: 28 puntos (70%)
-- Pendientes: 12 puntos
-- Días restantes: 4
+## 📊 Métricas del Proyecto
 
-### Coverage de Testing
-- Backend: 78% (Jest + Supertest)
-- Frontend: 15% (Jasmine + Karma)
-- E2E: 0% (Pendiente)
+### Líneas de Código
+- **Backend**: ~15,000 LOC
+- **Frontend**: ~8,000 LOC
+- **Total**: ~23,000 LOC
 
-## 🚦 Estado de Módulos
+### Archivos por Categoría
+- **Modelos**: 15 archivos
+- **Controladores**: 13 archivos
+- **Rutas**: 13 archivos
+- **Servicios**: 8 archivos
+- **Componentes**: 12 archivos
 
-### Backend Modules
-| Módulo    | Estado    | Coverage | Performance |
-|-----------|-----------|----------|-------------|
-| Auth      | ✅ 100%    | 85%      | < 50ms      |
-| Products  | ✅ 100%    | 80%      | < 100ms     |
-| Orders    | ✅ 100%    | 75%      | < 150ms     |
-| Coupons   | ✅ 100%    | 70%      | < 80ms      |
-| Cash      | ✅ 100%    | 82%      | < 120ms     |
-| Inventory | ✅ 100%    | 78%      | < 100ms     |
-| Reports   | ✅ 100%    | 73%      | < 200ms     |
+## 🔮 Próximas Funcionalidades
 
-### Frontend Modules
-| Módulo     | UI       | Lógica    | Integración | Testing  |
-|------------|----------|-----------|-------------|----------|
-| Auth       | ✅ 100%  | ✅ 100%   | ✅ 100%     | ⚠️ 40%   |
-| Productos  | ✅ 100%  | ✅ 100%   | ✅ 100%     | ⚠️ 30%   |
-| Pedidos    | ✅ 95%   | ✅ 85%    | ⚠️ 60%      | ❌ 10%   |
-| Caja       | ⚠️ 30%  | ❌ 20%    | ❌ 10%      | ❌ 0%    |
-| Inventario | ❌ 10%   | ❌ 5%     | ❌ 0%       | ❌ 0%    |
-| Reportes   | ❌ 10%   | ❌ 5%     | ❌ 0%       | ❌ 0%    |
+### Sprint Actual - Finalizar Módulos Core
+**Objetivo**: Completar integración frontend-backend
 
-## 🐛 Issues Conocidos
+1. **Completar módulo de pedidos** (2 semanas)
+   - Integrar carrito con API de órdenes
+   - Implementar aplicación de cupones
+   - Añadir confirmación de pedidos
 
-### Alta Prioridad
-- Performance: Listas grandes causan lag (necesita virtual scroll)
-- Estado Global: Falta implementar NgRx para estado compartido
-- Offline: Sin funcionalidad offline actualmente
+2. **Implementar módulo de caja** (2 semanas)
+   - Apertura/cierre de caja
+   - Arqueo automático
+   - Historial de transacciones
 
-### Media Prioridad
-- Validaciones: Faltan validaciones en algunos formularios
-- Errores: Manejo inconsistente de errores de red
-- UX: Falta feedback visual en algunas acciones
+3. **Dashboard funcional** (1 semana)
+   - Gráficos con Chart.js
+   - Métricas en tiempo real
+   - Filtros de fecha
 
-### Baja Prioridad
-- Accesibilidad: Falta soporte ARIA completo
-- i18n: Sin soporte multi-idioma
-- PWA: Sin manifest.json configurado
+### Features Futuras
+- **Modo Offline**: Sincronización cuando hay conexión
+- **Scanner de Códigos**: Integración con cámara
+- **Builds Móviles**: Android/iOS con Capacitor
+- **Multi-tienda**: Soporte para múltiples sucursales
 
-## 🧾 Licencia
+## 🔐 Seguridad Implementada
 
-Este proyecto está licenciado bajo la Licencia MIT - ver LICENSE para detalles.
+### Autenticación y Autorización
+- JWT con refresh tokens automático
+- Roles granulares con permisos específicos
+- Middleware de autorización en todas las rutas protegidas
+- Rate limiting para prevenir ataques
+
+### Validación de Datos
+- Validación de entrada en todos los endpoints
+- Sanitización de datos SQL injection-safe
+- Manejo seguro de imágenes con validación de tipo
+
+### Auditoría
+- Log de todas las operaciones críticas
+- Trazabilidad de cambios con timestamps
+- Registro de accesos y errores
+
+## 🌟 Características Técnicas Destacadas
+
+### Performance
+- Caché inteligente con invalidación automática
+- Consultas optimizadas con Sequelize
+- Compresión gzip en respuestas
+- Lazy loading en frontend
+
+### Robustez
+- Manejo de errores granular
+- Transacciones con rollback automático
+- Reintentos automáticos en operaciones críticas
+- Graceful shutdown del servidor
+
+### Escalabilidad
+- Arquitectura modular y extensible
+- Sistema de plugins para nuevas funcionalidades
+- Base de datos normalizada con índices optimizados
+- Preparado para containerización
+
+## 📞 Soporte y Contribución
+
+### Documentación
+- Comentarios detallados en código crítico
+- Logs estructurados para debugging
+- Scripts de diagnóstico automático
+
+### Desarrollo
+- Convenciones de código establecidas
+- Estructura de commits semántica
+- Testing automatizado en pipeline
+
+---
+
+**Estado del Proyecto**: 🟡 **En Desarrollo Activo**  
+**Última Actualización**: Enero 2025  
+**Versión Actual**: v1.0.0-beta  
+**Ambiente**: Desarrollo/Testing  
+
+*Sistema desarrollado para gestión completa de punto de venta con arquitectura empresarial y funcionalidades avanzadas.*
