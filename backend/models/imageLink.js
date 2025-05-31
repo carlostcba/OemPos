@@ -10,7 +10,7 @@ const ImageLink = sequelize.define('ImageLink', {
     primaryKey: true
   },
   image_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.CHAR(36), // ← Cambiar de STRING a CHAR(36) para UUIDs
     allowNull: false,
     references: {
       model: 'images',
@@ -18,15 +18,15 @@ const ImageLink = sequelize.define('ImageLink', {
     }
   },
   owner_type: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.STRING(50), // ← Mantener como STRING pero con límite
     allowNull: false
   },
   owner_id: {
-    type: DataTypes.STRING(50),  // Cambio a STRING para aceptar UUIDs
+    type: DataTypes.CHAR(36), // ← Cambiar a CHAR(36) para UUIDs de productos
     allowNull: false
   },
   tag: {
-    type: DataTypes.STRING(50),
+    type: DataTypes.STRING(50), // ← Con límite
     allowNull: true,
     defaultValue: 'default'
   },

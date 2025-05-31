@@ -59,7 +59,6 @@ exports.create = async (req, res) => {
   }
 };
 
-// ✅ Actualizar producto con validación de existencia
 // ✅ Actualizar producto con validación y auditoría
 exports.update = async (req, res) => {
   try {
@@ -92,9 +91,13 @@ exports.update = async (req, res) => {
       }
     }
 
+    // ❌ QUITAR EL CAMPO product_image_id del update
+    const updateData = { ...req.body };
+    delete updateData.product_image_id; // ← Eliminar este campo
+    updateData.updated_at = new Date();
+
     // Actualizar producto
-    req.body.updated_at = new Date();
-    const [updatedCount] = await Product.update(req.body, { where: { id } });
+    const [updatedCount] = await Product.update(updateData, { where: { id } });
 
     if (updatedCount === 0) {
       return res.status(400).json({ error: 'No se realizaron cambios' });
@@ -102,40 +105,12 @@ exports.update = async (req, res) => {
 
     const actualizado = await Product.findByPk(id);
 
-    // Auditoría de cambios (comentada temporalmente hasta ajustar esquema)
-    /*
-    const changes = {};
-    for (const campo in req.body) {
-      if (anterior[campo] !== undefined && anterior[campo] !== req.body[campo]) {
-        changes[campo] = {
-          before: anterior[campo],
-          after: req.body[campo]
-        };
-      }
-    }
-
-    if (Object.keys(changes).length > 0) {
-      await AuditLog.create({
-        entity_type: 'Product',
-        entity_id: id,
-        action: 'update',
-        // 🔧 TODO: guardar como JSON o usar campo tipo JSON en el modelo
-        changes: JSON.stringify(changes),
-        previous_values: JSON.stringify(anterior),
-        performed_by: userId,
-        source: 'backend'
-      });
-    }
-    */
-
     res.status(200).json(actualizado);
   } catch (error) {
     console.error('❌ Error al actualizar producto:', error);
     res.status(500).json({ error: 'Error al actualizar producto' });
   }
 };
-
-
 
 // ✅ Eliminar producto con validación
 exports.remove = async (req, res) => {

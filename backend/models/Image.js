@@ -5,12 +5,10 @@ const sequelize = require('../config/database');
 
 const Image = sequelize.define('Image', {
   id: {
-    type: DataTypes.UUID,
+    type: DataTypes.CHAR(36), // ← Asegurar que sea CHAR(36)
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true
   },
-  // Eliminamos el campo image de aquí para evitar almacenar datos binarios grandes directamente
-  // El contenido binario estará en la estrategia correcta, no en este modelo
   path: {
     type: DataTypes.STRING(255),
     allowNull: true,
