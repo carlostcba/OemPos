@@ -26,9 +26,23 @@ const verifyToken = async (req, res, next) => {
     // Verificar token
     try {
       const decoded = jwt.verify(token, SECRET);
-      req.user = decoded;
       
-      // Cargar usuario con roles y permisos
+      // ✅ Establecer req.user con los datos del token decodificado
+      req.user = {
+        id: decoded.id,
+        username: decoded.username,
+        roles: decoded.roles || [], // Roles vienen del token como array de strings
+        permissions: decoded.permissions || []
+      };
+      
+      console.log('🔍 Usuario decodificado del token:', {
+        id: req.user.id,
+        username: req.user.username,
+        roles: req.user.roles,
+        permissions: req.user.permissions
+      });
+      
+      // ✅ Cargar usuario con roles y permisos adicionales desde la BD
       const user = await User.findByPk(decoded.id, {
         include: [
           {
@@ -54,18 +68,29 @@ const verifyToken = async (req, res, next) => {
         return res.status(401).json({ error: 'Usuario no encontrado' });
       }
       
-      // Consolidar permisos
+      // ✅ Consolidar roles del token + roles de la BD
+      const rolesFromToken = req.user.roles || [];
+      const directRole = user.role ? [user.role.name] : [];
+      const manyToManyRoles = user.roles?.map(role => role.name) || [];
+      
+      // Combinar todos los roles
+      req.user.roles = [...new Set([...rolesFromToken, ...directRole, ...manyToManyRoles])];
+      
+      // ✅ Consolidar permisos del token + permisos de la BD
+      const permissionsFromToken = req.user.permissions || [];
       const manyToManyPermissions = user.roles?.flatMap(role =>
         role.permissions?.map(perm => perm.name) || []
       ) || [];
       
-      req.user.permissions = [...new Set([...manyToManyPermissions])];
+      // Combinar todos los permisos
+      req.user.permissions = [...new Set([...permissionsFromToken, ...manyToManyPermissions])];
       
-      // Añadir permisos específicos basados en rol
+      // ✅ Añadir permisos específicos basados en rol
       const rolesToPermissions = {
-        'vendedor': ['ver_productos'],
-        'cajero': ['ver_caja', 'ver_ordenes'],
-        'supervisor': ['ver_reportes', 'ver_inventario']
+        'vendedor': ['ver_productos', 'crear_producto', 'modificar_producto'],
+        'cajero': ['ver_caja', 'ver_ordenes', 'procesar_pagos'],
+        'supervisor': ['ver_reportes', 'ver_inventario'],
+        'admin': ['gestionar_usuarios', 'gestionar_sistema']
       };
       
       // Agregar permisos implícitos según el rol
@@ -79,10 +104,11 @@ const verifyToken = async (req, res, next) => {
         }
       });
       
-      logger.info('Usuario autenticado con éxito', { 
-        username: user.username,
+      logger.info('✅ Usuario autenticado con éxito', { 
+        id: req.user.id,
+        username: req.user.username,
         roles: req.user.roles,
-        permissions: req.user.permissions.length
+        permissionsCount: req.user.permissions.length
       });
       
       next();
@@ -106,29 +132,47 @@ const verifyToken = async (req, res, next) => {
 
 // ✅ Middleware para verificar permiso específico o rol
 const requirePermission = (permission) => (req, res, next) => {
+  console.log(`🔐 Verificando permiso: ${permission}`);
+  console.log(`👤 Usuario: ${req.user?.username}`);
+  console.log(`🎭 Roles: ${req.user?.roles?.join(', ')}`);
+  console.log(`🔑 Permisos: ${req.user?.permissions?.join(', ')}`);
+  
   // Si tiene el permiso específico o es admin, permitir acceso
   if (req.user?.permissions?.includes(permission) || req.user?.roles?.includes('admin')) {
+    console.log(`✅ Acceso permitido para permiso: ${permission}`);
     return next();
   }
   
   logger.warn('Acceso denegado por falta de permiso', { 
     username: req.user?.username,
     requiredPermission: permission,
-    userPermissions: req.user?.permissions || []
+    userPermissions: req.user?.permissions || [],
+    userRoles: req.user?.roles || []
   });
-  return res.status(403).json({ error: `Acceso denegado: falta el permiso "${permission}"` });
+  
+  return res.status(403).json({ 
+    error: `Acceso denegado: falta el permiso "${permission}"` 
+  });
 };
 
 // Middleware para verificar rol
 const requireRole = (role) => (req, res, next) => {
+  console.log(`🔐 Verificando rol: ${role}`);
+  console.log(`👤 Usuario: ${req.user?.username}`);
+  console.log(`🎭 Roles del usuario: ${req.user?.roles?.join(', ')}`);
+  
   if (!req.user?.roles?.includes(role)) {
     logger.warn('Acceso denegado por falta de rol', { 
       username: req.user?.username,
       requiredRole: role,
       userRoles: req.user?.roles || []
     });
-    return res.status(403).json({ error: `Acceso denegado: se requiere el rol "${role}"` });
+    return res.status(403).json({ 
+      error: `Acceso denegado: se requiere el rol "${role}"` 
+    });
   }
+  
+  console.log(`✅ Acceso permitido para rol: ${role}`);
   next();
 };
 
