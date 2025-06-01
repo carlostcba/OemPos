@@ -402,6 +402,10 @@ ng lint
 
 ---
 
+### 💡 Documentación de API disponible en la [Wiki](https://github.com/carlostcba/oempos/wiki) del proyecto.
+
+---
+
 ## 📞 Soporte y Contribución
 
 ### Documentación
