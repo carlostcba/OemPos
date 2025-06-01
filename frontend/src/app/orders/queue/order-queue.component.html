@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Cola de Atención</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="refreshQueue()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card class="stats-card">
+    <ion-card-content>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">{{ queueStats.waiting }}</div>
+          <div class="stat-label">Esperando</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{ queueStats.called }}</div>
+          <div class="stat-label">Llamados</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">{{ queueStats.processed }}</div>
+          <div class="stat-label">Procesados</div>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="ion-padding">
+    <ion-button 
+      expand="block" 
+      size="large"
+      color="success"
+      (click)="callNext()"
+      [disabled]="queueStats.waiting === 0"
+    >
+      <ion-icon name="megaphone-outline" slot="start"></ion-icon>
+      Llamar Siguiente
+    </ion-button>
+  </div>
+
+  <ion-card *ngIf="currentEntry" class="current-card">
+    <ion-card-header>
+      <ion-card-title color="success">Cliente Actual</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="current-order">
+        <h2>{{ currentEntry.order?.order_code }}</h2>
+        <h3>{{ currentEntry.order?.customer_name }}</h3>
+        <p>Total: ${{ currentEntry.order?.total_amount | number:'1.2-2' }}</p>
+        <ion-button 
+          color="primary" 
+          (click)="markAsProcessed(currentEntry.id)"
+        >
+          Marcar como Procesado
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Próximos en la Cola</ion-label>
+    </ion-list-header>
+
+    <ion-item *ngFor="let entry of waitingQueue; let i = index">
+      <ion-label>
+        <h2>{{ entry.order?.order_code }} - {{ entry.order?.customer_name }}</h2>
+        <h3>{{ getTypeLabel(entry.order?.type) }}</h3>
+        <p>Total: ${{ entry.order?.total_amount | number:'1.2-2' }}</p>
+      </ion-label>
+
+      <div slot="end" class="position-info">
+        <ion-badge color="primary">#{{ i + 1 }}</ion-badge>
+        <ion-badge 
+          *ngIf="entry.priority > 0" 
+          color="warning" 
+          class="priority-badge"
+        >
+          Prioridad
+        </ion-badge>
+      </div>
+    </ion-item>
+
+    <div class="ion-padding ion-text-center" *ngIf="waitingQueue.length === 0">
+      <ion-icon name="checkmark-circle-outline" size="large" color="success"></ion-icon>
+      <h3>¡Cola vacía!</h3>
+      <p>No hay órdenes esperando atención</p>
+    </div>
+  </ion-list>
+</ion-content>

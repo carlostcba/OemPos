@@ -1,0 +1,404 @@
+<!-- src/app/orders/details/order-details.component.html -->
+
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>
+      <div class="header-title">
+        <ion-icon [name]="orderTypeIcon" class="title-icon"></ion-icon>
+        <span>Detalles de {{ orderTypeText }}</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <!-- Botón Guardar (solo si hay cambios y es editable) -->
+      <ion-button 
+        *ngIf="isEditable && unsavedChanges && !saving"
+        fill="solid"
+        color="success"
+        (click)="handleSaveChanges()"
+        class="save-button"
+      >
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Guardar
+      </ion-button>
+
+      <!-- Botón Agregar Producto (solo si es editable) -->
+      <ion-button 
+        *ngIf="isEditable && !saving"
+        fill="outline"
+        color="light"
+        (click)="openProductSelector()"
+      >
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Agregar
+      </ion-button>
+
+      <!-- Botón Cerrar -->
+      <ion-button fill="clear" color="light" (click)="handleClose()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  
+  <!-- === LOADING STATE === -->
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando detalles de la orden...</p>
+  </div>
+
+  <!-- === ERROR STATE === -->
+  <ion-card *ngIf="error && !loading" color="danger" class="error-card">
+    <ion-card-content>
+      <div class="error-content">
+        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+        <div>
+          <h3>Error</h3>
+          <p>{{ error }}</p>
+          <ion-button 
+            fill="outline" 
+            color="light" 
+            size="small"
+            (click)="fetchOrderDetails()"
+          >
+            Reintentar
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- === MAIN CONTENT === -->
+  <div *ngIf="order && !loading" class="order-details-content">
+    
+    <!-- Información de la Orden -->
+    <ion-card class="order-info-card">
+      <ion-card-header>
+        <div class="order-header">
+          <div class="order-code">
+            <h2>{{ order.order_code }}</h2>
+            <ion-badge [color]="orderStatusColor">{{ orderStatusText }}</ion-badge>
+          </div>
+          <div class="order-meta">
+            <p class="customer-name">{{ order.customer_name }}</p>
+            <p class="order-date">{{ order.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content>
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>Tipo:</span>
+            <span>{{ orderTypeText }}</span>
+          </div>
+          <div class="summary-row" *ngIf="order.delivery_date">
+            <span>Fecha de entrega:</span>
+            <span>{{ order.delivery_date | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="summary-row" *ngIf="order.payment_method">
+            <span>Método de pago:</span>
+            <span>{{ order.payment_method | titlecase }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Lista de Items -->
+    <ion-card class="items-card">
+      <ion-card-header>
+        <ion-card-title>
+          <div class="items-header">
+            <span>Productos ({{ tempItems.length }})</span>
+            <div class="unsaved-indicator" *ngIf="unsavedChanges">
+              <ion-icon name="ellipse" color="warning"></ion-icon>
+              <span>Cambios sin guardar</span>
+            </div>
+          </div>
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Items List -->
+        <div class="items-container" *ngIf="tempItems.length > 0">
+          <div 
+            *ngFor="let item of tempItems; trackBy: trackByItemId" 
+            class="item-row"
+          >
+            <div class="item-info">
+              <h3 class="item-name">{{ item.product_name }}</h3>
+              <p class="item-details">
+                ${{ item.unit_price | number:'1.2-2' }}/{{ item.unit_label }}
+              </p>
+            </div>
+
+            <div class="item-quantity">
+              <!-- Controles de cantidad (solo si es editable) -->
+              <div *ngIf="isEditable && !saving" class="quantity-controls">
+                <ion-button 
+                  fill="clear" 
+                  size="small"
+                  (click)="handleUpdateQuantity(item.id, item.quantity - (item.is_weighable ? 0.1 : 1))"
+                >
+                  <ion-icon name="remove-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+                
+                <span class="quantity-display">{{ formatQuantity(item) }}</span>
+                
+                <ion-button 
+                  fill="clear" 
+                  size="small"
+                  (click)="handleUpdateQuantity(item.id, item.quantity + (item.is_weighable ? 0.1 : 1))"
+                >
+                  <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+
+              <!-- Cantidad solo lectura -->
+              <div *ngIf="!isEditable || saving" class="quantity-readonly">
+                <span>{{ formatQuantity(item) }}</span>
+              </div>
+            </div>
+
+            <div class="item-total">
+              <span class="total-amount">${{ item.subtotal | number:'1.2-2' }}</span>
+              
+              <!-- Botón eliminar -->
+              <ion-button 
+                *ngIf="isEditable && !saving"
+                fill="clear" 
+                color="danger" 
+                size="small"
+                (click)="handleUpdateQuantity(item.id, 0)"
+                class="delete-button"
+              >
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="tempItems.length === 0" class="empty-items">
+          <ion-icon name="basket-outline" class="empty-icon"></ion-icon>
+          <p>No hay productos en esta orden</p>
+          <ion-button 
+            *ngIf="isEditable"
+            fill="outline"
+            (click)="openProductSelector()"
+          >
+            Agregar Producto
+          </ion-button>
+        </div>
+
+        <!-- Total -->
+        <div class="total-section" *ngIf="tempItems.length > 0">
+          <div class="total-line">
+            <span class="total-label">Total:</span>
+            <span class="total-value">${{ totalAmount | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+</ion-content>
+
+<!-- === MODAL: SELECTOR DE PRODUCTOS === -->
+<ion-modal 
+  [isOpen]="showProductSelector" 
+  (ionModalDidDismiss)="closeProductSelector()"
+  class="product-selector-modal"
+>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="secondary">
+        <ion-title>Agregar Producto</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="closeProductSelector()">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content>
+      <!-- Filtros -->
+      <div class="filters-container">
+        <ion-searchbar
+          [(ngModel)]="searchQuery"
+          (ionInput)="onSearchChange($event)"
+          placeholder="Buscar productos..."
+          show-clear-button="focus"
+        ></ion-searchbar>
+
+        <ion-item>
+          <ion-select
+            [(ngModel)]="selectedCategory"
+            (ionSelectionChange)="onCategoryChange($event)"
+            placeholder="Todas las categorías"
+            interface="popover"
+          >
+            <ion-select-option value="">Todas las categorías</ion-select-option>
+            <ion-select-option 
+              *ngFor="let category of categories; trackBy: trackByCategoryId" 
+              [value]="category.id"
+            >
+              {{ category.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+
+      <!-- Grid de Productos -->
+      <div class="products-grid" *ngIf="!loading">
+        <div 
+          *ngFor="let product of paginatedProducts; trackBy: trackByProductId" 
+          class="product-card"
+          (click)="handleProductClick(product)"
+        >
+          <div class="product-image">
+            <ion-icon name="cube-outline" *ngIf="!product.image_url"></ion-icon>
+            <img *ngIf="product.image_url" [src]="product.image_url" [alt]="product.name">
+          </div>
+          
+          <div class="product-info">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-price">${{ product.price | number:'1.2-2' }}/{{ product.unit_label }}</p>
+            <ion-badge 
+              *ngIf="product.is_weighable" 
+              color="primary" 
+              class="weighable-badge"
+            >
+              Por kg
+            </ion-badge>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading productos -->
+      <div *ngIf="loading" class="loading-products">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando productos...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredProducts.length === 0 && !loading" class="empty-products">
+        <ion-icon name="search-outline" class="empty-icon"></ion-icon>
+        <p>No se encontraron productos</p>
+      </div>
+
+      <!-- Paginación -->
+      <div 
+        *ngIf="totalPages > 1" 
+        class="pagination-container"
+      >
+        <ion-button 
+          fill="clear" 
+          [disabled]="currentPage === 1"
+          (click)="previousPage()"
+        >
+          <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        
+        <span class="pagination-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </span>
+        
+        <ion-button 
+          fill="clear" 
+          [disabled]="currentPage === totalPages"
+          (click)="nextPage()"
+        >
+          <ion-icon name="chevron-forward-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- === MODAL: CANTIDAD PARA PRODUCTOS PESABLES === -->
+<ion-modal 
+  [isOpen]="showQuantityModal" 
+  (ionModalDidDismiss)="closeQuantityModal()"
+  class="quantity-modal"
+>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar color="tertiary">
+        <ion-title>{{ selectedProduct?.name }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="closeQuantityModal()">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <div class="quantity-content">
+        <div class="product-info-modal">
+          <h2>{{ selectedProduct?.name }}</h2>
+          <p>${{ selectedProduct?.price | number:'1.2-2' }}/{{ selectedProduct?.unit_label }}</p>
+        </div>
+
+        <div class="quantity-input-container">
+          <ion-button 
+            fill="outline" 
+            size="large"
+            (click)="tempQuantity = (parseFloat(tempQuantity) - 0.1).toFixed(3)"
+            [disabled]="parseFloat(tempQuantity) <= 0.1"
+          >
+            <ion-icon name="remove-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+
+          <ion-input
+            [(ngModel)]="tempQuantity"
+            type="number"
+            step="0.001"
+            min="0"
+            class="quantity-input"
+            placeholder="0.000"
+          ></ion-input>
+
+          <ion-button 
+            fill="outline" 
+            size="large"
+            (click)="tempQuantity = (parseFloat(tempQuantity) + 0.1).toFixed(3)"
+          >
+            <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="quantity-actions">
+          <ion-button 
+            expand="block" 
+            fill="outline"
+            (click)="closeQuantityModal()"
+          >
+            Cancelar
+          </ion-button>
+          
+          <ion-button 
+            expand="block" 
+            color="primary"
+            (click)="handleQuantityConfirm()"
+            [disabled]="!tempQuantity || parseFloat(tempQuantity) <= 0"
+          >
+            Agregar
+          </ion-button>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<!-- === LOADING OVERLAY === -->
+<ion-loading 
+  *ngIf="saving"
+  message="Guardando cambios..."
+  [isOpen]="saving"
+></ion-loading>
