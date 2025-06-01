@@ -319,6 +319,87 @@ ng lint
 - Base de datos normalizada con índices optimizados
 - Preparado para containerización
 
+## 🔁 Modelo de Negocio y Flujo de Trabajo
+
+### 🧩 Modelo de Negocio
+- **Tipo**: Venta minorista presencial
+- **Canal**: Punto de orden (vendedor) + Punto de caja (cajero)
+- **Clientes**: ORDEN (inmediato) / PEDIDO (programado) / DELIVERY (a domicilio) / SALON (consumo en local)
+- **Medios de Pago**: Efectivo, Tarjeta, Transferencia
+- **Valor Agregado**: Descuentos especiales en efectivo, pedidos programables
+- **Sistema**: Transacciones, cupones, comprobantes, estadísticas
+
+---
+
+### 🔄 Flujo de Trabajo Implementado
+
+#### 👤 VENDEDOR (Punto de Orden)
+1. Recibe al cliente
+2. Registra tipo de transacción: ORDEN, PEDIDO, DELIVERY o SALON
+3. Recopila datos según tipo de operación
+4. Agrega productos al pedido
+5. Sistema genera código único automático (Ej: O001, P001)
+6. Registra medio de pago tentativo
+7. Envía transacción a la cola de atención
+
+#### 💵 CAJERO (Punto de Caja)
+1. Abre caja al iniciar turno
+2. Gestiona cola de atención con priorización
+3. Llama al siguiente cliente según prioridad
+4. Confirma o modifica método de pago
+5. Procesa cobro y aplica cupones si corresponde
+6. Registra pagos completos o señas para pedidos
+7. Genera comprobante de venta
+8. Actualiza inventario automáticamente
+9. Cierra caja al finalizar turno
+
+---
+
+## 🔐 Sistema de Roles y Permisos
+
+### Roles Principales
+- **VENDEDOR**: carga pedidos
+- **CAJERO**: procesa pagos
+- **SUPERVISOR**: audita operaciones
+- **ADMINISTRADOR**: gestión completa del sistema
+
+### Permisos Implementados
+
+#### 📦 Transacciones
+- ver_productos
+- crear_producto
+- modificar_producto
+- eliminar_producto
+- ver_ordenes
+- crear_orden
+- modificar_orden
+- eliminar_orden
+- gestionar_cola
+- ver_inventario
+- gestionar_inventario
+
+#### 🧾 Pagos y Cupones
+- procesar_pagos
+- ver_cupones
+- aplicar_cupones
+- gestionar_imagenes
+- ver_comprobantes
+- anular_comprobantes
+
+#### 📊 Reportes y Caja
+- ver_reportes
+- ver_caja
+- abrir_caja
+- cerrar_caja
+- ver_historial_caja
+
+#### ⚙️ Administración
+- ver_usuarios
+- gestionar_usuarios
+- configurar_parametros
+
+---
+
 ## 📞 Soporte y Contribución
 
 ### Documentación
