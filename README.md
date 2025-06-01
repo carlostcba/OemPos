@@ -319,6 +319,8 @@ ng lint
 - Base de datos normalizada con índices optimizados
 - Preparado para containerización
 
+---
+
 ## 🔁 Modelo de Negocio y Flujo de Trabajo
 
 ### 🧩 Modelo de Negocio
