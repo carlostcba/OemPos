@@ -1,7 +1,6 @@
-<!-- frontend/src/app/shared/services/carga-imagenes.modal.html -->
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>{{ titulo }}</ion-title>
+    <ion-title>Cargar Imágenes</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cerrarModal()">
         <ion-icon name="close" slot="icon-only"></ion-icon>
@@ -11,37 +10,112 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="botonera">
-    <button class="btn-upload-gray" (click)="fileInput.click()">
-      <img src="assets/icon-upload-white.png" alt="icon" />
-      Seleccionar archivo
-    </button>
-    <input type="file" #fileInput hidden (change)="cargarImagenes($event)" multiple accept="image/*" />
+  <!-- Instrucciones -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Instrucciones</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ol>
+        <li>Selecciona múltiples imágenes</li>
+        <li>Asocia cada imagen con un {{ campoAsociacion }}</li>
+        <li>Confirma la carga</li>
+      </ol>
+    </ion-card-content>
+  </ion-card>
 
-    <button class="btn-upload-purple" (click)="guardarTodas()" [disabled]="isLoading">
-      <ion-spinner *ngIf="isLoading" name="dots" style="margin-right: 8px;"></ion-spinner>
-      <img *ngIf="!isLoading" src="assets/save-data.png" alt="icon" />
-      {{isLoading ? 'Guardando...' : 'Guardar en la Base'}}
-    </button>
+  <!-- Selector de archivos -->
+  <ion-button expand="block" fill="outline" (click)="triggerFileInput()">
+    <ion-icon name="cloud-upload" slot="start"></ion-icon>
+    Seleccionar Imágenes
+  </ion-button>
+
+  <input 
+    #fileInput 
+    type="file" 
+    multiple 
+    accept="image/*" 
+    (change)="onFilesSelected($event)" 
+    style="display: none;">
+
+  <!-- Preview de archivos seleccionados -->
+  <div *ngIf="selectedFiles.length > 0" class="files-preview">
+    <ion-list>
+      <ion-list-header>
+        <ion-label>Archivos seleccionados ({{ selectedFiles.length }})</ion-label>
+      </ion-list-header>
+
+      <ion-item *ngFor="let file of selectedFiles; let i = index">
+        <ion-thumbnail slot="start">
+          <img [src]="file.preview" [alt]="file.file.name">
+        </ion-thumbnail>
+
+        <ion-label>
+          <h3>{{ file.file.name }}</h3>
+          <p>{{ (file.file.size / 1024).toFixed(2) }} KB</p>
+        </ion-label>
+
+        <ion-select 
+          [(ngModel)]="file.asociadoCon" 
+          placeholder="Seleccionar {{ campoAsociacion }}"
+          slot="end"
+          style="max-width: 200px;">
+          <ion-select-option 
+            *ngFor="let elemento of elementos" 
+            [value]="elemento.id">
+            {{ elemento[campoAsociacion] }}
+          </ion-select-option>
+        </ion-select>
+
+        <ion-button 
+          fill="clear" 
+          color="danger" 
+          (click)="removerArchivo(i)"
+          slot="end">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
   </div>
 
-  <p *ngIf="imagenes.length === 0" class="ion-text-center ion-padding">
-    Selecciona imágenes para subir
-  </p>
+  <!-- Botones de acción -->
+  <div *ngIf="selectedFiles.length > 0" class="action-buttons">
+    <ion-button 
+      expand="block" 
+      color="success" 
+      (click)="procesarCarga()" 
+      [disabled]="uploading || !todasLasImagenesTienenAsociacion()">
+      <ion-icon name="cloud-upload" slot="start"></ion-icon>
+      {{ uploading ? 'Procesando...' : 'Cargar Imágenes' }}
+    </ion-button>
 
-  <div class="contenedor-imagenes">
-    <div *ngFor="let img of imagenes"
-         class="imagen-preview"
-         [ngClass]="{ 'seleccionada': img.seleccionado }"
-         (click)="alternarSeleccion(img)">
-      
-      <button class="btn-eliminar" (click)="eliminarImagen(img); $event.stopPropagation()">×</button>
+    <ion-progress-bar 
+      *ngIf="uploading" 
+      [value]="progreso">
+    </ion-progress-bar>
+  </div>
 
-      <div class="zona-imagen">
-        <img [src]="img.base64" alt="preview" />
-      </div>
+  <!-- Resultados -->
+  <div *ngIf="resultados.length > 0" class="resultados">
+    <ion-list>
+      <ion-list-header>
+        <ion-label>Resultados de Carga</ion-label>
+      </ion-list-header>
 
-      <div class="nombre-archivo">{{ img.nombre }}</div>
-    </div>
+      <ion-item *ngFor="let resultado of resultados">
+        <ion-icon 
+          [name]="resultado.exito ? 'checkmark-circle' : 'close-circle'" 
+          [color]="resultado.exito ? 'success' : 'danger'" 
+          slot="start">
+        </ion-icon>
+
+        <ion-label>
+          <h3>{{ resultado.archivo }}</h3>
+          <p [style.color]="resultado.exito ? 'var(--ion-color-success)' : 'var(--ion-color-danger)'">
+            {{ resultado.mensaje }}
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
   </div>
 </ion-content>

@@ -1,4 +1,3 @@
-<!-- frontend/src/app/productos/lista/productos-lista.component.html -->
 
 <ion-header>
   <ion-toolbar color="primary">
@@ -13,7 +12,7 @@
       <ion-button (click)="abrirCargaImagenesModal()">
         <img src="assets/upload-images.png" style="width: 24px; height: 24px;" />
       </ion-button>
-      <ion-button routerLink="/productos/crear">
+      <ion-button (click)="abrirCrearProductoModal()">
         <ion-icon slot="icon-only" name="add"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -29,7 +28,7 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-list *ngIf="productos.length > 0">
+  <ion-list *ngIf="productos && productos.length > 0">
     <ion-item-sliding *ngFor="let producto of productos">
       <ion-item detail="true" (click)="editarProducto(producto)">
         <ion-label>
@@ -56,17 +55,8 @@
     </ion-item-sliding>
   </ion-list>
 
-  <ion-list *ngIf="isLoading">
-    <ion-item *ngFor="let i of [1, 2, 3, 4, 5]">
-      <ion-label>
-        <h2><ion-skeleton-text animated style="width: 70%"></ion-skeleton-text></h2>
-        <p><ion-skeleton-text animated style="width: 50%"></ion-skeleton-text></p>
-      </ion-label>
-      <ion-skeleton-text slot="end" animated style="width: 20%"></ion-skeleton-text>
-    </ion-item>
-  </ion-list>
-
-  <div *ngIf="productos.length === 0 && !isLoading" class="ion-padding ion-text-center">
+  <!-- Mensaje cuando no hay productos -->
+  <div *ngIf="productos && productos.length === 0 && !isLoading" class="ion-padding ion-text-center">
     <ion-icon name="cube" size="large" color="medium"></ion-icon>
     <p>No hay productos disponibles</p>
     <ion-button (click)="reloadProducts()">Reintentar</ion-button>
@@ -78,3 +68,28 @@
     <ion-button (click)="reloadProducts()">Reintentar</ion-button>
   </div>
 </ion-content>
+
+<!-- ✅ Footer fijo -->
+<ion-footer *ngIf="totalProducts > 0">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button 
+        [disabled]="currentPage === 1" 
+        (click)="cambiarPagina(currentPage - 1)">
+        Anterior
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title class="ion-text-center" size="small">
+      Mostrando {{ desde }}–{{ hasta }} de {{ totalProducts }} productos
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button 
+        [disabled]="currentPage * pageSize >= totalProducts" 
+        (click)="cambiarPagina(currentPage + 1)">
+        Siguiente
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

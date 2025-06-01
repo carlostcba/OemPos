@@ -20,10 +20,12 @@ const productAccessMiddleware = (req, res, next) => {
 };
 
 // Rutas protegidas con logging detallado
+router.get('/search', verifyToken, productController.getByName);  // 👈 Primero rutas específicas si lo colocas debajo no te va a funcionar
 router.get('/', verifyToken, productAccessMiddleware, productController.getAll);
 router.get('/:id', verifyToken, requirePermission('ver_productos'), productController.getById);
 router.post('/', verifyToken, requirePermission('crear_producto'), productController.create);
 router.put('/:id', verifyToken, requirePermission('modificar_producto'), productController.update);
 router.delete('/:id', verifyToken, requirePermission('eliminar_producto'), productController.remove);
+
 
 module.exports = router;

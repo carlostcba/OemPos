@@ -235,6 +235,7 @@ exports.create = async (req, res) => {
   }
 };
 
+
 // ✅ Actualizar producto con validación y auditoría mejorada
 exports.update = async (req, res) => {
   try {
@@ -372,5 +373,46 @@ exports.remove = async (req, res) => {
   } catch (error) {
     console.error('❌ Error al eliminar producto:', error);
     res.status(500).json({ error: 'Error al eliminar producto' });
+  }
+};
+
+// Buscar productos por nombre con paginación y orden alfabético
+exports.getByName = async (req, res) => {
+  try {
+    const search = req.query.search || '';
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 20;
+    const offset = (page - 1) * pageSize;
+
+    if (isNaN(page) || isNaN(pageSize) || page < 1 || pageSize < 1) {
+      return res.status(400).json({ error: 'Parámetros inválidos de paginación' });
+    }
+
+    const condition = search !== ''
+      ? { name: { [Op.like]: `%${search}%` } }
+      : {};
+
+    const { count, rows } = await Product.findAndCountAll({
+      where: condition,
+      offset,
+      limit: pageSize,
+      order: [['name', 'ASC']],
+      include: [
+        { model: Category, as: 'category', attributes: ['id', 'name'], required: false },
+        { model: Subcategory, as: 'subcategory', attributes: ['id', 'name'], required: false },
+        { model: ProductImage, as: 'image', required: false },
+        { model: User, as: 'creator', attributes: ['id', 'username'], required: false }
+      ]
+    });
+
+    return res.json({
+      total: count,
+      page,
+      pageSize,
+      products: rows
+    });
+  } catch (error) {
+    console.error('Error al buscar productos por nombre:', error);
+    return res.status(500).json({ error: 'Error del servidor' });
   }
 };
