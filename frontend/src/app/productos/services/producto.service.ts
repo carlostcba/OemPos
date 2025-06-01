@@ -59,4 +59,16 @@ export class ProductoService {
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  // Función para la búsqueda con paginación
+  search(searchTerm: string, page: number = 1, pageSize: number = 20): Observable<{ products: Producto[], total: number }> {
+    const params = {
+      search: searchTerm,
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+    };
+    return this.http.get<{ products: Producto[], total: number }>(`${this.apiUrl}/search`, { params });
+
+  }
+
 }

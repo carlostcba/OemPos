@@ -1,0 +1,124 @@
+// src/app/orders/modals/order-confirmation.modal.scss
+
+:host {
+    .type-badge {
+      margin-left: 8px;
+      font-size: 0.75rem;
+    }
+  
+    .total-card {
+      .total-breakdown {
+        .total-line {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 0;
+          font-size: 1rem;
+          
+          &:not(:last-child) {
+            border-bottom: 1px solid var(--ion-color-light);
+          }
+          
+          &.final-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--ion-color-success);
+            margin-top: 8px;
+            padding-top: 16px;
+            border-top: 2px solid var(--ion-color-success);
+          }
+          
+          .discount-label {
+            color: var(--ion-color-success);
+            font-weight: 500;
+          }
+          
+          .discount-amount {
+            color: var(--ion-color-success);
+            font-weight: 600;
+          }
+        }
+        
+        .deposit-info {
+          margin-top: 16px;
+          
+          ion-note {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--ion-color-warning-tint);
+            
+            ion-icon {
+              font-size: 1.2rem;
+            }
+          }
+        }
+      }
+    }
+  
+    .special-instructions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      
+      .delivery-note,
+      .salon-note,
+      .preorder-note {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        background: var(--ion-color-light);
+        
+        ion-icon {
+          font-size: 1.5rem;
+        }
+        
+        span {
+          font-weight: 500;
+        }
+      }
+    }
+  
+    .footer-actions {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 12px;
+      padding: 12px;
+      
+      .confirm-btn {
+        font-weight: 600;
+      }
+    }
+  
+    // Responsive design
+    @media (max-width: 768px) {
+      .footer-actions {
+        grid-template-columns: 1fr;
+        
+        ion-button {
+          margin: 4px 0;
+        }
+      }
+    }
+  
+    // Dark theme support
+    @media (prefers-color-scheme: dark) {
+      .special-instructions {
+        .delivery-note,
+        .salon-note,
+        .preorder-note {
+          background: var(--ion-color-dark-tint);
+        }
+      }
+    }
+  
+    // Accessibility improvements
+    ion-button:focus {
+      outline: 2px solid var(--ion-color-primary);
+      outline-offset: 2px;
+    }
+  }

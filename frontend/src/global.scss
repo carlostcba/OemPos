@@ -174,28 +174,101 @@ ion-popover {
 }
 
  // Actualizar la configuración del modal
-ion-modal.custom-centered-modal {
-  --width: 750px !important;
-  --height: 900px !important;
-  --max-width: unset !important;
-  --max-height: unset !important;
-  --border-radius: 16px !important;
-  --background: #1a1a1a !important;
-  --box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
-}
+ 
+// 🧱 Base común para todos los modals
+ion-modal[class*="modal-"] {
+  --border-radius: 16px;
+  --background: var(--ion-color-step-50);
+  --box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --color: var(--ion-color-primary-contrast); // Títulos y texto por defecto
 
-// ✅ Quitar el ::part(content) que puede estar causando problemas
-// ion-modal.custom-centered-modal::part(content) {
-//   // Comentar o eliminar este bloque
-// }
-
-// ✅ Agregar estilos de accesibilidad
-ion-modal.custom-centered-modal {
   &[aria-hidden="false"] {
     pointer-events: auto;
   }
-  
+
   &[aria-hidden="true"] {
     pointer-events: none;
+  }
+
+  ion-content {
+    contain: none;
+    height: auto;
+    overflow-y: auto;
+    max-height: 100%;
+    --padding-bottom: 16px;
+    --background: var(--ion-color-step-50);
+  }
+
+  ion-toolbar {
+    --background: transparent;
+    --color: var(--ion-color-primary-contrast);
+  }
+
+  ion-title {
+    color: var(--ion-color-primary-contrast);
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+}
+
+// 🎨 Estilos de tamaño para ion-modal
+// Compatible con Shadow DOM gracias a ::ng-deep
+// =============================
+
+ion-modal.modal-sm::part(content) {
+  width: 320px;
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: 16px;
+  background: var(--ion-color-step-100);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  color: var(--ion-color-primary-contrast);
+}
+
+ion-modal.modal-md::part(content) {
+  width: 600px;
+  max-width: 95vw;
+  max-height: 95vh;
+  border-radius: 16px;
+  background: var(--ion-color-step-100);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  color: var(--ion-color-primary-contrast);
+}
+
+ion-modal.modal-lg::part(content) {
+  width: 900px;
+  max-width: 95vw;
+  max-height: 95vh;
+  border-radius: 16px;
+  background: var(--ion-color-step-100);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  color: var(--ion-color-primary-contrast);
+}
+
+ion-modal.modal-xl::part(content) {
+  width: 1200px;
+  max-width: 95vw;
+  max-height: 100vh;
+  border-radius: 16px;
+  background: var(--ion-color-step-100);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  color: var(--ion-color-primary-contrast);
+}
+
+::ng-deep ion-modal.modal-xl .modal-wrapper {
+  width: 1200px !important;
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+  border-radius: 16px !important;
+  background: var(--ion-color-step-100) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6) !important;
+  color: var(--ion-color-primary-contrast);
+}
+
+// 📱 Estilos responsivos para móviles
+@media (max-width: 768px) {
+  ::ng-deep ion-modal[class*="modal-"] .modal-wrapper {
+    width: 95vw !important;
+    max-height: 95vh !important;
   }
 }

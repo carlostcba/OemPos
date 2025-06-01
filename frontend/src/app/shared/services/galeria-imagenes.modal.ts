@@ -1,168 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // ← Agregar
+import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController, AlertController, LoadingController } from '@ionic/angular';
 import { ImagenService, ImagenProducto } from './imagen.service';
 
 @Component({
   selector: 'app-galeria-imagenes',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule], // ← Agregar FormsModule
-  template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-title>{{ selectedProductForImage ? 'Seleccionar imagen para: ' + selectedProductForImage : 'Galería de Imágenes' }}</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="cerrarModal()">
-            <ion-icon name="close" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <ion-content class="ion-padding">
-      <!-- Subir nueva imagen -->
-      <div class="upload-section">
-        <ion-item>
-          <ion-label position="stacked">Título de la imagen</ion-label>
-          <ion-input [(ngModel)]="imageTitle" placeholder="Título de la imagen"></ion-input>
-        </ion-item>
-        
-        <div class="upload-controls">
-          <ion-button fill="outline" (click)="triggerFileInput()">
-            <ion-icon name="cloud-upload" slot="start"></ion-icon>
-            {{ selectedFile ? 'Cambiar archivo' : 'Seleccionar archivo' }}
-          </ion-button>
-          
-          <ion-button 
-            color="success" 
-            (click)="subirImagen()" 
-            [disabled]="!selectedFile || !imageTitle || uploading">
-            <ion-icon name="save" slot="start"></ion-icon>
-            {{ uploading ? 'Subiendo...' : 'Subir Imagen' }}
-          </ion-button>
-        </div>
-        
-        <input 
-          #fileInput 
-          type="file" 
-          accept="image/*" 
-          (change)="onFileSelected($event)" 
-          style="display: none;">
-          
-        <ion-note *ngIf="selectedFile" color="medium">
-          Archivo seleccionado: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(2) }} KB)
-        </ion-note>
-      </div>
-
-      <!-- Buscador -->
-      <ion-searchbar 
-        [(ngModel)]="searchQuery" 
-        (ionInput)="filtrarImagenes()" 
-        placeholder="Buscar imágenes...">
-      </ion-searchbar>
-
-      <!-- Loading -->
-      <div *ngIf="loadingGallery" class="loading-container">
-        <ion-spinner></ion-spinner>
-        <ion-label>Cargando imágenes...</ion-label>
-      </div>
-
-      <!-- Grid de imágenes -->
-      <div *ngIf="!loadingGallery" class="images-grid">
-        <div 
-          *ngFor="let image of filteredImages" 
-          class="image-card"
-          (click)="seleccionarImagen(image)">
-          <img [src]="image.url" [alt]="image.title" />
-          <div class="image-overlay">
-            <ion-label>{{ image.title }}</ion-label>
-          </div>
-          <div *ngIf="updatingImage" class="loading-overlay">
-            <ion-spinner></ion-spinner>
-          </div>
-        </div>
-      </div>
-
-      <!-- Mensaje cuando no hay imágenes -->
-      <div *ngIf="!loadingGallery && filteredImages.length === 0" class="empty-state">
-        <ion-icon name="images" size="large" color="medium"></ion-icon>
-        <ion-label color="medium">No se encontraron imágenes. ¡Sube la primera!</ion-label>
-      </div>
-    </ion-content>
-  `,
-  styles: [`
-    .upload-section {
-      background: var(--ion-color-light);
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-
-    .upload-controls {
-      display: flex;
-      gap: 8px;
-      margin-top: 16px;
-      flex-wrap: wrap;
-    }
-
-    .images-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 16px;
-      padding: 16px 0;
-    }
-
-    .image-card {
-      position: relative;
-      aspect-ratio: 1;
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .image-card:hover {
-      transform: scale(1.05);
-    }
-
-    .image-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .image-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(transparent, rgba(0,0,0,0.7));
-      padding: 8px;
-      color: white;
-      font-size: 12px;
-    }
-
-    .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255,255,255,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .loading-container, .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 32px;
-      gap: 16px;
-    }
-  `]
+  imports: [CommonModule, IonicModule, FormsModule],
+  templateUrl: './galeria-imagenes.modal.html',
+  styleUrls: ['./galeria-imagenes.modal.scss']
 })
 export class GaleriaImagenesModal implements OnInit {
   @Input() owner_type: string = '';
@@ -177,6 +24,7 @@ export class GaleriaImagenesModal implements OnInit {
   uploading: boolean = false;
   imageTitle: string = '';
   selectedFile: File | null = null;
+  previewUrl: string | null = null;
 
   constructor(
     private modalCtrl: ModalController,
@@ -207,7 +55,7 @@ export class GaleriaImagenesModal implements OnInit {
     if (!this.searchQuery.trim()) {
       this.filteredImages = [...this.imagenes];
     } else {
-      this.filteredImages = this.imagenes.filter(img => 
+      this.filteredImages = this.imagenes.filter(img =>
         img.title.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
@@ -218,10 +66,12 @@ export class GaleriaImagenesModal implements OnInit {
     fileInput?.click();
   }
 
-  onFileSelected(event: any) {
+  async onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.selectedFile = file;
+      const transformado = await this.imagenService.transformarImagenAlSubir(file);
+      this.selectedFile = transformado.file;
+      this.previewUrl = transformado.preview;
     }
   }
 
@@ -234,14 +84,15 @@ export class GaleriaImagenesModal implements OnInit {
     this.uploading = true;
     try {
       await this.imagenService.subirImagenes(
-        [this.selectedFile], 
-        this.owner_type, 
+        [this.selectedFile],
+        this.owner_type,
         this.owner_id
       ).toPromise();
-      
+
       this.mostrarAlerta('Éxito', 'Imagen subida correctamente');
       this.imageTitle = '';
       this.selectedFile = null;
+      this.previewUrl = null;
       await this.cargarImagenes();
     } catch (error) {
       console.error('Error al subir imagen:', error);
@@ -260,7 +111,7 @@ export class GaleriaImagenesModal implements OnInit {
           this.owner_id,
           imagen.id
         ).toPromise();
-        
+
         this.modalCtrl.dismiss({
           url: imagen.url,
           id: imagen.id,

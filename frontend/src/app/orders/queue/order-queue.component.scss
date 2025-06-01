@@ -1,0 +1,56 @@
+.stats-card {
+  margin: 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  text-align: center;
+}
+
+.stat-item {
+  .stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--ion-color-primary);
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.current-card {
+  margin: 16px;
+  border-left: 4px solid var(--ion-color-success);
+}
+
+.current-order {
+  h2 {
+    margin: 0 0 8px 0;
+    color: var(--ion-color-success);
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    font-weight: bold;
+  }
+}
+
+.position-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.priority-badge {
+  font-size: 0.7rem;
+}
