@@ -1,0 +1,30 @@
+ion-card-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+ion-card-content {
+  font-size: 0.95rem;
+}
+
+ion-toolbar ion-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+ion-footer {
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    color: white;
+    ion-title {
+      font-size: 1rem;
+    }
+    ion-button {
+      font-size: 0.85rem;
+    }
+  }
+}
+
+ion-searchbar, ion-select {
+  margin-bottom: 12px;
+}

@@ -1,0 +1,147 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/orders"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nueva Orden</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form [formGroup]="customerForm">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Datos del Cliente</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input formControlName="customer_name" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Teléfono</ion-label>
+          <ion-input formControlName="customer_phone" type="tel"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="floating">Email</ion-label>
+          <ion-input formControlName="customer_email" type="email"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </form>
+
+  <form [formGroup]="orderForm">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Configuración</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Tipo de Orden</ion-label>
+          <ion-select formControlName="type">
+            <ion-select-option *ngFor="let t of orderTypes" [value]="t.key">{{ t.label }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Método de Pago</ion-label>
+          <ion-segment formControlName="payment_method">
+            <ion-segment-button *ngFor="let m of paymentMethods" [value]="m.key">
+              <ion-icon [name]="m.icon"></ion-icon>
+              {{ m.label }}
+            </ion-segment-button>
+          </ion-segment>
+        </ion-item>
+
+        <ion-item *ngIf="orderForm.get('delivery_address')?.enabled">
+          <ion-label position="floating">Dirección</ion-label>
+          <ion-input formControlName="delivery_address"></ion-input>
+        </ion-item>
+
+        <ion-item *ngIf="orderForm.get('delivery_date')?.enabled">
+          <ion-label>Fecha Entrega</ion-label>
+          <ion-datetime formControlName="delivery_date" presentation="date"></ion-datetime>
+        </ion-item>
+
+        <ion-item *ngIf="orderForm.get('table_number')?.enabled">
+          <ion-label position="floating">N° de Mesa</ion-label>
+          <ion-input formControlName="table_number"></ion-input>
+        </ion-item>
+
+        <ion-item *ngIf="orderForm.get('deposit_amount')?.enabled">
+          <ion-label position="floating">Seña</ion-label>
+          <ion-input formControlName="deposit_amount" type="number" min="0"></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </form>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Productos</ion-card-title>
+      <ion-searchbar [(ngModel)]="searchQuery" (ionInput)="onSearchChange($event)"></ion-searchbar>
+      <ion-select [(ngModel)]="selectedCategory" (ionChange)="onCategoryChange($event)">
+        <ion-select-option value="">Todas</ion-select-option>
+        <ion-select-option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</ion-select-option>
+      </ion-select>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6" size-md="4" *ngFor="let p of paginatedProducts; trackBy: trackByProductId">
+            <ion-card (click)="addToCart(p)">
+              <ion-card-header>
+                <ion-card-subtitle>{{ p.category?.name || 'Sin categoría' }}</ion-card-subtitle>
+                <ion-card-title>{{ p.name }}</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <p>${{ p.price | number:'1.2-2' }}</p>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+      <ion-button expand="block" (click)="previousPage()" [disabled]="currentPage === 1">Anterior</ion-button>
+      <ion-button expand="block" (click)="nextPage()" [disabled]="currentPage >= totalPages">Siguiente</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Carrito</ion-card-title>
+    </ion-card-header>
+    <ion-card-content *ngIf="cartItems.length > 0; else emptyCart">
+      <ion-list>
+        <ion-item *ngFor="let item of cartItems; trackBy: trackByCartItem">
+          <ion-label>
+            <h3>{{ item.product_name }}</h3>
+            <p>{{ formatQuantity(item) }} x ${{ item.unit_price | number:'1.2-2' }}</p>
+          </ion-label>
+          <ion-button fill="clear" color="danger" (click)="removeFromCart(item.tempId)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+      <ion-button expand="block" color="medium" (click)="clearCart()">Limpiar Carrito</ion-button>
+    </ion-card-content>
+    <ng-template #emptyCart>
+      <ion-item>
+        <ion-label class="ion-text-center">El carrito está vacío</ion-label>
+      </ion-item>
+    </ng-template>
+  </ion-card>
+
+  <ion-footer>
+    <ion-toolbar>
+      <ion-title>
+        Total: ${{ getFinalTotal() | number:'1.2-2' }}
+        <span *ngIf="appliedCoupon"> (Cupón: -${{ discountAmount }})</span>
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button color="warning" (click)="openCouponModal()">Cupón</ion-button>
+        <ion-button color="danger" (click)="cancelOrder()">Cancelar</ion-button>
+        <ion-button color="success" [disabled]="saving" (click)="createOrder()">Crear</ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
+</ion-content>
