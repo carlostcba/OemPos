@@ -13,7 +13,7 @@ import { map, catchError, tap } from 'rxjs/operators';
 import { AlertController, LoadingController } from '@ionic/angular';
 
 import { OrderService } from '../services/order.service';
-import { AuthService } from '../../auth/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -58,8 +58,8 @@ export class OrderDetailsGuard implements CanActivate {
       });
       await loading.present();
 
-      // Verificar autenticación
-      const isAuthenticated = this.authService.isAuthenticated();
+      // Verificar autenticación utilizando el servicio centralizado
+      const isAuthenticated = await this.authService.checkStoredToken();
       if (!isAuthenticated) {
         await loading.dismiss();
         console.error('❌ Usuario no autenticado');
