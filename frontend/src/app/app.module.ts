@@ -20,7 +20,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     { title: 'Pedidos', url: '/pedidos', icon: 'cart', roles: ['admin', 'vendedor'] },
     { title: 'Caja', url: '/caja', icon: 'cash', roles: ['admin', 'cajero'] },
     { title: 'Productos', url: '/productos', icon: 'cube', roles: ['admin'] },
-    { title: 'Inventario', url: '/inventario', icon: 'clipboard', roles: ['admin'] },
+    { title: 'Inventario', url: '/inventory', icon: 'clipboard', roles: ['admin'] },
     { title: 'Reportes', url: '/reportes', icon: 'bar-chart', roles: ['admin'] },
     { title: 'Administración', url: '/admin/dashboard', icon: 'settings', roles: ['admin'] }
   ];
