@@ -1,0 +1,159 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Crear Producto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" color="light" (click)="cancelar()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" [scrollY]="true">
+  <form [formGroup]="productoForm" (ngSubmit)="crearProducto()">
+
+    <!-- Imagen + Primer grupo -->
+    <div class="flex-row-top">
+      <div class="image-container">
+        <img
+          [src]="imagenURL"
+          (error)="imagenURL = 'assets/no_image_available.png'"
+          alt="Imagen del producto"
+          class="product-image"
+        />
+        <ion-button
+          class="edit-icon-button"
+          fill="clear"
+          (click)="abrirGaleriaImagenes()"
+          type="button"
+          tabindex="-1"
+        >
+          <ion-icon name="images" aria-hidden="true"></ion-icon>
+        </ion-button>
+      </div>
+    
+
+      <div class="first-form-group">
+        <ion-list>
+          <!-- Nombre -->
+          <ion-item>
+            <ion-label position="stacked">Nombre <ion-text color="danger">*</ion-text></ion-label>
+            <ion-input formControlName="name" type="text"></ion-input>
+          </ion-item>
+          <ion-note slot="error" color="danger" *ngIf="productoForm.get('name')?.hasError('required') && productoForm.get('name')?.touched">
+            Este campo es requerido
+          </ion-note>
+
+          <!-- Código PLU y Precio -->
+          <div style="display: flex; gap: 16px;">
+            <ion-item style="flex: 1;">
+              <ion-label position="stacked">Código PLU</ion-label>
+              <ion-input formControlName="plu_code" type="text" maxlength="4"></ion-input>
+            </ion-item>
+            <ion-item style="flex: 1;">
+              <ion-label position="stacked">Precio <ion-text color="danger">*</ion-text></ion-label>
+              <ion-input formControlName="price" type="number" min="0.01" step="0.01"></ion-input>
+            </ion-item>
+          </div>
+
+          <!-- Categoría y Subcategoría -->
+          <div style="display: flex; gap: 16px;">
+            <ion-item style="flex: 1;">
+              <ion-label position="stacked">Categoría</ion-label>
+              <ion-select formControlName="category_id" placeholder="Seleccionar categoría" interface="popover">
+                <ion-select-option value="">Sin categoría</ion-select-option>
+                <ion-select-option *ngFor="let categoria of categorias" [value]="categoria.id">
+                  {{ categoria.name }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item style="flex: 1;" [class.disabled]="!productoForm.get('category_id')?.value">
+              <ion-label position="stacked">Subcategoría</ion-label>
+              <ion-select formControlName="subcategory_id" [disabled]="!productoForm.get('category_id')?.value" interface="popover">
+                <ion-select-option value="">Sin subcategoría</ion-select-option>
+                <ion-select-option *ngFor="let subcategoria of subcategoriasDisponibles" [value]="subcategoria.id">
+                  {{ subcategoria.name }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+          <ion-item *ngIf="cargandoCategorias">
+            <ion-label>
+              <ion-spinner name="dots"></ion-spinner>
+              Cargando categorías...
+            </ion-label>
+          </ion-item>
+    
+          <div style="display: flex; gap: 16px;">
+            <ion-item class="toggle-derecha" style="flex: 1;">
+              <ion-label>Seguimiento de stock</ion-label>
+              <ion-toggle formControlName="track_stock"></ion-toggle>
+            </ion-item>
+            <ion-item *ngIf="productoForm.get('track_stock')?.value" style="flex: 1;">
+              <ion-label position="stacked">Stock inicial</ion-label>
+              <ion-input formControlName="stock" type="number" min="0"></ion-input>
+            </ion-item>
+          </div>
+          
+          <!-- Igual para "Es pesable" -->
+          <div style="display: flex; gap: 16px;">
+            <ion-item class="toggle-derecha" style="flex: 1;">
+              <ion-label>Es pesable</ion-label>
+              <ion-toggle formControlName="is_weighable"></ion-toggle>
+            </ion-item>
+            <ion-item *ngIf="productoForm.get('is_weighable')?.value" style="flex: 1;">
+              <ion-label position="stacked">Unidad de medida</ion-label>
+              <ion-select formControlName="unit_label" interface="popover">
+                <ion-select-option value="unidad">Unidad</ion-select-option>
+                <ion-select-option value="kg">Kilogramo</ion-select-option>
+                <ion-select-option value="g">Gramo</ion-select-option>
+                <ion-select-option value="l">Litro</ion-select-option>
+                <ion-select-option value="ml">Mililitro</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+
+        </ion-list>
+      </div>
+    </div>
+
+    <!-- Segundo grupo -->
+    <ion-list class="second-form-group">
+
+                <!-- Descripción -->
+                <ion-item>
+                  <ion-label position="stacked">Descripción</ion-label>
+                  <ion-textarea formControlName="description" rows="3"></ion-textarea>
+                </ion-item>
+
+      <div style="display: flex;">
+        <ion-item class="toggle-derecha" style="flex: 1;">
+          <ion-label>Activo</ion-label>
+          <ion-toggle formControlName="is_active"></ion-toggle>
+        </ion-item>
+      </div>
+    </ion-list>
+
+  <!-- Botones -->
+  <ion-buttons class="button-bar ion-padding-top" style="display: flex; gap: 16px; flex-direction: row;">
+    <ion-button expand="false" type="submit" [disabled]="productoForm.invalid || loading || !currentUser">
+      <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+      {{ loading ? 'Creando...' : 'Crear Producto' }}
+    </ion-button>
+    <ion-button expand="false" fill="outline" color="medium" (click)="cancelar()" [disabled]="loading">
+      Cancelar
+    </ion-button>
+  </ion-buttons>
+
+
+    <ion-card class="ion-margin-top" *ngIf="debugInfo">
+      <ion-card-header>
+        <ion-card-title>Debug Info</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <pre>{{ debugInfo | json }}</pre>
+      </ion-card-content>
+    </ion-card>
+  </form>
+</ion-content>

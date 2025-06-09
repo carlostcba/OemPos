@@ -18,6 +18,10 @@ export interface Producto {
   category_id?: string;
   subcategory_id?: string;
   product_image_id?: string;
+  image_url?: string;
+  // ✅ Agregar relaciones para mostrar nombres
+  category?: { id: string; name: string };
+  subcategory?: { id: string; name: string };
 }
 
 @Injectable({
@@ -48,7 +52,23 @@ export class ProductoService {
     return this.update(producto.id, producto);
   }
 
+  obtenerImagenProducto(productId: string): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/images?owner_type=products&owner_id=${productId}`);
+  }
+
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  // Función para la búsqueda con paginación
+  search(searchTerm: string, page: number = 1, pageSize: number = 20): Observable<{ products: Producto[], total: number }> {
+    const params = {
+      search: searchTerm,
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+    };
+    return this.http.get<{ products: Producto[], total: number }>(`${this.apiUrl}/search`, { params });
+
+  }
+
 }

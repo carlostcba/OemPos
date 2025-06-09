@@ -1,0 +1,292 @@
+<!-- src/app/orders/modals/order-summary.modal.html -->
+
+<ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>
+        <div class="header-content">
+          <ion-icon [name]="getOrderTypeIcon()" class="header-icon"></ion-icon>
+          <span>{{ modalTitle }}</span>
+        </div>
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="showOrderDetails()">
+          <ion-icon name="information-circle-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="dismiss()">
+          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content>
+    
+    <!-- Error Display -->
+    <ion-card *ngIf="error" color="danger" class="error-card">
+      <ion-card-content>
+        <div class="error-content">
+          <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+          <div>
+            <h3>Error</h3>
+            <p>{{ error }}</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  
+    <!-- Order Header -->
+    <ion-card class="order-header-card">
+      <ion-card-content>
+        <div class="order-header">
+          <div class="order-code-section">
+            <h1 class="order-code">{{ order.order_code }}</h1>
+            <ion-badge [color]="getStatusColor()" class="status-badge">
+              {{ getStatusText() }}
+            </ion-badge>
+          </div>
+          
+          <div class="order-meta">
+            <div class="customer-info">
+              <h2 class="customer-name">{{ order.customer_name }}</h2>
+              <p class="order-date">{{ order.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            
+            <div class="order-type-info">
+              <ion-chip [color]="order.type === 'pedido' ? 'success' : 'primary'" outline>
+                <ion-icon [name]="getOrderTypeIcon()"></ion-icon>
+                <ion-label>{{ order.type | titlecase }}</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Delivery Info -->
+        <div *ngIf="order.delivery_date || order.delivery_address" class="delivery-info">
+          <div *ngIf="order.delivery_date" class="delivery-date">
+            <ion-icon name="calendar-outline" color="primary"></ion-icon>
+            <span>{{ order.delivery_date | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div *ngIf="order.delivery_address" class="delivery-address">
+            <ion-icon name="location-outline" color="primary"></ion-icon>
+            <span>{{ order.delivery_address }}</span>
+          </div>
+        </div>
+  
+        <!-- Table Number -->
+        <div *ngIf="order.table_number" class="table-info">
+          <ion-icon name="restaurant-outline" color="secondary"></ion-icon>
+          <span>Mesa {{ order.table_number }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  
+    <!-- Order Items -->
+    <ion-card class="items-card">
+      <ion-card-header>
+        <ion-card-title class="items-title">
+          <ion-icon name="list-outline"></ion-icon>
+          Productos ({{ order.items.length }})
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="items-list">
+          <div 
+            *ngFor="let item of order.items; trackBy: trackByItemId" 
+            class="item-row"
+          >
+            <div class="item-info">
+              <h3 class="item-name">{{ item.product_name }}</h3>
+              <div class="item-details">
+                <span class="item-price">${{ item.unit_price | number:'1.2-2' }}/{{ item.unit_label }}</span>
+                <span class="item-quantity">x {{ formatItemQuantity(item) }}</span>
+              </div>
+            </div>
+            
+            <div class="item-total">
+              <span class="total-amount">${{ item.subtotal | number:'1.2-2' }}</span>
+              <div *ngIf="item.discount_applied && item.discount_applied > 0" class="item-discount">
+                <ion-icon name="pricetag-outline" color="success"></ion-icon>
+                <span>-${{ item.discount_applied | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  
+    <!-- Order Totals -->
+    <ion-card class="totals-card">
+      <ion-card-header>
+        <ion-card-title class="totals-title">
+          <ion-icon name="calculator-outline"></ion-icon>
+          Resumen de Pago
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="totals-section">
+          
+          <!-- Subtotal -->
+          <div class="total-line">
+            <span>Subtotal:</span>
+            <span class="amount">${{ getSubtotal() | number:'1.2-2' }}</span>
+          </div>
+  
+          <!-- Descuentos -->
+          <div *ngIf="getTotalDiscount() > 0" class="total-line discount-line">
+            <div class="discount-info">
+              <span>Descuentos:</span>
+              <div class="discount-details">
+                <span *ngIf="order.discount_percentage > 0" class="discount-item">
+                  {{ order.discount_percentage }}% OFF
+                </span>
+                <span *ngIf="order.coupon_code" class="discount-item coupon-code">
+                  Cupón: {{ order.coupon_code }}
+                </span>
+              </div>
+            </div>
+            <span class="discount-amount">-${{ getTotalDiscount() | number:'1.2-2' }}</span>
+          </div>
+  
+          <!-- Total Final -->
+          <div class="total-line final-total">
+            <span class="total-label">Total:</span>
+            <span class="final-amount">${{ getFinalTotal() | number:'1.2-2' }}</span>
+          </div>
+  
+          <!-- Payment Method -->
+          <div *ngIf="order.payment_method" class="payment-method">
+            <ion-chip color="secondary" outline>
+              <ion-icon 
+                [name]="order.payment_method === 'cash' ? 'cash-outline' : 
+                        order.payment_method === 'credit' ? 'card-outline' : 
+                        'swap-horizontal-outline'"
+              ></ion-icon>
+              <ion-label>
+                {{ order.payment_method === 'cash' ? 'Efectivo' : 
+                   order.payment_method === 'credit' ? 'Tarjeta' : 
+                   'Transferencia' }}
+              </ion-label>
+            </ion-chip>
+          </div>
+  
+          <!-- Pre-order Payment Info -->
+          <div *ngIf="order.type === 'pedido' && order.deposit_amount > 0" class="preorder-payment">
+            <div class="payment-breakdown">
+              <div class="payment-line">
+                <span>Seña pagada:</span>
+                <span class="paid-amount">${{ order.deposit_amount | number:'1.2-2' }}</span>
+              </div>
+              <div class="payment-line remaining">
+                <span>Saldo restante:</span>
+                <span class="remaining-amount">${{ (getFinalTotal() - order.deposit_amount) | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          </div>
+  
+        </div>
+      </ion-card-content>
+    </ion-card>
+  
+    <!-- Queue Information -->
+    <ion-card *ngIf="includeQueue" class="queue-info-card">
+      <ion-card-header>
+        <ion-card-title class="queue-title">
+          <ion-icon name="people-outline"></ion-icon>
+          Cola de Atención
+        </ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="queue-info">
+          <p class="queue-description">
+            Al confirmar, esta orden será agregada a la cola de atención para su procesamiento.
+          </p>
+          <div class="queue-stats">
+            <div class="stat-item">
+              <ion-icon name="time-outline" color="primary"></ion-icon>
+              <span>Tiempo estimado: 5-10 min</span>
+            </div>
+            <div class="stat-item">
+              <ion-icon name="trophy-outline" color="warning"></ion-icon>
+              <span>Prioridad: {{ order.type === 'salon' ? 'Alta' : order.type === 'orden' ? 'Media' : 'Normal' }}</span>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  
+  </ion-content>
+  
+  <!-- Action Footer -->
+  <ion-footer *ngIf="showActions">
+    <ion-toolbar class="actions-toolbar">
+      <div class="action-buttons">
+        
+        <!-- Cancel Button -->
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          color="medium"
+          (click)="dismiss()"
+          [disabled]="processing"
+          class="action-button cancel-button"
+        >
+          <ion-icon name="close-outline" slot="start"></ion-icon>
+          Cerrar
+        </ion-button>
+  
+        <!-- Confirm Button -->
+        <ion-button 
+          *ngIf="canConfirmOrder() && !includeQueue"
+          expand="block" 
+          color="success"
+          (click)="confirmOrder()"
+          [disabled]="processing"
+          class="action-button confirm-button"
+        >
+          <ion-spinner *ngIf="processing" name="crescent" size="small" slot="start"></ion-spinner>
+          <ion-icon *ngIf="!processing" name="checkmark-circle-outline" slot="start"></ion-icon>
+          {{ processing ? 'Confirmando...' : 'Confirmar Orden' }}
+        </ion-button>
+  
+        <!-- Add to Queue Button -->
+        <ion-button 
+          *ngIf="canAddToQueue() && includeQueue && !canConfirmOrder()"
+          expand="block" 
+          color="primary"
+          (click)="addToQueue()"
+          [disabled]="processing"
+          class="action-button queue-button"
+        >
+          <ion-spinner *ngIf="processing" name="crescent" size="small" slot="start"></ion-spinner>
+          <ion-icon *ngIf="!processing" name="people-outline" slot="start"></ion-icon>
+          {{ processing ? 'Agregando...' : 'Agregar a Cola' }}
+        </ion-button>
+  
+        <!-- Confirm and Queue Button -->
+        <ion-button 
+          *ngIf="canConfirmOrder() && includeQueue"
+          expand="block" 
+          color="success"
+          (click)="confirmAndQueue()"
+          [disabled]="processing"
+          class="action-button confirm-queue-button"
+        >
+          <ion-spinner *ngIf="processing" name="crescent" size="small" slot="start"></ion-spinner>
+          <ion-icon *ngIf="!processing" name="checkmark-done-outline" slot="start"></ion-icon>
+          {{ processing ? 'Procesando...' : 'Confirmar y Agregar a Cola' }}
+        </ion-button>
+  
+      </div>
+    </ion-toolbar>
+  </ion-footer>
+  
+  <!-- Loading Overlay -->
+  <ion-loading 
+    *ngIf="processing"
+    [isOpen]="processing"
+    message="Procesando orden..."
+    spinner="crescent"
+  ></ion-loading>

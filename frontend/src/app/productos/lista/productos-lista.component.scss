@@ -1,17 +1,58 @@
-// frontend/src/app/productos/lista/productos-lista.component.scss
+ion-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  --padding-bottom: 0;
+  overflow: hidden;
+}
 
-// Estilos específicos para el componente de listado de productos
+ion-list {
+  flex: 1; // ocupa todo el espacio disponible
+  display: flex;
+  flex-direction: column;
+}
+
+ion-item-sliding {
+  flex: 1; // cada ítem ocupa 1/10 del espacio
+  max-height: 10%;
+  min-height: 0;
+  --min-height: unset;
+}
+
+ion-item {
+  height: 100%;
+  align-items: center;
+}
+
 ion-item h2 {
-    font-weight: 500;
+  font-weight: 500;
+}
+
+ion-item ion-note {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.ion-text-center ion-icon {
+  font-size: 64px;
+  margin: 20px 0 10px;
+  opacity: 0.7;
+}
+
+ion-footer {
+  ion-toolbar {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --background: #1a1a1a;
+    color: white;
+
+    ion-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    ion-button {
+      font-size: 0.9rem;
+    }
   }
-  
-  ion-item ion-note {
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-  
-  .ion-text-center ion-icon {
-    font-size: 64px;
-    margin: 20px 0 10px;
-    opacity: 0.7;
-  }
+}

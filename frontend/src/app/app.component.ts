@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { DomUtils } from './core/utils/dom-utils';
 // Importar los iconos necesarios
-import { 
+import {
   homeOutline,
   cartOutline,
   cashOutline,
@@ -32,10 +32,35 @@ import {
   refresh,
   trash,
   create,
-  add
+  add,
+  close,
+  saveOutline,
+  lockOpenOutline,
+  imageOutline,
+  imagesOutline,
+  images,
+  save,
+  cloudUpload,
+  todayOutline,
+  funnelOutline,
+  timeOutline,
+  hourglassOutline,
+  syncCircle,
+  listOutline,
+  gridOutline,
+  chevronDownOutline,
+  checkmarkCircleOutline,
+  arrowDownOutline,
+  alertCircleOutline,
+  chevronDown,
+  flagOutline,
+  calendarOutline,
+  syncCircleOutline
+
 } from 'ionicons/icons';
 // Importar addIcons para registrar los iconos
 import { addIcons } from 'ionicons';
+import { Icon } from 'ionicons/dist/types/components/icon/icon';
 
 @Component({
   selector: 'app-root',
@@ -47,7 +72,8 @@ import { addIcons } from 'ionicons';
 export class AppComponent implements OnInit, AfterViewInit {
   appPages = [
     //{ title: 'Inicio', url: '/dashboard', icon: 'home-outline', roles: ['admin', 'cajero', 'vendedor'] },
-    { title: 'Pedidos', url: '/pedidos', icon: 'cart-outline', roles: ['admin', 'vendedor'] },
+    { title: 'Ordenes', url: '/orders', icon: 'cart-outline', roles: ['admin', 'vendedor'] },
+    { title: 'Pedidos', url: '/pedidos', icon: 'time-outline', roles: ['admin', 'vendedor'] },
     { title: 'Caja', url: '/caja', icon: 'cash-outline', roles: ['admin', 'cajero'] },
     { title: 'Productos', url: '/productos', icon: 'cube-outline', roles: ['admin'] },
     { title: 'Inventario', url: '/inventario', icon: 'clipboard-outline', roles: ['admin'] },
@@ -99,7 +125,30 @@ export class AppComponent implements OnInit, AfterViewInit {
       'refresh': refresh,
       'trash': trash,
       'create': create,
-      'add': add
+      'add': add,
+      'close': close,
+      'save-outline': saveOutline,
+      'lock-open-outline': lockOpenOutline,
+      'image-outline': imageOutline,
+      'images-outline': imagesOutline,
+      'images': images,
+      'save': save,
+      'cloud-upload': cloudUpload,
+      'funnel-outline': funnelOutline,
+      'hourglass-outline': hourglassOutline,
+      'today-outline': todayOutline,
+      'sync-circle': syncCircle,
+      'sync-circle-outline': syncCircleOutline,
+      'list-outline': listOutline,
+      'grid-outline': gridOutline,
+      'chevron-down-outline': chevronDownOutline,
+      'checkmark-circle-outline': checkmarkCircleOutline,
+      'arrow-down-outline': arrowDownOutline,
+      'alert-circle-outline': alertCircleOutline,
+      'chevron-down': chevronDown,
+      'calendar-outline': calendarOutline,
+      'flag-outline': flagOutline,
+      'time-outline': timeOutline
     });
     
     this.initializeApp();

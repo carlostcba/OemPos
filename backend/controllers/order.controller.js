@@ -6,6 +6,11 @@ const logger = require('../utils/logger');
 const cache = require('../utils/cache');
 const { withTransaction } = require('../utils/transaction');
 
+const formatDateForSQL = (isoString) => {
+  const date = new Date(isoString);
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+};
+
 // Obtener todas las órdenes
 exports.getAll = async (req, res) => {
   try {
@@ -15,18 +20,27 @@ exports.getAll = async (req, res) => {
     const where = {};
     
     if (startDate && endDate) {
-      where.created_at = {
-        [Op.between]: [new Date(startDate), new Date(endDate)]
-      };
-    } else if (startDate) {
-      where.created_at = {
-        [Op.gte]: new Date(startDate)
-      };
-    } else if (endDate) {
-      where.created_at = {
-        [Op.lte]: new Date(endDate)
-      };
-    }
+  where.created_at = {
+    [Op.between]: [
+      formatDateForSQL(startDate),
+      formatDateForSQL(endDate)
+    ]
+  };
+} else if (startDate) {
+  where.created_at = {
+    [Op.gte]: formatDateForSQL(startDate)
+  };
+} else if (endDate) {
+  where.created_at = {
+    [Op.lte]: formatDateForSQL(endDate)
+  };
+}
+
+// ✅ Evitar errores si quedó vacío
+if (where.created_at && Object.keys(where.created_at).length === 0) {
+  delete where.created_at;
+}
+
     
     if (status) {
       where.status = status;
@@ -600,18 +614,21 @@ exports.search = async (req, res) => {
     // Fechas
     if (startDate && endDate) {
       whereConditions.created_at = {
-        [Op.between]: [new Date(startDate), new Date(endDate)]
+        [Op.between]: [
+          formatDateForSQL(startDate),
+          formatDateForSQL(endDate)
+        ]
       };
     } else if (startDate) {
       whereConditions.created_at = {
-        [Op.gte]: new Date(startDate)
+        [Op.gte]: formatDateForSQL(startDate)
       };
     } else if (endDate) {
       whereConditions.created_at = {
-        [Op.lte]: new Date(endDate)
+        [Op.lte]: formatDateForSQL(endDate)
       };
     }
-    
+
     // Estado
     if (status) {
       whereConditions.status = status;

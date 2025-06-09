@@ -4,6 +4,7 @@
   "description": "Backend para OemPOS",
   "main": "server.js",
   "dependencies": {
+    "backend": "file:",
     "bcrypt": "^5.1.1",
     "body-parser": "^2.2.0",
     "compression": "^1.7.4",
@@ -14,7 +15,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mssql": "^11.0.1",
-    "multer": "^1.4.5-lts.2",
+    "multer": "^2.0.0",
     "node-cache": "^5.1.2",
     "rate-limiter-flexible": "^2.4.1",
     "sequelize": "^6.37.7",

@@ -144,15 +144,49 @@ exports.getStorageInfo = (req, res) => {
 };
 
 exports.updateImageLink = async (req, res) => {
-  const { owner_type, owner_id, image_id, tag = 'default' } = req.body;
-
-  if (!owner_type || !owner_id || !image_id) {
-    return res.status(400).json({ error: 'Faltan parámetros requeridos (owner_type, owner_id, image_id)' });
-  }
-
   try {
+    const { owner_type, owner_id, image_id, tag = 'default' } = req.body;
+
+    // Validar parámetros requeridos
+    if (!owner_type || !owner_id || !image_id) {
+      logger.error('Faltan parámetros requeridos', { body: req.body });
+      return res.status(400).json({ 
+        error: 'Faltan parámetros requeridos (owner_type, owner_id, image_id)' 
+      });
+    }
+
+    logger.info('Actualizando vínculo de imagen', {
+      owner_type,
+      owner_id,
+      image_id,
+      tag
+    });
+
+    // Verificar que la imagen existe
+    const { Image } = require('../models');
+    const imageExists = await Image.findByPk(image_id);
+    if (!imageExists) {
+      logger.error('Imagen no encontrada', { image_id });
+      return res.status(404).json({ 
+        error: `Imagen con ID ${image_id} no encontrada` 
+      });
+    }
+
+    logger.info('Imagen encontrada', { 
+      imageId: imageExists.id, 
+      filename: imageExists.filename 
+    });
+
     // Eliminar vínculos previos del mismo tipo y entidad
-    await ImageLink.destroy({ where: { owner_type, owner_id } });
+    const { ImageLink } = require('../models');
+    const deletedCount = await ImageLink.destroy({ 
+      where: { 
+        owner_type, 
+        owner_id 
+      } 
+    });
+
+    logger.info(`Vínculos anteriores eliminados: ${deletedCount}`);
 
     // Crear nuevo vínculo
     const newLink = await ImageLink.create({
@@ -162,13 +196,52 @@ exports.updateImageLink = async (req, res) => {
       tag
     });
 
+    logger.info('Nuevo vínculo creado exitosamente', { 
+      linkId: newLink.id,
+      image_id: newLink.image_id,
+      owner_type: newLink.owner_type,
+      owner_id: newLink.owner_id
+    });
+
     res.json({
       success: true,
       message: 'Vínculo actualizado correctamente',
-      link: newLink
+      link: {
+        id: newLink.id,
+        image_id: newLink.image_id,
+        owner_type: newLink.owner_type,
+        owner_id: newLink.owner_id,
+        tag: newLink.tag
+      }
     });
+
   } catch (err) {
-    logger.error('Error al actualizar vínculo de imagen:', err);
-    res.status(500).json({ error: 'No se pudo actualizar el vínculo' });
+    logger.error('Error al actualizar vínculo de imagen:', {
+      error: err.message,
+      stack: err.stack,
+      body: req.body,
+      sqlMessage: err.original?.message,
+      sqlCode: err.original?.code
+    });
+    
+    // Manejar errores específicos
+    if (err.name === 'SequelizeForeignKeyConstraintError') {
+      return res.status(400).json({ 
+        error: 'La imagen especificada no existe en el sistema',
+        details: 'Verifique que el ID de imagen sea correcto'
+      });
+    }
+    
+    if (err.name === 'SequelizeValidationError') {
+      return res.status(400).json({ 
+        error: 'Datos inválidos',
+        details: err.errors.map(e => e.message)
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'No se pudo actualizar el vínculo',
+      details: err.message 
+    });
   }
 };

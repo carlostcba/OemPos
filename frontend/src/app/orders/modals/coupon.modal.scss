@@ -1,0 +1,486 @@
+// src/app/orders/modals/coupon.modal.scss
+
+:host {
+    --coupon-primary: #3880ff;
+    --coupon-secondary: #5260ff;
+    --coupon-success: #2dd36f;
+    --coupon-warning: #ffc409;
+    --coupon-danger: #eb445a;
+    --coupon-radius: 12px;
+    --coupon-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --coupon-transition: all 0.3s ease;
+  }
+  
+  // === HEADER ===
+  ion-header {
+    ion-toolbar {
+      --background: var(--coupon-secondary);
+      --color: white;
+    }
+  }
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  
+    .header-icon {
+      font-size: 1.2rem;
+    }
+  }
+  
+  // === CONTENT ===
+  ion-content {
+    --background: #f8f9fa;
+    padding: 16px;
+  }
+  
+  // === FORM SECTION ===
+  .coupon-form {
+    margin-bottom: 20px;
+  }
+  
+  .form-section {
+    margin-bottom: 16px;
+  
+    .coupon-input-item {
+      --background: white;
+      --border-radius: var(--coupon-radius);
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --inner-padding-end: 8px;
+      box-shadow: var(--coupon-shadow);
+      margin-bottom: 8px;
+  
+      &.item-has-error {
+        --border-color: var(--coupon-danger);
+        --border-width: 2px;
+      }
+  
+      ion-label {
+        font-weight: 600;
+        color: var(--coupon-secondary);
+      }
+  
+      .coupon-code-input {
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+  
+      .validate-button {
+        --color: var(--coupon-success);
+        --padding-start: 8px;
+        --padding-end: 8px;
+        margin-left: 8px;
+  
+        &:hover:not([disabled]) {
+          --background: var(--ion-color-success-tint);
+        }
+      }
+    }
+  
+    .validation-error {
+      padding-left: 16px;
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+  }
+  
+  .payment-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  
+    ion-icon {
+      font-size: 1rem;
+    }
+  }
+  
+  // === VALIDATION SECTION ===
+  .validation-section {
+    margin: 20px 0;
+    animation: slideInUp 0.4s ease-out;
+  }
+  
+  .validation-card {
+    --border-radius: var(--coupon-radius);
+    box-shadow: var(--coupon-shadow);
+    border: none;
+    overflow: hidden;
+  
+    &.valid-coupon {
+      background: linear-gradient(135deg, var(--ion-color-success), var(--ion-color-success-shade));
+      color: white;
+    }
+  
+    &.invalid-coupon {
+      background: linear-gradient(135deg, var(--ion-color-danger), var(--ion-color-danger-shade));
+      color: white;
+    }
+  
+    .validation-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+  
+      .validation-icon {
+        flex-shrink: 0;
+        margin-top: 4px;
+  
+        ion-icon {
+          font-size: 2rem;
+        }
+      }
+  
+      .validation-details {
+        flex: 1;
+  
+        h3 {
+          margin: 0 0 8px 0;
+          font-size: 1.2rem;
+          font-weight: 700;
+        }
+  
+        .discount-description {
+          margin: 0 0 12px 0;
+          font-size: 1rem;
+          opacity: 0.9;
+        }
+  
+        .error-message {
+          margin: 0;
+          opacity: 0.9;
+        }
+  
+        .savings-info {
+          margin-bottom: 12px;
+  
+          .savings-amount {
+            font-size: 1.1rem;
+            font-weight: 600;
+          }
+  
+          .savings-percentage {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 2px;
+          }
+        }
+  
+        .coupon-warnings {
+          margin-top: 12px;
+  
+          ion-chip {
+            --background: rgba(255, 255, 255, 0.2);
+            --color: white;
+            margin: 0 8px 4px 0;
+          }
+        }
+      }
+    }
+  }
+  
+  // === SUGGESTIONS SECTION ===
+  .suggestions-section {
+    margin: 24px 0;
+  
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--coupon-secondary);
+  
+      ion-icon {
+        color: var(--coupon-warning);
+      }
+    }
+  
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+  
+      .suggestion-card {
+        --border-radius: var(--coupon-radius);
+        box-shadow: var(--coupon-shadow);
+        border: 2px solid transparent;
+        transition: var(--coupon-transition);
+        cursor: pointer;
+  
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          border-color: var(--coupon-primary);
+        }
+  
+        .suggestion-content {
+          .coupon-code {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--coupon-primary);
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+          }
+  
+          .coupon-benefit {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--coupon-success);
+            margin-bottom: 8px;
+          }
+  
+          .coupon-description {
+            font-size: 0.9rem;
+            color: var(--ion-color-medium);
+            margin-bottom: 8px;
+            line-height: 1.4;
+          }
+  
+          .coupon-conditions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+  
+            ion-chip {
+              font-size: 0.75rem;
+              height: 24px;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // === ORDER SUMMARY ===
+  .order-summary-card {
+    --border-radius: var(--coupon-radius);
+    box-shadow: var(--coupon-shadow);
+    margin-top: 20px;
+  
+    .summary-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.1rem;
+      color: var(--coupon-secondary);
+  
+      ion-icon {
+        color: var(--coupon-primary);
+      }
+    }
+  
+    .summary-content {
+      .summary-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--ion-color-light);
+  
+        &:last-child {
+          border-bottom: none;
+        }
+  
+        &.discount-line {
+          color: var(--coupon-success);
+          font-weight: 600;
+  
+          .discount-amount {
+            font-size: 1.1rem;
+          }
+        }
+  
+        &.total-line {
+          margin-top: 8px;
+          padding-top: 12px;
+          border-top: 2px solid var(--ion-color-light);
+          font-size: 1.2rem;
+          font-weight: 700;
+  
+          .total-amount {
+            color: var(--coupon-primary);
+            font-size: 1.4rem;
+          }
+        }
+  
+        span:first-child {
+          font-weight: 500;
+        }
+  
+        .amount {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+  
+  // === FOOTER ===
+  ion-footer {
+    .footer-toolbar {
+      --background: white;
+      --border-color: var(--ion-color-light);
+      --border-width: 1px 0 0 0;
+      padding: 12px 16px;
+    }
+  
+    .footer-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+  
+      .footer-button {
+        --border-radius: var(--coupon-radius);
+        --padding-top: 12px;
+        --padding-bottom: 12px;
+        font-weight: 600;
+        transition: var(--coupon-transition);
+  
+        &.cancel-button {
+          --color: var(--ion-color-medium);
+          --border-color: var(--ion-color-medium);
+  
+          &:hover:not([disabled]) {
+            --background: var(--ion-color-light);
+          }
+        }
+  
+        &.validate-button {
+          --background: var(--coupon-secondary);
+          --color: white;
+  
+          &:hover:not([disabled]) {
+            --background: var(--coupon-primary);
+            transform: translateY(-1px);
+          }
+        }
+  
+        &.apply-button {
+          --background: var(--coupon-success);
+          --color: white;
+  
+          &:hover:not([disabled]) {
+            --background: var(--ion-color-success-shade);
+            transform: translateY(-1px);
+          }
+        }
+  
+        &[disabled] {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+  
+  // === ANIMATIONS ===
+  @keyframes slideInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  
+  // === RESPONSIVE ===
+  @media (max-width: 768px) {
+    .suggestions-grid {
+      grid-template-columns: 1fr !important;
+    }
+  
+    .footer-buttons {
+      grid-template-columns: 1fr !important;
+      
+      .footer-button {
+        margin-bottom: 8px;
+      }
+    }
+  
+    .validation-content {
+      flex-direction: column;
+      text-align: center;
+  
+      .validation-icon {
+        align-self: center;
+        margin-top: 0;
+        margin-bottom: 8px;
+      }
+    }
+  }
+  
+  @media (max-width: 480px) {
+    ion-content {
+      padding: 12px;
+    }
+  
+    .suggestion-card {
+      .suggestion-content {
+        .coupon-code {
+          font-size: 1rem;
+        }
+  
+        .coupon-benefit {
+          font-size: 1rem;
+        }
+      }
+    }
+  
+    .order-summary-card {
+      .summary-content {
+        .summary-line {
+          font-size: 0.9rem;
+  
+          &.total-line {
+            font-size: 1.1rem;
+  
+            .total-amount {
+              font-size: 1.2rem;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // === DARK THEME ===
+  @media (prefers-color-scheme: dark) {
+    ion-content {
+      --background: #121212;
+    }
+  
+    .coupon-input-item,
+    .suggestion-card,
+    .order-summary-card {
+      --background: #1e1e1e;
+      --color: #ffffff;
+    }
+  
+    .footer-toolbar {
+      --background: #1e1e1e;
+    }
+  }
+  
+  // === ACCESSIBILITY ===
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }

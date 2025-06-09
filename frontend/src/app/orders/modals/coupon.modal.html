@@ -1,0 +1,303 @@
+<!-- src/app/orders/modals/coupon.modal.html -->
+
+<ion-header>
+    <ion-toolbar color="secondary">
+      <ion-title>
+        <div class="header-content">
+          <ion-icon name="pricetag-outline" class="header-icon"></ion-icon>
+          <span>Aplicar Cupón</span>
+        </div>
+      </ion-title>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="showCouponHelp()">
+          <ion-icon name="help-circle-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" (click)="dismiss()">
+          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content>
+    
+    <!-- Formulario de cupón -->
+    <form [formGroup]="couponForm" class="coupon-form">
+      
+      <!-- Campo de código de cupón -->
+      <div class="form-section">
+        <ion-item 
+          [class.item-has-error]="hasValidationErrors"
+          class="coupon-input-item"
+        >
+          <ion-label position="stacked">Código del Cupón</ion-label>
+          <ion-input 
+            formControlName="couponCode"
+            type="text"
+            placeholder="Ej: DESC10, EFECTIVO15"
+            (ionInput)="clearValidation()"
+            class="coupon-code-input"
+            maxlength="20"
+          ></ion-input>
+          <ion-button 
+            slot="end" 
+            fill="clear" 
+            size="small"
+            [disabled]="!isFormValid() || validating"
+            (click)="validateCoupon()"
+            class="validate-button"
+          >
+            <ion-spinner *ngIf="validating" name="crescent" size="small"></ion-spinner>
+            <ion-icon *ngIf="!validating" name="checkmark-circle-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+        
+        <!-- Mensaje de error de validación -->
+        <ion-note 
+          *ngIf="hasValidationErrors" 
+          color="danger" 
+          class="validation-error"
+        >
+          {{ validationErrorMessage }}
+        </ion-note>
+      </div>
+  
+      <!-- Método de pago (solo si es requerido) -->
+      <div class="form-section" *ngIf="showPaymentMethod || validationResult?.requires_cash">
+        <ion-item>
+          <ion-label>Método de Pago</ion-label>
+          <ion-select 
+            formControlName="paymentMethod" 
+            interface="popover"
+            (ionSelectionChange)="clearValidation()"
+          >
+            <ion-select-option value="cash">
+              <div class="payment-option">
+                <ion-icon name="cash-outline"></ion-icon>
+                <span>Efectivo</span>
+              </div>
+            </ion-select-option>
+            <ion-select-option value="credit">
+              <div class="payment-option">
+                <ion-icon name="card-outline"></ion-icon>
+                <span>Tarjeta</span>
+              </div>
+            </ion-select-option>
+            <ion-select-option value="transfer">
+              <div class="payment-option">
+                <ion-icon name="swap-horizontal-outline"></ion-icon>
+                <span>Transferencia</span>
+              </div>
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </div>
+  
+    </form>
+  
+    <!-- Resultado de validación -->
+    <div class="validation-section" *ngIf="validationResult">
+      
+      <!-- Cupón válido -->
+      <ion-card 
+        *ngIf="validationResult.valid" 
+        class="validation-card valid-coupon"
+        color="success"
+      >
+        <ion-card-content>
+          <div class="validation-content">
+            <div class="validation-icon">
+              <ion-icon name="checkmark-circle" color="light"></ion-icon>
+            </div>
+            <div class="validation-details">
+              <h3>¡Cupón Válido!</h3>
+              <p class="discount-description">
+                <span *ngIf="validationResult.discount_type === 'percentage'">
+                  {{ validationResult.discount_value }}% de descuento
+                </span>
+                <span *ngIf="validationResult.discount_type === 'fixed'">
+                  ${{ validationResult.discount_value | number:'1.2-2' }} de descuento
+                </span>
+              </p>
+              <div class="savings-info">
+                <div class="savings-amount">
+                  Ahorras: <strong>${{ getSavingsAmount() | number:'1.2-2' }}</strong>
+                </div>
+                <div class="savings-percentage" *ngIf="getSavingsPercentage() > 0">
+                  ({{ getSavingsPercentage() | number:'1.1-1' }}% del total)
+                </div>
+              </div>
+              
+              <!-- Advertencias especiales -->
+              <div class="coupon-warnings" *ngIf="validationResult.requires_cash">
+                <ion-chip color="warning" outline>
+                  <ion-icon name="cash-outline"></ion-icon>
+                  <ion-label>Solo efectivo</ion-label>
+                </ion-chip>
+              </div>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+  
+      <!-- Cupón inválido -->
+      <ion-card 
+        *ngIf="!validationResult.valid" 
+        class="validation-card invalid-coupon"
+        color="danger"
+      >
+        <ion-card-content>
+          <div class="validation-content">
+            <div class="validation-icon">
+              <ion-icon name="close-circle" color="light"></ion-icon>
+            </div>
+            <div class="validation-details">
+              <h3>Cupón Inválido</h3>
+              <p class="error-message">{{ validationResult.error }}</p>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+  
+    </div>
+  
+    <!-- Cupones sugeridos -->
+    <div class="suggestions-section" *ngIf="showSuggestions && suggestedCoupons.length > 0 && !validationResult">
+      <h4 class="section-title">
+        <ion-icon name="bulb-outline"></ion-icon>
+        Cupones Disponibles
+      </h4>
+      
+      <div class="suggestions-grid">
+        <ion-card 
+          *ngFor="let coupon of suggestedCoupons" 
+          class="suggestion-card"
+          (click)="applySuggestedCoupon(coupon)"
+          button
+        >
+          <ion-card-content>
+            <div class="suggestion-content">
+              <div class="coupon-code">{{ coupon.code }}</div>
+              <div class="coupon-benefit">
+                <span *ngIf="coupon.discount_type === 'percentage'">
+                  {{ coupon.discount_value }}% OFF
+                </span>
+                <span *ngIf="coupon.discount_type === 'fixed'">
+                  ${{ coupon.discount_value }} OFF
+                </span>
+              </div>
+              <div class="coupon-description">{{ coupon.description }}</div>
+              
+              <!-- Condiciones -->
+              <div class="coupon-conditions" *ngIf="coupon.min_purchase_amount || coupon.cash_payment_only">
+                <ion-chip 
+                  *ngIf="coupon.min_purchase_amount" 
+                  size="small" 
+                  color="medium"
+                  outline
+                >
+                  Min: ${{ coupon.min_purchase_amount }}
+                </ion-chip>
+                <ion-chip 
+                  *ngIf="coupon.cash_payment_only" 
+                  size="small" 
+                  color="warning"
+                  outline
+                >
+                  Solo efectivo
+                </ion-chip>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+  
+    <!-- Resumen del pedido -->
+    <ion-card class="order-summary-card">
+      <ion-card-header>
+        <ion-card-title class="summary-title">
+          <ion-icon name="receipt-outline"></ion-icon>
+          Resumen del Pedido
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-content">
+          <div class="summary-line">
+            <span>Subtotal:</span>
+            <span class="amount">${{ orderTotal | number:'1.2-2' }}</span>
+          </div>
+          
+          <div class="summary-line discount-line" *ngIf="validationResult?.valid">
+            <span>Descuento:</span>
+            <span class="discount-amount">-${{ getSavingsAmount() | number:'1.2-2' }}</span>
+          </div>
+          
+          <div class="summary-line total-line">
+            <span>Total:</span>
+            <span class="total-amount">${{ getFinalTotal() | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  
+  </ion-content>
+  
+  <!-- Footer con botones de acción -->
+  <ion-footer>
+    <ion-toolbar class="footer-toolbar">
+      <div class="footer-buttons">
+        
+        <!-- Botón cancelar -->
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          color="medium"
+          (click)="dismiss()"
+          [disabled]="applying"
+          class="footer-button cancel-button"
+        >
+          Cancelar
+        </ion-button>
+        
+        <!-- Botón validar -->
+        <ion-button 
+          expand="block" 
+          color="secondary"
+          [disabled]="!isFormValid() || validating || applying"
+          (click)="validateCoupon()"
+          class="footer-button validate-button"
+          *ngIf="!validationResult"
+        >
+          <ion-spinner *ngIf="validating" name="crescent" size="small" slot="start"></ion-spinner>
+          <ion-icon *ngIf="!validating" name="checkmark-circle-outline" slot="start"></ion-icon>
+          {{ validating ? 'Validando...' : 'Validar Cupón' }}
+        </ion-button>
+        
+        <!-- Botón aplicar -->
+        <ion-button 
+          expand="block" 
+          color="success"
+          [disabled]="!canApplyCoupon()"
+          (click)="applyCoupon()"
+          class="footer-button apply-button"
+          *ngIf="validationResult"
+        >
+          <ion-spinner *ngIf="applying" name="crescent" size="small" slot="start"></ion-spinner>
+          <ion-icon *ngIf="!applying && validationResult?.valid" name="pricetag" slot="start"></ion-icon>
+          <ion-icon *ngIf="!applying && !validationResult?.valid" name="refresh-outline" slot="start"></ion-icon>
+          
+          <span *ngIf="!applying && validationResult?.valid">
+            Aplicar Cupón
+          </span>
+          <span *ngIf="!applying && !validationResult?.valid">
+            Validar Nuevamente
+          </span>
+          <span *ngIf="applying">
+            Aplicando...
+          </span>
+        </ion-button>
+        
+      </div>
+    </ion-toolbar>
+  </ion-footer>

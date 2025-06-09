@@ -1,0 +1,377 @@
+<!-- src/app/orders/list/order-list.component.html -->
+
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    
+    <ion-title>
+      <div class="header-title">
+        <ion-icon name="receipt-outline" class="title-icon"></ion-icon>
+        <span>Órdenes</span>
+        <ion-badge *ngIf="totalItems > 0" color="light" class="orders-count">
+          {{ totalItems }}
+        </ion-badge>
+      </div>
+    </ion-title>
+    
+    <ion-buttons slot="end">
+      <!-- Toggle Auto Refresh -->
+      <ion-button 
+        fill="clear" 
+        [color]="autoRefresh ? 'success' : 'medium'"
+        (click)="autoRefresh = !autoRefresh; setupAutoRefresh()"
+      >
+        <ion-icon 
+          [name]="autoRefresh ? 'sync-circle' : 'sync-circle-outline'" 
+          slot="icon-only"
+        ></ion-icon>
+      </ion-button>
+      
+      <!-- View Mode Toggle -->
+      <ion-button fill="clear" (click)="toggleViewMode()">
+        <ion-icon 
+          [name]="viewMode === 'list' ? 'grid-outline' : 'list-outline'" 
+          slot="icon-only"
+        ></ion-icon>
+      </ion-button>
+      
+      <!-- New Order Button -->
+      <ion-button fill="solid" color="success" routerLink="/orders/create">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Nueva
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Search and Filters Bar -->
+  <ion-toolbar class="search-toolbar">
+    <div class="search-container">
+      <!-- Search Input -->
+      <ion-searchbar
+        [(ngModel)]="searchTerm"
+        (ionInput)="onSearchChange($event)"
+        placeholder="Buscar por código, cliente, teléfono..."
+        show-clear-button="focus"
+        class="orders-searchbar"
+      ></ion-searchbar>
+      
+      <!-- Sort Options -->
+      <ion-button 
+        fill="outline" 
+        size="small"
+        id="sort-trigger"
+        class="sort-button"
+      >
+        <ion-icon name="funnel-outline" slot="start"></ion-icon>
+        <span>{{ sortBy | titlecase }}</span>
+        <ion-icon 
+          [name]="sortDirection === 'asc' ? 'chevron-up-outline' : 'chevron-down-outline'" 
+          slot="end"
+        ></ion-icon>
+      </ion-button>
+      
+      <!-- Sort Popover -->
+      <ion-popover trigger="sort-trigger" trigger-action="click">
+        <ng-template>
+          <ion-content class="sort-popover">
+            <ion-list>
+              <ion-item 
+                button 
+                *ngFor="let option of [
+                  {key: 'date', label: 'Fecha', icon: 'calendar-outline'},
+                  {key: 'status', label: 'Estado', icon: 'flag-outline'},
+                  {key: 'total', label: 'Total', icon: 'cash-outline'},
+                  {key: 'customer', label: 'Cliente', icon: 'person-outline'}
+                ]"
+                (click)="onSortChange(option.key)"
+                [class.selected]="sortBy === option.key"
+              >
+                <ion-icon [name]="option.icon" slot="start"></ion-icon>
+                <ion-label>{{ option.label }}</ion-label>
+                <ion-icon 
+                  *ngIf="sortBy === option.key"
+                  [name]="sortDirection === 'asc' ? 'chevron-up' : 'chevron-down'" 
+                  slot="end"
+                ></ion-icon>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-popover>
+    </div>
+  </ion-toolbar>
+
+  <!-- Filter Chips -->
+  <ion-toolbar class="filters-toolbar">
+    <div class="filters-container">
+      <ion-chip
+        *ngFor="let filter of filterOptions; trackBy: trackByFilterOption"
+        [class.active]="activeFilter === filter.key"
+        [color]="activeFilter === filter.key ? filter.color : 'medium'"
+        (click)="onFilterChange(filter.key)"
+        class="filter-chip"
+      >
+        <ion-icon [name]="filter.icon"></ion-icon>
+        <ion-label>{{ filter.label }}</ion-label>
+      </ion-chip>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="orders-content">
+  
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pulling-icon="arrow-down-outline"
+      pulling-text="Desliza para actualizar"
+      refreshing-spinner="crescent"
+      refreshing-text="Actualizando órdenes..."
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && !refreshing" class="loading-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Cargando órdenes...</p>
+  </div>
+
+  <!-- Error State -->
+  <ion-card *ngIf="error && !loading" color="danger" class="error-card">
+    <ion-card-content>
+      <div class="error-content">
+        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
+        <div>
+          <h3>Error</h3>
+          <p>{{ error }}</p>
+          <ion-button 
+            fill="outline" 
+            color="light" 
+            size="small"
+            (click)="loadOrders()"
+          >
+            Reintentar
+          </ion-button>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Empty State -->
+  <div 
+    *ngIf="!loading && !error && filteredOrders.length === 0" 
+    class="empty-state"
+  >
+    <ion-icon 
+      [name]="searchTerm ? 'search-outline' : 'receipt-outline'" 
+      class="empty-icon"
+    ></ion-icon>
+    
+    <h2 *ngIf="!searchTerm">No hay órdenes</h2>
+    <h2 *ngIf="searchTerm">Sin resultados</h2>
+    
+    <p *ngIf="!searchTerm">
+      No se encontraron órdenes con los filtros aplicados.
+    </p>
+    <p *ngIf="searchTerm">
+      No se encontraron órdenes que coincidan con "{{ searchTerm }}".
+    </p>
+
+    <ion-button 
+      *ngIf="!searchTerm"
+      fill="outline" 
+      routerLink="/orders/create"
+    >
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Crear Primera Orden
+    </ion-button>
+    
+    <ion-button 
+      *ngIf="searchTerm"
+      fill="outline" 
+      (click)="searchTerm = ''; onSearchChange({detail: {value: ''}})"
+    >
+      <ion-icon name="close-outline" slot="start"></ion-icon>
+      Limpiar Búsqueda
+    </ion-button>
+  </div>
+
+  <!-- Orders List -->
+  <div *ngIf="!loading && !error && filteredOrders.length > 0" class="orders-container">
+    
+    <!-- List View -->
+    <div *ngIf="viewMode === 'list'" class="orders-list">
+      <ion-card 
+        *ngFor="let order of paginatedOrders; trackBy: trackByOrderId" 
+        class="order-card"
+        (click)="openOrderDetails(order)"
+        button
+      >
+        <ion-card-content>
+          <div class="order-row">
+            
+            <!-- Order Info -->
+            <div class="order-info">
+              <div class="order-header">
+                <h2 class="order-code">{{ order.order_code }}</h2>
+                <ion-badge [color]="order.status | orderStatus:'color'" class="status-badge">
+                  {{ order.status | orderStatus:'text' }}
+                </ion-badge>
+              </div>
+              
+              <div class="order-details">
+                <h3 class="customer-name">{{ order.customer_name }}</h3>
+                <div class="order-meta">
+                  <span class="order-date">
+                    <ion-icon name="calendar-outline"></ion-icon>
+                    {{ order.created_at | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                  
+                  <span *ngIf="order.delivery_date" class="delivery-date">
+                    <ion-icon name="time-outline" color="success"></ion-icon>
+                    {{ order.delivery_date | date:'dd/MM/yyyy HH:mm' }}
+                  </span>
+                  
+                  <span class="order-type">
+                    <ion-icon [name]="order.type | orderType:'icon'" [color]="order.type | orderType:'color'"></ion-icon>
+                    {{ order.type | orderType:'text' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Amount -->
+            <div class="order-amount">
+              <div class="amount-info">
+                <span class="total-amount">${{ order.total_amount | number:'1.2-2' }}</span>
+                
+                <div *ngIf="order.total_amount_with_discount && order.total_amount_with_discount < order.total_amount" class="discount-info">
+                  <span class="discounted-total">${{ order.total_amount_with_discount | number:'1.2-2' }}</span>
+                  <ion-chip color="success" outline size="small">
+                    <ion-icon name="pricetag-outline"></ion-icon>
+                    <ion-label>Descuento</ion-label>
+                  </ion-chip>
+                </div>
+
+                <div *ngIf="order.type === 'pedido' && order.deposit_amount > 0" class="preorder-info">
+                  <span class="deposit-amount">Seña: ${{ order.deposit_amount | number:'1.2-2' }}</span>
+                  <span class="remaining-amount">Saldo: ${{ (order.total_amount - order.deposit_amount) | number:'1.2-2' }}</span>
+                </div>
+              </div>
+
+              <!-- Payment Method -->
+              <div *ngIf="order.payment_method" class="payment-method">
+                <ion-chip color="secondary" outline size="small">
+                  <ion-icon 
+                    [name]="order.payment_method === 'cash' ? 'cash-outline' : 
+                            order.payment_method === 'credit' ? 'card-outline' : 
+                            'swap-horizontal-outline'"
+                  ></ion-icon>
+                  <ion-label>
+                    {{ order.payment_method === 'cash' ? 'Efectivo' : 
+                       order.payment_method === 'credit' ? 'Tarjeta' : 
+                       'Transferencia' }}
+                  </ion-label>
+                </ion-chip>
+              </div>
+            </div>
+
+            <!-- Actions Button -->
+            <div class="order-actions">
+              <ion-button 
+                fill="clear" 
+                size="small"
+                (click)="showOrderActions(order, $event)"
+                class="actions-button"
+              >
+                <ion-icon name="ellipsis-vertical-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </div>
+
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="viewMode === 'grid'" class="orders-grid">
+      <ion-card 
+        *ngFor="let order of paginatedOrders; trackBy: trackByOrderId" 
+        class="order-grid-card"
+        (click)="openOrderDetails(order)"
+        button
+      >
+        <ion-card-header>
+          <div class="grid-card-header">
+            <ion-card-title class="grid-order-code">{{ order.order_code }}</ion-card-title>
+            <ion-badge [color]="order.status | orderStatus:'color'" size="small">
+              {{ order.status | orderStatus:'text' }}
+            </ion-badge>
+          </div>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <div class="grid-card-content">
+            <div class="grid-customer">
+              <ion-icon name="person-outline" color="medium"></ion-icon>
+              <span>{{ order.customer_name }}</span>
+            </div>
+            
+            <div class="grid-amount">
+              <span class="grid-total">${{ order.total_amount | number:'1.2-2' }}</span>
+            </div>
+            
+            <div class="grid-meta">
+              <span class="grid-date">{{ order.created_at | date:'dd/MM HH:mm' }}</span>
+              <ion-chip [color]="order.type | orderType:'color'" outline size="small">
+                <ion-icon [name]="order.type | orderType:'icon'"></ion-icon>
+                <ion-label>{{ order.type | orderType:'text' }}</ion-label>
+              </ion-chip>
+            </div>
+
+            <ion-button 
+              fill="clear" 
+              size="small"
+              (click)="showOrderActions(order, $event)"
+              class="grid-actions-button"
+            >
+              <ion-icon name="ellipsis-horizontal-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="pagination-container">
+      <ion-button 
+        fill="outline" 
+        size="small"
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
+      >
+        <ion-icon name="chevron-back-outline" slot="start"></ion-icon>
+        Anterior
+      </ion-button>
+      
+      <div class="pagination-info">
+        <span>Página {{ currentPage }} de {{ totalPages }}</span>
+        <span class="items-info">({{ filteredOrders.length }} órdenes)</span>
+      </div>
+      
+      <ion-button 
+        fill="outline" 
+        size="small"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        Siguiente
+        <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+      </ion-button>
+    </div>
+
+  </div>
+
+</ion-content>

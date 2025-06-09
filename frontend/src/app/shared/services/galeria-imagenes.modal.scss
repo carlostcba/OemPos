@@ -1,53 +1,73 @@
-// galera-imagenes.modal.scss
-
-.galeria {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+:host {
+  .upload-section {
+    background: var(--ion-color-light);
     padding: 16px;
-    justify-content: center;
+    border-radius: 8px;
+    margin-bottom: 16px;
   }
-  
-  .imagen-item {
-    width: 140px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 12px;
+
+  .upload-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .image-card {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
     overflow: hidden;
-    padding: 8px;
-    background: #fff;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      padding: 8px;
+      color: white;
+      font-size: 12px;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
-  
-  .imagen-item:hover {
-    transform: scale(1.05);
+
+  .loading-container,
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+    gap: 16px;
   }
-  
-  .imagen-item img {
-    max-width: 100%;
-    height: 100px;
-    object-fit: contain;
-  }
-  
-  .nombre {
-    font-size: 12px;
-    margin-top: 4px;
-  }
-  
-  .origen {
-    font-size: 10px;
-    color: #888;
-  }
-  
-  .sin-imagenes {
-    text-align: center;
-    margin-top: 20px;
-    color: #777;
-  }
-  
-  .cargando {
-    display: block;
-    margin: 40px auto;
-  }
-  
+}
