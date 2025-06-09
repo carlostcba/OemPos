@@ -39,8 +39,8 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'inventario',
-    loadChildren: () => import('./inventario/inventario.module').then(m => m.InventarioModule),
+    path: 'inventory',
+    loadChildren: () => import('./inventory/inventory.module').then(m => m.InventoryModule),
     canActivate: [AuthGuard]
   },
   {
