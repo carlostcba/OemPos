@@ -249,6 +249,36 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
     this.calcularTotal();
   }
 
+  modificarCantidad(item: {producto: Producto, cantidad: number, subtotal: number}, aumentar: boolean) {
+    const step = item.producto.is_weighable ? 0.05 : 1;
+    let nuevaCantidad = item.cantidad + (aumentar ? step : -step);
+    nuevaCantidad = item.producto.is_weighable ? parseFloat(nuevaCantidad.toFixed(2)) : Math.round(nuevaCantidad);
+    this.establecerCantidad(item, nuevaCantidad);
+  }
+
+  cambiarCantidadManual(item: {producto: Producto, cantidad: number, subtotal: number}, valor: string) {
+    let cantidad = parseFloat(valor);
+    if (isNaN(cantidad)) {
+      return;
+    }
+    cantidad = item.producto.is_weighable ? parseFloat(cantidad.toFixed(2)) : Math.round(cantidad);
+    this.establecerCantidad(item, cantidad);
+  }
+
+  private establecerCantidad(item: {producto: Producto, cantidad: number, subtotal: number}, cantidad: number) {
+    if (cantidad <= 0) {
+      const index = this.itemsPedido.indexOf(item);
+      if (index !== -1) {
+        this.eliminarItem(index);
+      }
+      return;
+    }
+
+    item.cantidad = cantidad;
+    item.subtotal = item.producto.price * cantidad;
+    this.calcularTotal();
+  }
+
   calcularTotal() {
     this.totalPedido = this.itemsPedido.reduce((total, item) => total + item.subtotal, 0);
   }

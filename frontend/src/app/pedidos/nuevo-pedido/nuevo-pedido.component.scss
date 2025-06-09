@@ -271,6 +271,19 @@ ion-item p {
   margin: 0;
 }
 
+.cantidad-controles {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .cantidad-input {
+    width: 50px;
+    text-align: center;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+}
+
 .checkbox-item {
   --inner-padding-end: 0;
   --padding-start: 0;

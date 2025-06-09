@@ -71,19 +71,36 @@
           <div class="detalle-items">
             <h3>Detalle de la Orden</h3>
             <ion-list *ngIf="itemsPedido.length > 0">
-              <ion-item *ngFor="let item of itemsPedido; let i = index">
-                <ion-label>
-                  <h2>{{ item.producto.name }}</h2>
-                  <p>{{ item.cantidad }} x ${{ item.producto.price | number:'1.2-2' }}</p>
-                </ion-label>
-                <ion-note slot="end" color="primary">${{ item.subtotal | number:'1.2-2' }}</ion-note>
-                <ion-buttons slot="end">
-                  <ion-button color="danger" (click)="eliminarItem(i)" size="small">
-                    <ion-icon name="trash-outline" size="small"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
-              </ion-item>
-            </ion-list>
+                <ion-item *ngFor="let item of itemsPedido; let i = index">
+                  <ion-label>
+                    <h2>{{ item.producto.name }}</h2>
+                    <p>${{ item.producto.price | number:'1.2-2' }} / {{ getUnitLabel(item.producto) }}</p>
+                  </ion-label>
+
+                  <div slot="end" class="cantidad-controles">
+                    <ion-button fill="clear" size="small" (click)="modificarCantidad(item, false)">
+                      <ion-icon name="remove-circle-outline"></ion-icon>
+                    </ion-button>
+                    <ion-input
+                      [ngModel]="item.cantidad"
+                      (ngModelChange)="cambiarCantidadManual(item, $event)"
+                      type="number"
+                      class="cantidad-input"
+                      inputmode="decimal"
+                    ></ion-input>
+                    <ion-button fill="clear" size="small" (click)="modificarCantidad(item, true)">
+                      <ion-icon name="add-circle-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+
+                  <ion-note slot="end" color="primary">${{ item.subtotal | number:'1.2-2' }}</ion-note>
+                  <ion-buttons slot="end">
+                    <ion-button color="danger" (click)="eliminarItem(i)" size="small">
+                      <ion-icon name="trash-outline" size="small"></ion-icon>
+                    </ion-button>
+                  </ion-buttons>
+                </ion-item>
+              </ion-list>
             <div *ngIf="itemsPedido.length === 0" class="sin-items">
               <p>No hay productos agregados</p>
             </div>

@@ -57,6 +57,8 @@ import {
   calendarOutline,
   removeOutline,
   closeOutline,
+  removeCircleOutline,
+  addCircleOutline,
   syncCircleOutline
 
 } from 'ionicons/icons';
@@ -152,6 +154,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       'flag-outline': flagOutline,
       'close-outline': closeOutline,
       'remove-outline': removeOutline,
+      'remove-circle-outline': removeCircleOutline,
+      'add-circle-outline': addCircleOutline,
       'time-outline': timeOutline
     });
     
