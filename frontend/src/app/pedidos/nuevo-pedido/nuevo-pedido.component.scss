@@ -316,6 +316,35 @@ ion-item p {
   --border-radius: 4px; /* Añadido radio de borde */
 }
 
+/* Modal para ingresar peso */
+.peso-modal {
+  --width: 320px;
+  --border-radius: 12px;
+
+  .peso-content {
+    text-align: center;
+
+    .peso-input-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px 0;
+
+      .peso-input {
+        text-align: center;
+        font-size: 1.5rem;
+        width: 100px;
+      }
+    }
+
+    .peso-actions {
+      display: flex;
+      gap: 12px;
+    }
+  }
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

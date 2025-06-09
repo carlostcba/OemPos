@@ -55,6 +55,8 @@ import {
   chevronDown,
   flagOutline,
   calendarOutline,
+  removeOutline,
+  closeOutline,
   syncCircleOutline
 
 } from 'ionicons/icons';
@@ -148,6 +150,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       'chevron-down': chevronDown,
       'calendar-outline': calendarOutline,
       'flag-outline': flagOutline,
+      'close-outline': closeOutline,
+      'remove-outline': removeOutline,
       'time-outline': timeOutline
     });
     
