@@ -44,7 +44,7 @@
                     <ion-card-subtitle>{{ producto.name }}</ion-card-subtitle>
                   </ion-card-header>
                   <ion-card-content>
-                    <div class="precio">${{ producto.price | number:'1.2-2' }}/{{ producto.unit_label }}</div>
+                    <div class="precio">${{ producto.price | number:'1.2-2' }}/{{ getUnitLabel(producto) }}</div>
                   </ion-card-content>
                 </ion-card>
               </ion-col>
@@ -162,7 +162,7 @@
       <ion-content class="ion-padding">
         <div class="peso-content">
           <p>
-            ${{ productoSeleccionado?.price | number:'1.2-2' }}/{{ productoSeleccionado?.unit_label }}
+            ${{ productoSeleccionado?.price | number:'1.2-2' }}/{{ getUnitLabel(productoSeleccionado) }}
           </p>
 
           <div class="peso-input-container">

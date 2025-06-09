@@ -43,6 +43,23 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   private holdInterval: any;
   private holdStart = 0;
 
+  getUnitLabel(producto?: Producto | null): string {
+    if (!producto) {
+      return '';
+    }
+
+    const label = producto.unit_label?.trim();
+
+    if (producto.is_weighable) {
+      if (!label || label.toLowerCase() === 'unidad') {
+        return 'kg';
+      }
+      return label;
+    }
+
+    return label || 'unidad';
+  }
+
   constructor(
     private productoService: ProductoService,
     private alertController: AlertController,
