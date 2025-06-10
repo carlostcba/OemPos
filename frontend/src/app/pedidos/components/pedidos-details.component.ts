@@ -4,7 +4,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, AlertController, LoadingController } from '@ionic/angular';
 import { PedidosService, Pedido } from '../services/pedidos.service';
-import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../pipes/pedidos-format.pipes';
+import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe } from '../pipes/pedidos-format.pipes';
 
 @Component({
   selector: 'app-pedido-details',
@@ -14,8 +14,8 @@ import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../
     IonicModule,
     PedidoTypePipe,
     PedidoStatusPipe,
-    TimeAgoPipe,
-    CurrencyPipe
+    TimeAgoPipe
+    // ✅ REMOVIDO: CurrencyPipe (usar el nativo de Angular)
   ],
   template: `
     <ion-header>
@@ -117,10 +117,10 @@ import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../
               <ion-item *ngFor="let item of pedido.items">
                 <ion-label>
                   <h3>{{ item.product_name }}</h3>
-                  <p>{{ item.quantity }} {{ item.unit_label }} × {{ item.unit_price | currency }}</p>
+                  <p>{{ item.quantity }} {{ item.unit_label }} × {{ item.unit_price | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</p>
                 </ion-label>
                 <ion-note slot="end" color="primary">
-                  {{ item.subtotal | currency }}
+                  {{ item.subtotal | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
                 </ion-note>
               </ion-item>
             </ion-list>
@@ -142,7 +142,7 @@ import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../
                 <ion-label>
                   <h3>Subtotal</h3>
                 </ion-label>
-                <ion-note slot="end">{{ pedido.total_amount | currency }}</ion-note>
+                <ion-note slot="end">{{ pedido.total_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</ion-note>
               </ion-item>
               
               <ion-item *ngIf="pedido.discount_amount && pedido.discount_amount > 0">
@@ -150,7 +150,7 @@ import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../
                   <h3>Descuento</h3>
                 </ion-label>
                 <ion-note slot="end" color="success">
-                  -{{ pedido.discount_amount | currency }}
+                  -{{ pedido.discount_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
                 </ion-note>
               </ion-item>
               
@@ -159,7 +159,7 @@ import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../
                   <h2><strong>Total</strong></h2>
                 </ion-label>
                 <ion-note slot="end" color="primary">
-                  <strong>{{ getFinalTotal() | currency }}</strong>
+                  <strong>{{ getFinalTotal() | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</strong>
                 </ion-note>
               </ion-item>
               
@@ -175,7 +175,7 @@ import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../
                   <h3>Seña Pagada</h3>
                 </ion-label>
                 <ion-note slot="end" color="success">
-                  {{ pedido.deposit_amount | currency }}
+                  {{ pedido.deposit_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
                 </ion-note>
               </ion-item>
             </ion-list>
@@ -310,9 +310,9 @@ export class PedidoDetailsComponent implements OnInit {
     this.error = null;
 
     try {
-  const result = await this.pedidosService.getById(this.pedidoId).toPromise();
-  this.pedido = result || null;
-} catch (error: any) {
+      const result = await this.pedidosService.getById(this.pedidoId).toPromise();
+      this.pedido = result || null;
+    } catch (error: any) {
       console.error('❌ Error loading pedido details:', error);
       this.error = 'Error al cargar los detalles del pedido';
     } finally {
@@ -398,8 +398,8 @@ export class PedidoDetailsComponent implements OnInit {
     await loading.present();
 
     try {
-  const result = await this.pedidosService.update(this.pedido.id, { status }).toPromise();
-  this.pedido = result || null;
+      const result = await this.pedidosService.update(this.pedido.id, { status }).toPromise();
+      this.pedido = result || null;
       await this.showToast('Pedido actualizado exitosamente', 'success');
       this.closeModal(true);
     } catch (error) {

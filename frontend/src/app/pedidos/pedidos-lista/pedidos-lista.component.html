@@ -1,12 +1,18 @@
-<!-- frontend/src/app/pedidos/pedidos-lista/pedidos-lista.component.html -->
+<!-- pedidos-lista.component.html - Header optimizado -->
 <ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Lista de Pedidos</ion-title>
+  <!-- ✅ Toolbar principal con búsqueda y botones de acción -->
+  <ion-toolbar>
+    <ion-searchbar 
+      placeholder="Buscar por código, cliente, teléfono..."
+      (ionChange)="onSearchChange($event)"
+      [debounce]="500"
+      slot="start"
+      style="flex: 1;">
+    </ion-searchbar>
+    
+    <!-- ✅ Botones reubicados en la búsqueda -->
     <ion-buttons slot="end">
-      <ion-button (click)="loadPedidos()" [disabled]="loading">
+      <ion-button fill="clear" (click)="loadPedidos()" [disabled]="loading">
         <ion-icon name="refresh" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button fill="clear" (click)="toggleAutoRefresh()">
@@ -15,17 +21,8 @@
     </ion-buttons>
   </ion-toolbar>
 
-  <!-- Filtros -->
+  <!-- Filtros de Tipo -->
   <ion-toolbar>
-    <ion-searchbar 
-      placeholder="Buscar por código, cliente, teléfono..."
-      (ionChange)="onSearchChange($event)"
-      [debounce]="500">
-    </ion-searchbar>
-  </ion-toolbar>
-
-  <ion-toolbar>
-    <!-- Filtros de Tipo -->
     <ion-segment [(ngModel)]="selectedType" (ionChange)="onFilterChange()" mode="md">
       <ion-segment-button 
         *ngFor="let filter of typeFilters; trackBy: trackByFilterOption" 
@@ -35,10 +32,10 @@
     </ion-segment>
   </ion-toolbar>
 
+  <!-- Filtros de Estado y Fecha -->
   <ion-toolbar>
     <ion-row class="ion-align-items-center">
       <ion-col size="6">
-        <!-- Filtros de Estado -->
         <ion-select 
           [(ngModel)]="selectedStatus" 
           (ionChange)="onFilterChange()"
@@ -53,7 +50,6 @@
       </ion-col>
       
       <ion-col size="6">
-        <!-- Filtros de Fecha -->
         <ion-select 
           [(ngModel)]="dateFilter" 
           (ionChange)="onDateFilterChange()"
@@ -146,7 +142,7 @@
           
           <div class="pedido-details">
             <p class="pedido-amount">
-              <strong>{{ pedido.total_amount | currency }}</strong>
+              <strong>{{ pedido.total_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</strong>
             </p>
             
             <p *ngIf="pedido.customer_phone" class="customer-phone">
@@ -219,17 +215,17 @@
       </ion-button>
     </div>
   </div>
-
-  <!-- Summary Footer -->
-  <ion-footer *ngIf="filteredPedidos.length > 0" class="summary-footer">
-    <ion-toolbar>
-      <ion-title size="small" class="ion-text-center">
-        {{ getPedidosCount() }} pedido(s) | 
-        Total: {{ getTotalAmount() | currency }}
-        <span *ngIf="getActiveFiltersCount() > 0" class="filter-indicator">
-          • {{ getActiveFiltersCount() }} filtro(s)
-        </span>
-      </ion-title>
-    </ion-toolbar>
-  </ion-footer>
 </ion-content>
+
+<!-- Summary Footer -->
+<ion-footer *ngIf="filteredPedidos.length > 0" class="summary-footer">
+  <ion-toolbar>
+    <ion-title size="small" class="ion-text-center">
+      {{ getPedidosCount() }} pedido(s) | 
+      Total: {{ getTotalAmount() | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+      <span *ngIf="getActiveFiltersCount() > 0" class="filter-indicator">
+        • {{ getActiveFiltersCount() }} filtro(s)
+      </span>
+    </ion-title>
+  </ion-toolbar>
+</ion-footer>

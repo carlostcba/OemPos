@@ -10,8 +10,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { PedidosService, Pedido, PedidoFilters } from '../services/pedidos.service';
 import { AuthService } from '../../core/services/auth.service';
 
-// ✅ Usar pipes propios del módulo pedidos
-import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe, CurrencyPipe } from '../pipes/pedidos-format.pipes';
+// ✅ Usar pipes propios del módulo pedidos (SIN CurrencyPipe)
+import { PedidoTypePipe, PedidoStatusPipe, TimeAgoPipe } from '../pipes/pedidos-format.pipes';
 
 // ✅ Usar componente propio del módulo pedidos
 import { PedidoDetailsComponent } from '../components/pedidos-details.component';
@@ -32,8 +32,8 @@ interface FilterOption {
     PedidoDetailsComponent,
     PedidoTypePipe,
     PedidoStatusPipe,
-    TimeAgoPipe,
-    CurrencyPipe
+    TimeAgoPipe
+    // ✅ REMOVIDO: CurrencyPipe (usar el nativo de Angular con | currency)
   ],
   templateUrl: './pedidos-lista.component.html',
   styleUrls: ['./pedidos-lista.component.scss']
@@ -78,7 +78,7 @@ export class PedidosListaComponent implements OnInit, OnDestroy {
   ];
 
   constructor(
-    private pedidosService: PedidosService,  // ✅ Servicio propio
+    private pedidosService: PedidosService,
     private authService: AuthService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
@@ -137,7 +137,6 @@ export class PedidosListaComponent implements OnInit, OnDestroy {
   private buildFilters(): PedidoFilters {
     const filters: PedidoFilters = {};
 
-    // Filtro de fecha
     if (this.dateFilter === 'today') {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -162,17 +161,14 @@ export class PedidosListaComponent implements OnInit, OnDestroy {
   private applyClientFilters() {
     let filtered = [...this.pedidos];
 
-    // Filtro por tipo
     if (this.selectedType !== 'all') {
       filtered = filtered.filter(pedido => pedido.type === this.selectedType);
     }
 
-    // Filtro por estado
     if (this.selectedStatus !== 'all') {
       filtered = filtered.filter(pedido => pedido.status === this.selectedStatus);
     }
 
-    // Filtro por búsqueda
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(pedido =>
@@ -219,7 +215,7 @@ export class PedidosListaComponent implements OnInit, OnDestroy {
 
   async openPedidoDetails(pedido: Pedido) {
     const modal = await this.modalCtrl.create({
-      component: PedidoDetailsComponent,  // ✅ Componente propio
+      component: PedidoDetailsComponent,
       componentProps: {
         pedidoId: pedido.id,
         userRole: this.getUserRole()

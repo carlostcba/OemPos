@@ -59,7 +59,17 @@ import {
   closeOutline,
   removeCircleOutline,
   addCircleOutline,
-  syncCircleOutline
+  syncCircleOutline,
+  eye,
+  storefront,
+  checkmarkCircle,
+  person,
+  time,
+  chevronDownCircleOutline,
+  pause,
+  calendar,
+  closeCircle,
+  play
 
 } from 'ionicons/icons';
 // Importar addIcons para registrar los iconos
@@ -156,7 +166,17 @@ export class AppComponent implements OnInit, AfterViewInit {
       'remove-outline': removeOutline,
       'remove-circle-outline': removeCircleOutline,
       'add-circle-outline': addCircleOutline,
-      'time-outline': timeOutline
+      'time-outline': timeOutline,
+      'storefront': storefront,
+      'eye': eye,
+      'checkmark-circle': checkmarkCircle,
+      'person': person,
+      'time': time,
+      'chevron-down-circle-outline': chevronDownCircleOutline,
+      'pause': pause,
+      'play': play,
+      'calendar': calendar,
+      'close-circle': closeCircle
     });
     
     this.initializeApp();

@@ -70,17 +70,4 @@ export class TimeAgoPipe implements PipeTransform {
   }
 }
 
-// ===== PIPE PARA FORMATEAR MONEDA =====
-@Pipe({
-  name: 'currency',
-  standalone: true
-})
-export class CurrencyPipe implements PipeTransform {
-  transform(amount: number): string {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2
-    }).format(amount);
-  }
-}
+// ✅ REMOVIDO: CurrencyPipe (usar el nativo de Angular)
