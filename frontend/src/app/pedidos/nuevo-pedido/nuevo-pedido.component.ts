@@ -7,6 +7,7 @@ import { IonicModule, AlertController, IonContent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { ProductoService, Producto } from '../../productos/services/producto.service';
 import { UiService } from '../../core/services/ui.service';
+import { PedidosListaComponent } from '../pedidos-lista/pedidos-lista.component';
 
 interface Categoria {
   id: string;
@@ -18,7 +19,13 @@ interface Categoria {
   templateUrl: './nuevo-pedido.component.html',
   styleUrls: ['./nuevo-pedido.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, RouterModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    FormsModule,
+    RouterModule,
+    PedidosListaComponent
+  ]
 })
 export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   @ViewChild(IonContent) content!: IonContent;

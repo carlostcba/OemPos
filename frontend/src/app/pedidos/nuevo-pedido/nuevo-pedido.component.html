@@ -144,18 +144,7 @@
     </div>
 
     <div *ngIf="seccionActual === 'ordenes'" class="ordenes-container">
-      <div class="header-bar">
-        <div class="menu-title">
-          <ion-button fill="clear" (click)="toggleMenu()" class="menu-button">
-            <ion-icon name="menu-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-          <h2>Órdenes</h2>
-        </div>
-      </div>
-      <div class="empty-state">
-        <ion-icon name="receipt-outline" size="large"></ion-icon>
-        <p>Funcionalidad en desarrollo...</p>
-      </div>
+      <app-pedidos-lista></app-pedidos-lista>
     </div>
   </div>
 

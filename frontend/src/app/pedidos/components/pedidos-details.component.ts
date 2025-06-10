@@ -310,8 +310,9 @@ export class PedidoDetailsComponent implements OnInit {
     this.error = null;
 
     try {
-      this.pedido = await this.pedidosService.getById(this.pedidoId).toPromise();
-    } catch (error: any) {
+  const result = await this.pedidosService.getById(this.pedidoId).toPromise();
+  this.pedido = result || null;
+} catch (error: any) {
       console.error('❌ Error loading pedido details:', error);
       this.error = 'Error al cargar los detalles del pedido';
     } finally {
@@ -397,7 +398,8 @@ export class PedidoDetailsComponent implements OnInit {
     await loading.present();
 
     try {
-      this.pedido = await this.pedidosService.update(this.pedido.id, { status }).toPromise();
+  const result = await this.pedidosService.update(this.pedido.id, { status }).toPromise();
+  this.pedido = result || null;
       await this.showToast('Pedido actualizado exitosamente', 'success');
       this.closeModal(true);
     } catch (error) {
