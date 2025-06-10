@@ -1,0 +1,231 @@
+<!-- pedidos-lista.component.html - Header optimizado -->
+<ion-header>
+  <!-- ✅ Toolbar principal con búsqueda y botones de acción -->
+  <ion-toolbar>
+    <ion-searchbar 
+      placeholder="Buscar por código, cliente, teléfono..."
+      (ionChange)="onSearchChange($event)"
+      [debounce]="500"
+      slot="start"
+      style="flex: 1;">
+    </ion-searchbar>
+    
+    <!-- ✅ Botones reubicados en la búsqueda -->
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="loadPedidos()" [disabled]="loading">
+        <ion-icon name="refresh" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="toggleAutoRefresh()">
+        <ion-icon [name]="autoRefresh ? 'pause' : 'play'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Filtros de Tipo -->
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="selectedType" (ionChange)="onFilterChange()" mode="md">
+      <ion-segment-button 
+        *ngFor="let filter of typeFilters; trackBy: trackByFilterOption" 
+        [value]="filter.key">
+        <ion-label>{{ filter.label }}</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+
+  <!-- Filtros de Estado y Fecha -->
+  <ion-toolbar>
+    <ion-row class="ion-align-items-center">
+      <ion-col size="6">
+        <ion-select 
+          [(ngModel)]="selectedStatus" 
+          (ionChange)="onFilterChange()"
+          interface="popover"
+          placeholder="Estado">
+          <ion-select-option 
+            *ngFor="let filter of statusFilters; trackBy: trackByFilterOption" 
+            [value]="filter.key">
+            {{ filter.label }}
+          </ion-select-option>
+        </ion-select>
+      </ion-col>
+      
+      <ion-col size="6">
+        <ion-select 
+          [(ngModel)]="dateFilter" 
+          (ionChange)="onDateFilterChange()"
+          interface="popover"
+          placeholder="Fecha">
+          <ion-select-option value="today">Hoy</ion-select-option>
+          <ion-select-option value="all">Todas</ion-select-option>
+          <ion-select-option value="custom">Personalizada</ion-select-option>
+        </ion-select>
+      </ion-col>
+    </ion-row>
+
+    <!-- Selector de fecha personalizada -->
+    <ion-row *ngIf="dateFilter === 'custom'">
+      <ion-col>
+        <ion-item>
+          <ion-label position="stacked">Fecha</ion-label>
+          <ion-datetime 
+            [(ngModel)]="customDate"
+            (ionChange)="onDateFilterChange()"
+            presentation="date"
+            [max]="getCurrentDate()">
+          </ion-datetime>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Pull to Refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content
+      pulling-icon="chevron-down-circle-outline"
+      pulling-text="Desliza para actualizar"
+      refreshing-spinner="crescent"
+      refreshing-text="Actualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando pedidos...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="error-container ion-padding ion-text-center">
+    <ion-icon name="alert-circle" size="large" color="danger"></ion-icon>
+    <h3>{{ error }}</h3>
+    <ion-button fill="outline" (click)="loadPedidos()">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Reintentar
+    </ion-button>
+  </div>
+
+  <!-- Pedidos List -->
+  <ion-list *ngIf="!loading && !error && filteredPedidos.length > 0">
+    <ion-item-sliding 
+      *ngFor="let pedido of filteredPedidos; trackBy: trackByPedidoId"
+      class="pedido-item">
+      
+      <ion-item button (click)="openPedidoDetails(pedido)">
+        <ion-label>
+          <div class="pedido-header">
+            <h2>{{ pedido.order_code }}</h2>
+            <ion-badge 
+              [color]="getStatusColor(pedido.status)" 
+              class="status-badge">
+              {{ pedido.status | pedidoStatus }}
+            </ion-badge>
+          </div>
+          
+          <div class="pedido-info">
+            <p class="customer-name">
+              <ion-icon name="person" size="small"></ion-icon>
+              {{ pedido.customer_name || 'Cliente sin nombre' }}
+            </p>
+            
+            <p class="pedido-type" *ngIf="pedido.type">
+              <ion-icon name="storefront" size="small"></ion-icon>
+              {{ pedido.type | pedidoType }}
+            </p>
+            
+            <p class="pedido-date">
+              <ion-icon name="time" size="small"></ion-icon>
+              {{ pedido.created_at | timeAgo }}
+            </p>
+          </div>
+          
+          <div class="pedido-details">
+            <p class="pedido-amount">
+              <strong>{{ pedido.total_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</strong>
+            </p>
+            
+            <p *ngIf="pedido.customer_phone" class="customer-phone">
+              <ion-icon name="call" size="small"></ion-icon>
+              {{ pedido.customer_phone }}
+            </p>
+          </div>
+        </ion-label>
+
+        <ion-chip 
+          slot="end" 
+          [color]="getTypeColor(pedido.type)"
+          outline>
+          {{ pedido.type | pedidoType }}
+        </ion-chip>
+      </ion-item>
+
+      <!-- Sliding Options -->
+      <ion-item-options side="end">
+        <!-- Confirmar (solo si está pendiente) -->
+        <ion-item-option 
+          *ngIf="canConfirmPedido(pedido)"
+          color="primary" 
+          (click)="confirmPedido(pedido)">
+          <ion-icon name="checkmark-circle" slot="icon-only"></ion-icon>
+        </ion-item-option>
+        
+        <!-- Marcar como entregado -->
+        <ion-item-option 
+          *ngIf="canMarkAsDelivered(pedido)"
+          color="success" 
+          (click)="markAsDelivered(pedido)">
+          <ion-icon name="checkmark-done" slot="icon-only"></ion-icon>
+        </ion-item-option>
+        
+        <!-- Ver detalles -->
+        <ion-item-option 
+          color="tertiary" 
+          (click)="openPedidoDetails(pedido)">
+          <ion-icon name="eye" slot="icon-only"></ion-icon>
+        </ion-item-option>
+        
+        <!-- Cancelar -->
+        <ion-item-option 
+          *ngIf="canCancelPedido(pedido)"
+          color="danger" 
+          (click)="cancelPedido(pedido)">
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && filteredPedidos.length === 0" 
+       class="empty-state ion-padding ion-text-center">
+    <ion-icon name="receipt-outline" size="large" color="medium"></ion-icon>
+    <h3>No hay pedidos</h3>
+    <p>No se encontraron pedidos con los filtros seleccionados.</p>
+    <ion-button fill="outline" (click)="loadPedidos()">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Actualizar
+    </ion-button>
+    
+    <!-- Mostrar filtros activos -->
+    <div *ngIf="getActiveFiltersCount() > 0" class="active-filters">
+      <p>Filtros activos: {{ getActiveFiltersCount() }}</p>
+      <ion-button fill="clear" size="small" (click)="clearAllFilters()">
+        Limpiar filtros
+      </ion-button>
+    </div>
+  </div>
+</ion-content>
+
+<!-- Summary Footer -->
+<ion-footer *ngIf="filteredPedidos.length > 0" class="summary-footer">
+  <ion-toolbar>
+    <ion-title size="small" class="ion-text-center">
+      {{ getPedidosCount() }} pedido(s) | 
+      Total: {{ getTotalAmount() | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+      <span *ngIf="getActiveFiltersCount() > 0" class="filter-indicator">
+        • {{ getActiveFiltersCount() }} filtro(s)
+      </span>
+    </ion-title>
+  </ion-toolbar>
+</ion-footer>

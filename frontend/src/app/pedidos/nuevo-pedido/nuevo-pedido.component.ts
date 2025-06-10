@@ -7,6 +7,7 @@ import { IonicModule, AlertController, IonContent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { ProductoService, Producto } from '../../productos/services/producto.service';
 import { UiService } from '../../core/services/ui.service';
+import { PedidosListaComponent } from '../pedidos-lista/pedidos-lista.component';
 
 interface Categoria {
   id: string;
@@ -18,7 +19,13 @@ interface Categoria {
   templateUrl: './nuevo-pedido.component.html',
   styleUrls: ['./nuevo-pedido.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, RouterModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    FormsModule,
+    RouterModule,
+    PedidosListaComponent
+  ]
 })
 export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   @ViewChild(IonContent) content!: IonContent;
@@ -35,6 +42,31 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   metodoPago = 'efectivo';
   totalPedido = 0;
 
+  // Modal para productos pesables
+  showPesoModal = false;
+  productoSeleccionado: Producto | null = null;
+  pesoTemporal = '0.00';
+
+  private holdInterval: any;
+  private holdStart = 0;
+
+  getUnitLabel(producto?: Producto | null): string {
+    if (!producto) {
+      return '';
+    }
+
+    const label = producto.unit_label?.trim();
+
+    if (producto.is_weighable) {
+      if (!label || label.toLowerCase() === 'unidad') {
+        return 'kg';
+      }
+      return label;
+    }
+
+    return label || 'unidad';
+  }
+
   constructor(
     private productoService: ProductoService,
     private alertController: AlertController,
@@ -48,7 +80,6 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Asegurarnos de que el contenido se renderice correctamente
     setTimeout(() => {
       this.content.scrollToTop();
       this.fixAriaHiddenIssues();
@@ -57,10 +88,8 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
 
   fixAriaHiddenIssues() {
     setTimeout(() => {
-      // Remover aria-hidden de elementos que podrían afectar el scroll
       const elementsWithAriaHidden = document.querySelectorAll('[aria-hidden="true"]');
       elementsWithAriaHidden.forEach(el => {
-        // Solo remover aria-hidden de los contenedores principales que podrían afectar el scroll
         if (el.classList.contains('catalogo-productos') || 
             el.classList.contains('detalle-items') || 
             el.classList.contains('ion-content') || 
@@ -78,7 +107,6 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
 
   cambiarSeccion(event: any) {
     this.seccionActual = event.detail.value;
-    // Resetear el scroll cuando se cambia de sección
     setTimeout(() => {
       this.content.scrollToTop();
       this.fixAriaHiddenIssues();
@@ -99,7 +127,6 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   }
 
   cargarCategorias() {
-    // Datos de ejemplo
     this.categorias = [
       { id: 'cat1', name: 'Panadería' },
       { id: 'cat2', name: 'Pastelería' },
@@ -145,44 +172,117 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   }
 
   async agregarAlPedido(producto: Producto) {
-    const alert = await this.alertController.create({
-      header: 'Cantidad',
-      inputs: [
-        {
-          name: 'cantidad',
-          type: 'number',
-          min: 1,
-          value: 1
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Agregar',
-          handler: (data) => {
-            const cantidad = parseInt(data.cantidad, 10) || 1;
-            const subtotal = producto.price * cantidad;
-            
-            this.itemsPedido.push({
-              producto,
-              cantidad,
-              subtotal
-            });
-            
-            this.calcularTotal();
-          }
-        }
-      ]
-    });
+    if (producto.is_weighable) {
+      this.productoSeleccionado = producto;
+      this.pesoTemporal = '0.00';
+      this.showPesoModal = true;
+    } else {
+      const existente = this.itemsPedido.find(item => item.producto.id === producto.id);
 
-    await alert.present();
+      if (existente) {
+        existente.cantidad += 1;
+        existente.subtotal = existente.cantidad * producto.price;
+      } else {
+        this.itemsPedido.push({
+          producto,
+          cantidad: 1,
+          subtotal: producto.price
+        });
+      }
+
+      this.calcularTotal();
+    }
+  }
+
+  ajustarPeso(delta: number) {
+    let peso = parseFloat(this.pesoTemporal) || 0;
+    peso = Math.max(0, parseFloat((peso + delta).toFixed(2)));
+    this.pesoTemporal = peso.toFixed(2);
+  }
+
+  startHold(increase: boolean) {
+    this.holdStart = Date.now();
+    const direction = increase ? 1 : -1;
+    this.holdInterval = setInterval(() => {
+      const elapsed = Date.now() - this.holdStart;
+      let step = 0.05;
+      if (elapsed > 4000) {
+        step = 1;
+      } else if (elapsed > 2000) {
+        step = 0.1;
+      } else {
+        step = 0.05;
+      }
+      this.ajustarPeso(step * direction);
+    }, 200);
+  }
+
+  stopHold() {
+    if (this.holdInterval) {
+      clearInterval(this.holdInterval);
+      this.holdInterval = null;
+    }
+  }
+
+  confirmarPeso() {
+    if (!this.productoSeleccionado) {
+      return;
+    }
+    const cantidad = parseFloat(this.pesoTemporal);
+    if (isNaN(cantidad) || cantidad <= 0) {
+      this.mostrarError('Peso inválido');
+      return;
+    }
+
+    const subtotal = this.productoSeleccionado.price * cantidad;
+    this.itemsPedido.push({
+      producto: this.productoSeleccionado,
+      cantidad,
+      subtotal
+    });
+    this.calcularTotal();
+    this.cerrarPesoModal();
+  }
+
+  cerrarPesoModal() {
+    this.showPesoModal = false;
+    this.productoSeleccionado = null;
+    this.pesoTemporal = '0.00';
+    this.stopHold();
   }
 
   eliminarItem(index: number) {
     this.itemsPedido.splice(index, 1);
+    this.calcularTotal();
+  }
+
+  modificarCantidad(item: {producto: Producto, cantidad: number, subtotal: number}, aumentar: boolean) {
+    const step = item.producto.is_weighable ? 0.05 : 1;
+    let nuevaCantidad = item.cantidad + (aumentar ? step : -step);
+    nuevaCantidad = item.producto.is_weighable ? parseFloat(nuevaCantidad.toFixed(2)) : Math.round(nuevaCantidad);
+    this.establecerCantidad(item, nuevaCantidad);
+  }
+
+  cambiarCantidadManual(item: {producto: Producto, cantidad: number, subtotal: number}, valor: string) {
+    let cantidad = parseFloat(valor);
+    if (isNaN(cantidad)) {
+      return;
+    }
+    cantidad = item.producto.is_weighable ? parseFloat(cantidad.toFixed(2)) : Math.round(cantidad);
+    this.establecerCantidad(item, cantidad);
+  }
+
+  private establecerCantidad(item: {producto: Producto, cantidad: number, subtotal: number}, cantidad: number) {
+    if (cantidad <= 0) {
+      const index = this.itemsPedido.indexOf(item);
+      if (index !== -1) {
+        this.eliminarItem(index);
+      }
+      return;
+    }
+
+    item.cantidad = cantidad;
+    item.subtotal = item.producto.price * cantidad;
     this.calcularTotal();
   }
 
@@ -227,7 +327,6 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Lógica para crear el pedido en el backend
     const alert = await this.alertController.create({
       header: 'Éxito',
       message: 'Pedido creado exitosamente',
@@ -236,7 +335,6 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
 
     await alert.present();
     
-    // Reiniciar formulario
     this.itemsPedido = [];
     this.totalPedido = 0;
     this.nombreCliente = '';
@@ -251,5 +349,9 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
       buttons: ['OK']
     });
     await alert.present();
+  }
+
+  esPesoValido(): boolean {
+    return !!(this.pesoTemporal && parseFloat(this.pesoTemporal) > 0);
   }
 }

@@ -9,6 +9,7 @@ import { RouterModule, Routes } from '@angular/router';
 // Componentes Standalone
 import { OrderDetailsComponent } from './details/order-details.component';
 import { OrderListComponent } from './list/order-list.component';
+import { CreateOrderComponent } from './create/create-order.component';
 
 // Modales Standalone
 import { CouponModal } from './modals/coupon.modal';
@@ -32,6 +33,10 @@ const routes: Routes = [
     component: OrderListComponent
   },
   {
+    path: 'create',
+    component: CreateOrderComponent
+  },
+  {
     path: 'details/:id',
     component: OrderDetailsComponent,
     canActivate: [OrderDetailsGuard]
@@ -52,6 +57,7 @@ const routes: Routes = [
     // Importación de componentes/pipes standalone
     OrderDetailsComponent,
     OrderListComponent,
+    CreateOrderComponent,
     CouponModal,
     OrderSummaryModal,
     OrderStatusPipe,
@@ -65,6 +71,7 @@ const routes: Routes = [
   exports: [
     OrderDetailsComponent,
     OrderListComponent,
+    CreateOrderComponent,
     CouponModal,
     OrderSummaryModal,
     OrderStatusPipe,
@@ -83,3 +90,4 @@ export * from './services/order-queue.service';
 export * from './guards/order-details.guard';
 export * from './pipes/order-status.pipe';
 export * from './pipes/order-type.pipe';
+export * from './create/create-order.component';
