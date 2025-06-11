@@ -1,0 +1,26 @@
+<!-- frontend/src/app/inventory/inventory.component.html -->
+
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Inventario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-button expand="block" color="success" (click)="agregarProducto()">
+    Agregar Producto
+  </ion-button>
+
+  <ion-list *ngIf="!loading">
+    <ion-item *ngFor="let producto of productos">
+      <ion-label>
+        <h2>{{ producto.nombre }}</h2>
+        <p>{{ producto.descripcion }}</p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" color="medium" (click)="editarProducto(producto)">Editar</ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="eliminarProducto(producto)">Eliminar</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-spinner *ngIf="loading" class="spinner-center" name="crescent"></ion-spinner>
+</ion-content>
