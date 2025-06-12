@@ -47,7 +47,7 @@ export class MainMenuComponent implements OnInit {
     { title: 'Dashboard', url: '/admin/dashboard', icon: 'speedometer', permission: 'ver_reportes' },
     { title: 'Productos', url: '/productos', icon: 'cube', permission: 'ver_productos' },
     { title: 'Pedidos', url: '/pedidos', icon: 'receipt', permission: 'ver_ordenes' },
-    { title: 'Caja', url: '/caja', icon: 'cash', permission: 'ver_caja' },
+    { title: 'Caja', url: '/cash-register', icon: 'cash', permission: 'ver_caja' },
     { title: 'Inventario', url: '/inventory', icon: 'file-tray-full', permission: 'ver_inventario' },
     { title: 'Reportes', url: '/reportes', icon: 'stats-chart', permission: 'ver_reportes' }
   ];

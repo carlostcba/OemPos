@@ -24,9 +24,9 @@ export const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'caja',
-    loadChildren: () => import('./caja/caja.module').then(m => m.CajaModule),
-    canActivate: [AuthGuard]
+  path: 'cash-register',
+  loadChildren: () => import('./cash-register/cash-register.module').then(m => m.CashRegisterModule),
+  canActivate: [AuthGuard]
   },
   {
     path: 'pedidos',
