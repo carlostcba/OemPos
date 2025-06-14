@@ -1,4 +1,4 @@
-// backend/controllers/order.controller.js
+// backend/controllers/order.controller.js - CÓDIGO COMPLETO
 const { Order, OrderItem, Coupon, Product, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
@@ -20,27 +20,26 @@ exports.getAll = async (req, res) => {
     const where = {};
     
     if (startDate && endDate) {
-  where.created_at = {
-    [Op.between]: [
-      formatDateForSQL(startDate),
-      formatDateForSQL(endDate)
-    ]
-  };
-} else if (startDate) {
-  where.created_at = {
-    [Op.gte]: formatDateForSQL(startDate)
-  };
-} else if (endDate) {
-  where.created_at = {
-    [Op.lte]: formatDateForSQL(endDate)
-  };
-}
+      where.created_at = {
+        [Op.between]: [
+          formatDateForSQL(startDate),
+          formatDateForSQL(endDate)
+        ]
+      };
+    } else if (startDate) {
+      where.created_at = {
+        [Op.gte]: formatDateForSQL(startDate)
+      };
+    } else if (endDate) {
+      where.created_at = {
+        [Op.lte]: formatDateForSQL(endDate)
+      };
+    }
 
-// ✅ Evitar errores si quedó vacío
-if (where.created_at && Object.keys(where.created_at).length === 0) {
-  delete where.created_at;
-}
-
+    // ✅ Evitar errores si quedó vacío
+    if (where.created_at && Object.keys(where.created_at).length === 0) {
+      delete where.created_at;
+    }
     
     if (status) {
       where.status = status;
@@ -99,9 +98,8 @@ exports.getById = async (req, res) => {
   }
 };
 
-// Crear una orden nueva con productos
+// ✅ CREAR ORDEN - VERSIÓN FINAL FUNCIONAL
 exports.create = async (req, res) => {
-  // ✅ Usar transacción manual simple
   const transaction = await sequelize.transaction();
   
   try {
@@ -112,7 +110,6 @@ exports.create = async (req, res) => {
       customer_email,
       table_number,
       delivery_address,
-      delivery_date,
       total_amount,
       deposit_amount,
       discount_percentage,
@@ -120,8 +117,6 @@ exports.create = async (req, res) => {
       payment_method,
       total_cash_paid,
       total_non_cash_paid,
-      first_payment_date,
-      last_payment_date,
       created_by,
       cash_register_id,
       coupon_code,
@@ -135,99 +130,132 @@ exports.create = async (req, res) => {
     }
 
     logger.info('📦 Creando nueva orden', {
-      type,
-      customer_name,
-      itemsCount: items.length,
-      total_amount,
-      created_by
+      type, customer_name, itemsCount: items.length, total_amount, created_by
     });
 
-    // ✅ Generar código de orden
+    // ✅ GENERAR CÓDIGO DE ORDEN
     const codePrefix = { orden: 'O', pedido: 'P', delivery: 'D', salon: 'S' }[type];
     
-    // Contar órdenes del día actual para este tipo
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const [countResult] = await sequelize.query(
+      `SELECT COUNT(*) as count FROM Orders 
+       WHERE type = :type AND 
+       CAST(created_at AS DATE) = CAST(GETDATE() AS DATE)`,
+      {
+        replacements: { type },
+        type: sequelize.QueryTypes.SELECT,
+        transaction
+      }
+    );
     
-    const countToday = await Order.count({
-      where: {
-        type,
-        created_at: {
-          [Op.gte]: today,
-          [Op.lt]: tomorrow
-        }
-      },
-      transaction
-    });
-    
+    const countToday = parseInt(countResult.count || 0);
     const orderCode = `${codePrefix}${String(countToday + 1).padStart(3, '0')}`;
-    
-    // ✅ Crear orden
-    const order = await Order.create({
+    const orderId = uuidv4();
+
+    // ✅ CREAR ORDEN PRINCIPAL
+    const orderData = {
+      id: orderId,
       order_code: orderCode,
       type,
       status: 'pendiente',
       customer_name: customer_name || '',
-      customer_phone,
-      customer_email,
-      table_number,
-      delivery_address,
-      delivery_date,
       total_amount,
       deposit_amount: deposit_amount || 0,
-      total_cash_paid: total_cash_paid || 0,
-      total_non_cash_paid: total_non_cash_paid || 0,
       discount_percentage: discount_percentage || 0,
       discount_amount: discount_amount || 0,
-      payment_method,
-      first_payment_date,
-      last_payment_date,
-      created_by,
-      cash_register_id,
-      coupon_code,
-      created_at: new Date()
-    }, { transaction });
+      total_cash_paid: total_cash_paid || 0,
+      total_non_cash_paid: total_non_cash_paid || 0,
+      created_by
+    };
 
-    // ✅ Crear items
+    // ✅ Agregar campos opcionales solo si existen
+    if (payment_method) orderData.payment_method = payment_method;
+    if (customer_phone) orderData.customer_phone = customer_phone;
+    if (customer_email) orderData.customer_email = customer_email;
+    if (table_number) orderData.table_number = table_number;
+    if (delivery_address) orderData.delivery_address = delivery_address;
+    if (cash_register_id) orderData.cash_register_id = cash_register_id;
+    if (coupon_code) orderData.coupon_code = coupon_code;
+
+    console.log('🔧 Datos de orden:', orderData);
+
+    // ✅ INSERTAR ORDEN CON SQL DIRECTO
+    const fields = Object.keys(orderData).join(', ');
+    const placeholders = Object.keys(orderData).map(key => `:${key}`).join(', ');
+    
+    await sequelize.query(
+      `INSERT INTO Orders (${fields}, created_at) VALUES (${placeholders}, GETDATE())`,
+      {
+        replacements: orderData,
+        type: sequelize.QueryTypes.INSERT,
+        transaction
+      }
+    );
+
+    console.log('✅ Orden creada con ID:', orderId);
+
+    // ✅ CREAR ITEMS CON SQL DIRECTO
     const orderItems = [];
-    for (const item of items) {
-      const orderItem = await OrderItem.create({
-        order_id: order.id,
-        product_id: item.product_id,
-        product_name: item.product_name || '',
-        quantity: item.quantity,
-        unit_label: item.unit_label || 'unidad',
-        unit_price: item.unit_price,
-        final_price: item.final_price,
-        discount_applied: item.discount_applied || 0,
-        subtotal: item.quantity * item.final_price,
-        is_weighable: item.is_weighable || false
-      }, { transaction });
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const itemId = uuidv4();
       
-      orderItems.push(orderItem);
+      const orderItemData = {
+        id: itemId,
+        order_id: orderId,
+        product_id: item.product_id,
+        product_name: item.product_name || `Producto ${i + 1}`,
+        quantity: parseFloat(item.quantity),
+        unit_price: parseFloat(item.unit_price),
+        final_price: parseFloat(item.final_price || item.unit_price),
+        subtotal: parseFloat(item.quantity) * parseFloat(item.final_price || item.unit_price),
+        unit_label: item.unit_label || 'unidad',
+        discount_applied: parseFloat(item.discount_applied || 0),
+        is_weighable: item.is_weighable ? 1 : 0  // SQL Server usa 1/0 para boolean
+      };
+
+      console.log(`🔧 Creando item ${i + 1}:`, orderItemData);
+
+      // ✅ INSERTAR ITEM CON SQL DIRECTO
+      await sequelize.query(
+        `INSERT INTO OrderItems (
+          id, order_id, product_id, product_name, quantity, 
+          unit_price, final_price, subtotal, unit_label, 
+          discount_applied, is_weighable
+        ) VALUES (
+          :id, :order_id, :product_id, :product_name, :quantity,
+          :unit_price, :final_price, :subtotal, :unit_label,
+          :discount_applied, :is_weighable
+        )`,
+        {
+          replacements: orderItemData,
+          type: sequelize.QueryTypes.INSERT,
+          transaction
+        }
+      );
+
+      orderItems.push({ id: itemId, ...orderItemData });
+      console.log(`✅ Item ${i + 1} creado:`, itemId);
     }
 
-    // ✅ Commit
+    // ✅ COMMIT
     await transaction.commit();
     
-    logger.info('✅ Orden creada exitosamente', {
-      orderId: order.id,
-      orderCode: order.order_code,
-      type: order.type,
+    logger.info('✅ Orden completada', {
+      orderId,
+      orderCode,
+      type,
       itemsCount: orderItems.length
     });
 
-    // ✅ Retornar orden con items
-    const createdOrder = await Order.findByPk(order.id, {
+    // ✅ RETORNAR ORDEN COMPLETA
+    const createdOrder = await Order.findByPk(orderId, {
       include: [{ model: OrderItem, as: 'items' }]
     });
 
     res.status(201).json(createdOrder);
     
   } catch (error) {
-    // ✅ Rollback en caso de error
+    // ✅ ROLLBACK
     try {
       await transaction.rollback();
     } catch (rollbackError) {
@@ -241,7 +269,7 @@ exports.create = async (req, res) => {
     
     res.status(500).json({ 
       error: 'Error al crear orden', 
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Error interno'
+      message: error.message
     });
   }
 };
