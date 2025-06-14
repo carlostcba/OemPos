@@ -6,9 +6,9 @@ const logger = require('../utils/logger');
 const cache = require('../utils/cache');
 const { withTransaction } = require('../utils/transaction');
 
-const formatDateForSQL = (isoString) => {
-  const date = new Date(isoString);
-  return date.toISOString().slice(0, 19).replace('T', ' ');
+const formatDateForSQL = (date = new Date()) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toISOString().slice(0, 19).replace('T', ' ');
 };
 
 // Obtener todas las órdenes
@@ -274,7 +274,7 @@ exports.create = async (req, res) => {
   }
 };
 
-// Actualizar una orden existente
+// Actualizar una orden existente - VERSIÓN CORREGIDA
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
@@ -286,8 +286,8 @@ exports.update = async (req, res) => {
     delete safeUpdateData.order_code;
     delete safeUpdateData.created_at;
     
-    // Añadir timestamp de actualización
-    safeUpdateData.updated_at = new Date();
+    // ✅ FIX: Formatear fecha correctamente para SQL Server
+    safeUpdateData.updated_at = formatDateForSQL();
     
     await withTransaction(async (t) => {
       const [updated] = await Order.update(safeUpdateData, { 
@@ -312,7 +312,7 @@ exports.update = async (req, res) => {
         // Insertar o actualizar ítems
         for (const item of updateData.items) {
           if (item.id) {
-            // Actualizar ítem existente
+            // ✅ FIX: Actualizar ítem existente
             await OrderItem.update(
               {
                 product_id: item.product_id,
@@ -322,7 +322,7 @@ exports.update = async (req, res) => {
                 final_price: item.final_price,
                 discount_applied: item.discount_applied || 0,
                 subtotal: item.quantity * item.final_price,
-                updated_at: new Date()
+                updated_at: formatDateForSQL() // ✅ FIX AQUÍ
               },
               {
                 where: { id: item.id, order_id: id },
@@ -496,7 +496,7 @@ exports.applyCoupon = async (req, res) => {
         coupon_code,
         discount_amount: discountAmount,
         payment_method: payment_method || order.payment_method,
-        updated_at: new Date()
+        updated_at: formatDateForSQL()
       }, { transaction: t });
       
       // Incrementar uso del cupón
