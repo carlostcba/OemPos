@@ -1,4 +1,4 @@
-// backend/controllers/order.controller.js
+// backend/controllers/order.controller.js - CÓDIGO COMPLETO
 const { Order, OrderItem, Coupon, Product, sequelize } = require('../models');
 const { Op } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
@@ -6,9 +6,9 @@ const logger = require('../utils/logger');
 const cache = require('../utils/cache');
 const { withTransaction } = require('../utils/transaction');
 
-const formatDateForSQL = (isoString) => {
-  const date = new Date(isoString);
-  return date.toISOString().slice(0, 19).replace('T', ' ');
+const formatDateForSQL = (date = new Date()) => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toISOString().slice(0, 19).replace('T', ' ');
 };
 
 // Obtener todas las órdenes
@@ -20,27 +20,26 @@ exports.getAll = async (req, res) => {
     const where = {};
     
     if (startDate && endDate) {
-  where.created_at = {
-    [Op.between]: [
-      formatDateForSQL(startDate),
-      formatDateForSQL(endDate)
-    ]
-  };
-} else if (startDate) {
-  where.created_at = {
-    [Op.gte]: formatDateForSQL(startDate)
-  };
-} else if (endDate) {
-  where.created_at = {
-    [Op.lte]: formatDateForSQL(endDate)
-  };
-}
+      where.created_at = {
+        [Op.between]: [
+          formatDateForSQL(startDate),
+          formatDateForSQL(endDate)
+        ]
+      };
+    } else if (startDate) {
+      where.created_at = {
+        [Op.gte]: formatDateForSQL(startDate)
+      };
+    } else if (endDate) {
+      where.created_at = {
+        [Op.lte]: formatDateForSQL(endDate)
+      };
+    }
 
-// ✅ Evitar errores si quedó vacío
-if (where.created_at && Object.keys(where.created_at).length === 0) {
-  delete where.created_at;
-}
-
+    // ✅ Evitar errores si quedó vacío
+    if (where.created_at && Object.keys(where.created_at).length === 0) {
+      delete where.created_at;
+    }
     
     if (status) {
       where.status = status;
@@ -99,8 +98,10 @@ exports.getById = async (req, res) => {
   }
 };
 
-// Crear una orden nueva con productos
+// ✅ CREAR ORDEN - VERSIÓN FINAL FUNCIONAL
 exports.create = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
   try {
     const {
       type,
@@ -109,7 +110,6 @@ exports.create = async (req, res) => {
       customer_email,
       table_number,
       delivery_address,
-      delivery_date,
       total_amount,
       deposit_amount,
       discount_percentage,
@@ -117,211 +117,164 @@ exports.create = async (req, res) => {
       payment_method,
       total_cash_paid,
       total_non_cash_paid,
-      first_payment_date,
-      last_payment_date,
       created_by,
       cash_register_id,
       coupon_code,
       items
     } = req.body;
 
-    // Validación básica
+    // ✅ Validación básica
     if (!type || !total_amount || !created_by || !items || !items.length) {
+      await transaction.rollback();
       return res.status(400).json({ error: 'Faltan campos obligatorios o productos' });
     }
 
-    // Usar la función withTransaction para manejo robusto de transacciones
-    const result = await withTransaction(async (t) => {
-      // Si hay un cupón, verificarlo
-      let finalDiscountAmount = discount_amount || 0;
-      
-      if (coupon_code) {
-        const coupon = await Coupon.findOne({ 
-          where: { 
-            code: coupon_code,
-            is_active: true,
-            valid_from: { [Op.lte]: new Date() },
-            [Op.or]: [
-              { valid_to: null },
-              { valid_to: { [Op.gte]: new Date() }}
-            ]
-          },
-          transaction: t
-        });
-        
-        if (!coupon) {
-          throw new Error('Cupón inválido o expirado');
-        }
-        
-        // Calcular el descuento según si es porcentual o monto fijo
-        if (coupon.discount_type === 'percentage') {
-          finalDiscountAmount = total_amount * (coupon.discount_value / 100);
-        } else {
-          finalDiscountAmount = coupon.discount_value;
-        }
-        
-        // Validar condiciones específicas del cupón
-        if (coupon.min_purchase_amount > 0 && total_amount < coupon.min_purchase_amount) {
-          throw new Error(`El monto mínimo para este cupón es ${coupon.min_purchase_amount}`);
-        }
-        
-        if (coupon.cash_payment_only && payment_method !== 'efectivo') {
-          throw new Error('Este cupón solo es válido para pagos en efectivo');
-        }
-        
-        // Incrementar contador de uso del cupón
-        await Coupon.update(
-          { usage_count: sequelize.literal('usage_count + 1') },
-          { where: { code: coupon_code }, transaction: t }
-        );
-      }
-
-      // Generar código de orden
-      const codePrefix = { orden: 'O', pedido: 'P', delivery: 'D', salon: 'S' }[type];
-
-      const [results] = await sequelize.query(
-        `SELECT COUNT(*) AS count FROM Orders WHERE type = ? AND CONVERT(date, created_at) = CONVERT(date, GETDATE())`,
-        {
-          replacements: [type],
-          type: sequelize.QueryTypes.SELECT,
-          transaction: t
-        }
-      );
-      
-      const countToday = results.count;
-      const orderCode = `${codePrefix}${String(countToday + 1).padStart(3, '0')}`;
-      const orderId = uuidv4();
-
-      // Insertar la orden
-      await sequelize.query(
-        `INSERT INTO Orders (
-          id, order_code, type, status, customer_name, customer_phone, customer_email, 
-          table_number, delivery_address, delivery_date, total_amount, deposit_amount,
-          total_cash_paid, total_non_cash_paid, discount_percentage, discount_amount,
-          payment_method, first_payment_date, last_payment_date, created_by, cash_register_id, coupon_code, created_at
-        ) 
-        VALUES (
-          :id, :order_code, :type, :status, :customer_name, :customer_phone, :customer_email,
-          :table_number, :delivery_address, :delivery_date, :total_amount, :deposit_amount,
-          :total_cash_paid, :total_non_cash_paid, :discount_percentage, :discount_amount,
-          :payment_method, :first_payment_date, :last_payment_date, :created_by, :cash_register_id, :coupon_code, GETDATE()
-        )`,
-        {
-          replacements: {
-            id: orderId,
-            order_code: orderCode,
-            type,
-            status: 'pendiente',
-            customer_name,
-            customer_phone: customer_phone || null,
-            customer_email: customer_email || null,
-            table_number: table_number || null,
-            delivery_address: delivery_address || null,
-            delivery_date: delivery_date || null,
-            total_amount,
-            deposit_amount: deposit_amount || 0,
-            total_cash_paid: total_cash_paid || 0,
-            total_non_cash_paid: total_non_cash_paid || 0,
-            discount_percentage: discount_percentage || 0,
-            discount_amount: finalDiscountAmount,
-            payment_method: payment_method || null,
-            first_payment_date: first_payment_date || null,
-            last_payment_date: last_payment_date || null,
-            created_by,
-            cash_register_id: cash_register_id || null,
-            coupon_code: coupon_code || null
-          },
-          type: sequelize.QueryTypes.INSERT,
-          transaction: t
-        }
-      );
-
-      // Insertar los ítems de la orden
-      for (const item of items) {
-        // Validar que el producto exista si es necesario
-        if (item.product_id) {
-          const product = await Product.findByPk(item.product_id, { transaction: t });
-          if (!product) {
-            throw new Error(`Producto no encontrado: ${item.product_id}`);
-          }
-        }
-        
-        await sequelize.query(
-          `INSERT INTO OrderItems (
-            id, order_id, product_id, product_name, quantity, unit_label,
-            unit_price, final_price, discount_applied, subtotal, created_at
-          ) VALUES (
-            :id, :order_id, :product_id, :product_name, :quantity, :unit_label,
-            :unit_price, :final_price, :discount_applied, :subtotal, GETDATE()
-          )`,
-          {
-            replacements: {
-              id: uuidv4(),
-              order_id: orderId,
-              product_id: item.product_id,
-              product_name: item.product_name || '',
-              quantity: item.quantity,
-              unit_label: item.unit_label || 'unidad',
-              unit_price: item.unit_price,
-              final_price: item.final_price,
-              discount_applied: item.discount_applied || 0,
-              subtotal: item.quantity * item.final_price
-            },
-            type: sequelize.QueryTypes.INSERT,
-            transaction: t
-          }
-        );
-      }
-
-      // Retornar el ID de la orden creada
-      return orderId;
-    }, { 
-      maxRetries: 3,
-      initialDelay: 200
+    logger.info('📦 Creando nueva orden', {
+      type, customer_name, itemsCount: items.length, total_amount, created_by
     });
 
-    // Invalidar caché relacionada
-    cache.invalidatePattern(/^orders:/);
-    cache.invalidatePattern(/^dashboard:/);
+    // ✅ GENERAR CÓDIGO DE ORDEN
+    const codePrefix = { orden: 'O', pedido: 'P', delivery: 'D', salon: 'S' }[type];
     
-    // Obtener la orden creada
-    const [createdOrder] = await sequelize.query(
-      `SELECT * FROM Orders WHERE id = :id`,
+    const [countResult] = await sequelize.query(
+      `SELECT COUNT(*) as count FROM Orders 
+       WHERE type = :type AND 
+       CAST(created_at AS DATE) = CAST(GETDATE() AS DATE)`,
       {
-        replacements: { id: result },
-        type: sequelize.QueryTypes.SELECT
+        replacements: { type },
+        type: sequelize.QueryTypes.SELECT,
+        transaction
+      }
+    );
+    
+    const countToday = parseInt(countResult.count || 0);
+    const orderCode = `${codePrefix}${String(countToday + 1).padStart(3, '0')}`;
+    const orderId = uuidv4();
+
+    // ✅ CREAR ORDEN PRINCIPAL
+    const orderData = {
+      id: orderId,
+      order_code: orderCode,
+      type,
+      status: 'pendiente',
+      customer_name: customer_name || '',
+      total_amount,
+      deposit_amount: deposit_amount || 0,
+      discount_percentage: discount_percentage || 0,
+      discount_amount: discount_amount || 0,
+      total_cash_paid: total_cash_paid || 0,
+      total_non_cash_paid: total_non_cash_paid || 0,
+      created_by
+    };
+
+    // ✅ Agregar campos opcionales solo si existen
+    if (payment_method) orderData.payment_method = payment_method;
+    if (customer_phone) orderData.customer_phone = customer_phone;
+    if (customer_email) orderData.customer_email = customer_email;
+    if (table_number) orderData.table_number = table_number;
+    if (delivery_address) orderData.delivery_address = delivery_address;
+    if (cash_register_id) orderData.cash_register_id = cash_register_id;
+    if (coupon_code) orderData.coupon_code = coupon_code;
+
+    console.log('🔧 Datos de orden:', orderData);
+
+    // ✅ INSERTAR ORDEN CON SQL DIRECTO
+    const fields = Object.keys(orderData).join(', ');
+    const placeholders = Object.keys(orderData).map(key => `:${key}`).join(', ');
+    
+    await sequelize.query(
+      `INSERT INTO Orders (${fields}, created_at) VALUES (${placeholders}, GETDATE())`,
+      {
+        replacements: orderData,
+        type: sequelize.QueryTypes.INSERT,
+        transaction
       }
     );
 
-    logger.info('✅ Orden creada exitosamente', {
-      orderId: result,
-      orderCode: createdOrder.order_code,
-      type: createdOrder.type
+    console.log('✅ Orden creada con ID:', orderId);
+
+    // ✅ CREAR ITEMS CON SQL DIRECTO
+    const orderItems = [];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const itemId = uuidv4();
+      
+      const orderItemData = {
+        id: itemId,
+        order_id: orderId,
+        product_id: item.product_id,
+        product_name: item.product_name || `Producto ${i + 1}`,
+        quantity: parseFloat(item.quantity),
+        unit_price: parseFloat(item.unit_price),
+        final_price: parseFloat(item.final_price || item.unit_price),
+        subtotal: parseFloat(item.quantity) * parseFloat(item.final_price || item.unit_price),
+        unit_label: item.unit_label || 'unidad',
+        discount_applied: parseFloat(item.discount_applied || 0),
+        is_weighable: item.is_weighable ? 1 : 0  // SQL Server usa 1/0 para boolean
+      };
+
+      console.log(`🔧 Creando item ${i + 1}:`, orderItemData);
+
+      // ✅ INSERTAR ITEM CON SQL DIRECTO
+      await sequelize.query(
+        `INSERT INTO OrderItems (
+          id, order_id, product_id, product_name, quantity, 
+          unit_price, final_price, subtotal, unit_label, 
+          discount_applied, is_weighable
+        ) VALUES (
+          :id, :order_id, :product_id, :product_name, :quantity,
+          :unit_price, :final_price, :subtotal, :unit_label,
+          :discount_applied, :is_weighable
+        )`,
+        {
+          replacements: orderItemData,
+          type: sequelize.QueryTypes.INSERT,
+          transaction
+        }
+      );
+
+      orderItems.push({ id: itemId, ...orderItemData });
+      console.log(`✅ Item ${i + 1} creado:`, itemId);
+    }
+
+    // ✅ COMMIT
+    await transaction.commit();
+    
+    logger.info('✅ Orden completada', {
+      orderId,
+      orderCode,
+      type,
+      itemsCount: orderItems.length
+    });
+
+    // ✅ RETORNAR ORDEN COMPLETA
+    const createdOrder = await Order.findByPk(orderId, {
+      include: [{ model: OrderItem, as: 'items' }]
     });
 
     res.status(201).json(createdOrder);
+    
   } catch (error) {
+    // ✅ ROLLBACK
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      logger.error('❌ Error en rollback:', rollbackError);
+    }
+    
     logger.error('❌ Error al crear orden:', { 
       error: error.message, 
       stack: error.stack
     });
     
-    // Manejo específico de errores conocidos
-    if (error.message.includes('Cupón inválido') || 
-        error.message.includes('monto mínimo') ||
-        error.message.includes('solo es válido') ||
-        error.message.includes('Producto no encontrado')) {
-      return res.status(400).json({ error: error.message });
-    }
-    
     res.status(500).json({ 
       error: 'Error al crear orden', 
-      message: error.message 
+      message: error.message
     });
   }
 };
 
-// Actualizar una orden existente
+// Actualizar una orden existente - VERSIÓN CORREGIDA
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
@@ -333,8 +286,8 @@ exports.update = async (req, res) => {
     delete safeUpdateData.order_code;
     delete safeUpdateData.created_at;
     
-    // Añadir timestamp de actualización
-    safeUpdateData.updated_at = new Date();
+    // ✅ FIX: Formatear fecha correctamente para SQL Server
+    safeUpdateData.updated_at = formatDateForSQL();
     
     await withTransaction(async (t) => {
       const [updated] = await Order.update(safeUpdateData, { 
@@ -359,7 +312,7 @@ exports.update = async (req, res) => {
         // Insertar o actualizar ítems
         for (const item of updateData.items) {
           if (item.id) {
-            // Actualizar ítem existente
+            // ✅ FIX: Actualizar ítem existente
             await OrderItem.update(
               {
                 product_id: item.product_id,
@@ -369,7 +322,7 @@ exports.update = async (req, res) => {
                 final_price: item.final_price,
                 discount_applied: item.discount_applied || 0,
                 subtotal: item.quantity * item.final_price,
-                updated_at: new Date()
+                updated_at: formatDateForSQL() // ✅ FIX AQUÍ
               },
               {
                 where: { id: item.id, order_id: id },
@@ -543,7 +496,7 @@ exports.applyCoupon = async (req, res) => {
         coupon_code,
         discount_amount: discountAmount,
         payment_method: payment_method || order.payment_method,
-        updated_at: new Date()
+        updated_at: formatDateForSQL()
       }, { transaction: t });
       
       // Incrementar uso del cupón

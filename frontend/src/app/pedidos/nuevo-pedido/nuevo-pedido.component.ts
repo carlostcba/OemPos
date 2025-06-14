@@ -7,7 +7,11 @@ import { IonicModule, AlertController, IonContent } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
 import { ProductoService, Producto } from '../../productos/services/producto.service';
 import { UiService } from '../../core/services/ui.service';
+import { PedidosService, type CreatePedidoRequest } from '../services/pedidos.service';
 import { PedidosListaComponent } from '../pedidos-lista/pedidos-lista.component';
+import { AuthService } from '../../core/services/auth.service';
+
+
 
 interface Categoria {
   id: string;
@@ -30,6 +34,7 @@ interface Categoria {
 export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   @ViewChild(IonContent) content!: IonContent;
   
+  private currentUser: any = null;
   seccionActual = 'nuevo';
   terminoBusqueda = '';
   categoriaSeleccionada = 'todas';
@@ -71,12 +76,15 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
     private productoService: ProductoService,
     private alertController: AlertController,
     private router: Router,
-    private uiService: UiService
+    private uiService: UiService,
+    private pedidosService: PedidosService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.cargarProductos();
     this.cargarCategorias();
+    this.loadCurrentUser();
   }
 
   ngAfterViewInit() {
@@ -170,6 +178,13 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
       );
     }
   }
+
+  private loadCurrentUser() {
+  this.authService.currentUser.subscribe(user => {
+    this.currentUser = user;
+    console.log('👤 Usuario cargado:', user?.username);
+  });
+}
 
   async agregarAlPedido(producto: Producto) {
     if (producto.is_weighable) {
@@ -326,20 +341,43 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
       this.mostrarError('Agregue al menos un producto al pedido');
       return;
     }
+    const pedidoData: CreatePedidoRequest = {
+      type: this.esPedidoAnticipado ? 'pedido' : 'orden',
+      customer_name: this.nombreCliente,
+      payment_method: this.metodoPago,
+      created_by: this.currentUser?.id || 'temp-user-id',
+      total_amount: this.totalPedido,
+      items: this.itemsPedido.map(item => ({
+        product_id: item.producto.id,
+        product_name: item.producto.name,
+        quantity: item.cantidad,
+        unit_price: item.producto.price,
+        final_price: item.producto.price,
+        subtotal: item.subtotal,
+        unit_label: this.getUnitLabel(item.producto),
+        is_weighable: item.producto.is_weighable
+      }))
+    };
 
-    const alert = await this.alertController.create({
-      header: 'Éxito',
-      message: 'Pedido creado exitosamente',
-      buttons: ['OK']
-    });
+    try {
+      await this.pedidosService.create(pedidoData).toPromise();
 
-    await alert.present();
-    
-    this.itemsPedido = [];
-    this.totalPedido = 0;
-    this.nombreCliente = '';
-    this.esPedidoAnticipado = false;
-    this.metodoPago = 'efectivo';
+      const alert = await this.alertController.create({
+        header: 'Éxito',
+        message: 'Pedido creado exitosamente',
+        buttons: ['OK']
+      });
+      await alert.present();
+
+      this.itemsPedido = [];
+      this.totalPedido = 0;
+      this.nombreCliente = '';
+      this.esPedidoAnticipado = false;
+      this.metodoPago = 'efectivo';
+    } catch (error) {
+      console.error('Error creando pedido:', error);
+      this.mostrarError('Error al crear el pedido');
+    }
   }
 
   async mostrarError(mensaje: string) {
