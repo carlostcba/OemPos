@@ -28,6 +28,22 @@ export interface Pedido {
   items?: PedidoItem[];
 }
 
+export interface CreatePedidoRequest {
+  type: Pedido['type'];
+  customer_name: string;
+  customer_phone?: string;
+  customer_email?: string;
+  table_number?: string;
+  delivery_address?: string;
+  delivery_date?: string;
+  payment_method?: string;
+  deposit_amount?: number;
+  coupon_code?: string;
+  items: Omit<PedidoItem, 'id' | 'order_id'>[];
+  total_amount?: number;
+  created_by: string;
+}
+
 export interface PedidoItem {
   id: string;
   order_id: string;
@@ -185,8 +201,16 @@ export class PedidosService {
     );
   }
 
-  create(pedidoData: Partial<Pedido>): Observable<Pedido> {
-    return this.http.post<Pedido>(this.apiUrl, pedidoData).pipe(
+  create(pedidoData: CreatePedidoRequest): Observable<Pedido> {
+    const total_amount = pedidoData.total_amount ??
+      pedidoData.items.reduce((sum, item) => sum + (item.quantity * item.final_price), 0);
+
+    const requestData = {
+      ...pedidoData,
+      total_amount
+    };
+
+    return this.http.post<Pedido>(this.apiUrl, requestData).pipe(
       tap(newPedido => {
         const currentPedidos = this.pedidosSubject.value;
         this.pedidosSubject.next([newPedido, ...currentPedidos]);
