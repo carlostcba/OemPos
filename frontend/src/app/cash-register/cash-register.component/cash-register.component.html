@@ -1,0 +1,41 @@
+<!-- // frontend/src/app/cash-register/cash-register.component/cash-register.component.html -->
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Caja</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Resumen del Día</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>Efectivo: ${{ totalEfectivo }}</p>
+      <p>Débito: ${{ totalDebito }}</p>
+      <p>Crédito: ${{ totalCredito }}</p>
+      <p>Billetera Electrónica: ${{ totalBilletera }}</p>
+      <p>Descuentos Aplicados: ${{ totalDescuentos }}</p>
+      <p>Pagos a Proveedores: ${{ totalPagosProveedores }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-button expand="full" color="success" (click)="abrirCaja()">Abrir Caja</ion-button>
+  <ion-button expand="full" color="warning" (click)="cerrarCaja()">Cerrar Caja</ion-button>
+  <ion-button expand="full" color="medium" (click)="agregarIngresoManual()">Agregar Ingreso Manual</ion-button>
+  <ion-button expand="full" color="danger" (click)="registrarPagoProveedor()">Pago a Proveedor</ion-button>
+
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Órdenes en curso</ion-label>
+    </ion-list-header>
+    <ion-item *ngFor="let orden of comandas">
+      <ion-label>
+        <h2>{{ orden.tipo | titlecase }} - {{ orden.codigo }}</h2>
+        <p>Estado: {{ orden.estado }}</p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" color="success" (click)="marcarOrdenComoPagada(orden)">Pagado</ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="cancelarOrden(orden)">Cancelar</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

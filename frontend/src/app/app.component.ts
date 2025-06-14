@@ -88,7 +88,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     //{ title: 'Inicio', url: '/dashboard', icon: 'home-outline', roles: ['admin', 'cajero', 'vendedor'] },
     { title: 'Ordenes', url: '/orders', icon: 'cart-outline', roles: ['admin', 'vendedor'] },
     { title: 'Pedidos', url: '/pedidos', icon: 'time-outline', roles: ['admin', 'vendedor'] },
-    { title: 'Caja', url: '/caja', icon: 'cash-outline', roles: ['admin', 'cajero'] },
+    { title: 'Caja', url: '/cash-register', icon: 'cash-outline', roles: ['admin', 'cajero'] },
     { title: 'Productos', url: '/productos', icon: 'cube-outline', roles: ['admin'] },
     { title: 'Inventario', url: '/inventory', icon: 'clipboard-outline', roles: ['admin'] },
     { title: 'Reportes', url: '/reportes', icon: 'bar-chart-outline', roles: ['admin'] },
