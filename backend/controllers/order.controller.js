@@ -101,6 +101,9 @@ exports.getById = async (req, res) => {
 
 // Crear una orden nueva con productos
 exports.create = async (req, res) => {
+  // ✅ Usar transacción manual simple
+  const transaction = await sequelize.transaction();
+  
   try {
     const {
       type,
@@ -125,198 +128,120 @@ exports.create = async (req, res) => {
       items
     } = req.body;
 
-    // Validación básica
+    // ✅ Validación básica
     if (!type || !total_amount || !created_by || !items || !items.length) {
+      await transaction.rollback();
       return res.status(400).json({ error: 'Faltan campos obligatorios o productos' });
     }
 
-    // Usar la función withTransaction para manejo robusto de transacciones
-    const result = await withTransaction(async (t) => {
-      // Si hay un cupón, verificarlo
-      let finalDiscountAmount = discount_amount || 0;
-      
-      if (coupon_code) {
-        const coupon = await Coupon.findOne({ 
-          where: { 
-            code: coupon_code,
-            is_active: true,
-            valid_from: { [Op.lte]: new Date() },
-            [Op.or]: [
-              { valid_to: null },
-              { valid_to: { [Op.gte]: new Date() }}
-            ]
-          },
-          transaction: t
-        });
-        
-        if (!coupon) {
-          throw new Error('Cupón inválido o expirado');
-        }
-        
-        // Calcular el descuento según si es porcentual o monto fijo
-        if (coupon.discount_type === 'percentage') {
-          finalDiscountAmount = total_amount * (coupon.discount_value / 100);
-        } else {
-          finalDiscountAmount = coupon.discount_value;
-        }
-        
-        // Validar condiciones específicas del cupón
-        if (coupon.min_purchase_amount > 0 && total_amount < coupon.min_purchase_amount) {
-          throw new Error(`El monto mínimo para este cupón es ${coupon.min_purchase_amount}`);
-        }
-        
-        if (coupon.cash_payment_only && payment_method !== 'efectivo') {
-          throw new Error('Este cupón solo es válido para pagos en efectivo');
-        }
-        
-        // Incrementar contador de uso del cupón
-        await Coupon.update(
-          { usage_count: sequelize.literal('usage_count + 1') },
-          { where: { code: coupon_code }, transaction: t }
-        );
-      }
-
-      // Generar código de orden
-      const codePrefix = { orden: 'O', pedido: 'P', delivery: 'D', salon: 'S' }[type];
-
-      const [results] = await sequelize.query(
-        `SELECT COUNT(*) AS count FROM Orders WHERE type = ? AND CONVERT(date, created_at) = CONVERT(date, GETDATE())`,
-        {
-          replacements: [type],
-          type: sequelize.QueryTypes.SELECT,
-          transaction: t
-        }
-      );
-      
-      const countToday = results.count;
-      const orderCode = `${codePrefix}${String(countToday + 1).padStart(3, '0')}`;
-      const orderId = uuidv4();
-
-      // Insertar la orden
-      await sequelize.query(
-        `INSERT INTO Orders (
-          id, order_code, type, status, customer_name, customer_phone, customer_email, 
-          table_number, delivery_address, delivery_date, total_amount, deposit_amount,
-          total_cash_paid, total_non_cash_paid, discount_percentage, discount_amount,
-          payment_method, first_payment_date, last_payment_date, created_by, cash_register_id, coupon_code, created_at
-        ) 
-        VALUES (
-          :id, :order_code, :type, :status, :customer_name, :customer_phone, :customer_email,
-          :table_number, :delivery_address, :delivery_date, :total_amount, :deposit_amount,
-          :total_cash_paid, :total_non_cash_paid, :discount_percentage, :discount_amount,
-          :payment_method, :first_payment_date, :last_payment_date, :created_by, :cash_register_id, :coupon_code, GETDATE()
-        )`,
-        {
-          replacements: {
-            id: orderId,
-            order_code: orderCode,
-            type,
-            status: 'pendiente',
-            customer_name,
-            customer_phone: customer_phone || null,
-            customer_email: customer_email || null,
-            table_number: table_number || null,
-            delivery_address: delivery_address || null,
-            delivery_date: delivery_date || null,
-            total_amount,
-            deposit_amount: deposit_amount || 0,
-            total_cash_paid: total_cash_paid || 0,
-            total_non_cash_paid: total_non_cash_paid || 0,
-            discount_percentage: discount_percentage || 0,
-            discount_amount: finalDiscountAmount,
-            payment_method: payment_method || null,
-            first_payment_date: first_payment_date || null,
-            last_payment_date: last_payment_date || null,
-            created_by,
-            cash_register_id: cash_register_id || null,
-            coupon_code: coupon_code || null
-          },
-          type: sequelize.QueryTypes.INSERT,
-          transaction: t
-        }
-      );
-
-      // Insertar los ítems de la orden
-      for (const item of items) {
-        // Validar que el producto exista si es necesario
-        if (item.product_id) {
-          const product = await Product.findByPk(item.product_id, { transaction: t });
-          if (!product) {
-            throw new Error(`Producto no encontrado: ${item.product_id}`);
-          }
-        }
-        
-        await sequelize.query(
-          `INSERT INTO OrderItems (
-            id, order_id, product_id, product_name, quantity, unit_label,
-            unit_price, final_price, discount_applied, subtotal, created_at
-          ) VALUES (
-            :id, :order_id, :product_id, :product_name, :quantity, :unit_label,
-            :unit_price, :final_price, :discount_applied, :subtotal, GETDATE()
-          )`,
-          {
-            replacements: {
-              id: uuidv4(),
-              order_id: orderId,
-              product_id: item.product_id,
-              product_name: item.product_name || '',
-              quantity: item.quantity,
-              unit_label: item.unit_label || 'unidad',
-              unit_price: item.unit_price,
-              final_price: item.final_price,
-              discount_applied: item.discount_applied || 0,
-              subtotal: item.quantity * item.final_price
-            },
-            type: sequelize.QueryTypes.INSERT,
-            transaction: t
-          }
-        );
-      }
-
-      // Retornar el ID de la orden creada
-      return orderId;
-    }, { 
-      maxRetries: 3,
-      initialDelay: 200
+    logger.info('📦 Creando nueva orden', {
+      type,
+      customer_name,
+      itemsCount: items.length,
+      total_amount,
+      created_by
     });
 
-    // Invalidar caché relacionada
-    cache.invalidatePattern(/^orders:/);
-    cache.invalidatePattern(/^dashboard:/);
+    // ✅ Generar código de orden
+    const codePrefix = { orden: 'O', pedido: 'P', delivery: 'D', salon: 'S' }[type];
     
-    // Obtener la orden creada
-    const [createdOrder] = await sequelize.query(
-      `SELECT * FROM Orders WHERE id = :id`,
-      {
-        replacements: { id: result },
-        type: sequelize.QueryTypes.SELECT
-      }
-    );
+    // Contar órdenes del día actual para este tipo
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const countToday = await Order.count({
+      where: {
+        type,
+        created_at: {
+          [Op.gte]: today,
+          [Op.lt]: tomorrow
+        }
+      },
+      transaction
+    });
+    
+    const orderCode = `${codePrefix}${String(countToday + 1).padStart(3, '0')}`;
+    
+    // ✅ Crear orden
+    const order = await Order.create({
+      order_code: orderCode,
+      type,
+      status: 'pendiente',
+      customer_name: customer_name || '',
+      customer_phone,
+      customer_email,
+      table_number,
+      delivery_address,
+      delivery_date,
+      total_amount,
+      deposit_amount: deposit_amount || 0,
+      total_cash_paid: total_cash_paid || 0,
+      total_non_cash_paid: total_non_cash_paid || 0,
+      discount_percentage: discount_percentage || 0,
+      discount_amount: discount_amount || 0,
+      payment_method,
+      first_payment_date,
+      last_payment_date,
+      created_by,
+      cash_register_id,
+      coupon_code,
+      created_at: new Date()
+    }, { transaction });
 
+    // ✅ Crear items
+    const orderItems = [];
+    for (const item of items) {
+      const orderItem = await OrderItem.create({
+        order_id: order.id,
+        product_id: item.product_id,
+        product_name: item.product_name || '',
+        quantity: item.quantity,
+        unit_label: item.unit_label || 'unidad',
+        unit_price: item.unit_price,
+        final_price: item.final_price,
+        discount_applied: item.discount_applied || 0,
+        subtotal: item.quantity * item.final_price,
+        is_weighable: item.is_weighable || false
+      }, { transaction });
+      
+      orderItems.push(orderItem);
+    }
+
+    // ✅ Commit
+    await transaction.commit();
+    
     logger.info('✅ Orden creada exitosamente', {
-      orderId: result,
-      orderCode: createdOrder.order_code,
-      type: createdOrder.type
+      orderId: order.id,
+      orderCode: order.order_code,
+      type: order.type,
+      itemsCount: orderItems.length
+    });
+
+    // ✅ Retornar orden con items
+    const createdOrder = await Order.findByPk(order.id, {
+      include: [{ model: OrderItem, as: 'items' }]
     });
 
     res.status(201).json(createdOrder);
+    
   } catch (error) {
+    // ✅ Rollback en caso de error
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      logger.error('❌ Error en rollback:', rollbackError);
+    }
+    
     logger.error('❌ Error al crear orden:', { 
       error: error.message, 
       stack: error.stack
     });
     
-    // Manejo específico de errores conocidos
-    if (error.message.includes('Cupón inválido') || 
-        error.message.includes('monto mínimo') ||
-        error.message.includes('solo es válido') ||
-        error.message.includes('Producto no encontrado')) {
-      return res.status(400).json({ error: error.message });
-    }
-    
     res.status(500).json({ 
       error: 'Error al crear orden', 
-      message: error.message 
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Error interno'
     });
   }
 };

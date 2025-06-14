@@ -9,6 +9,9 @@ import { ProductoService, Producto } from '../../productos/services/producto.ser
 import { UiService } from '../../core/services/ui.service';
 import { PedidosService, type CreatePedidoRequest } from '../services/pedidos.service';
 import { PedidosListaComponent } from '../pedidos-lista/pedidos-lista.component';
+import { AuthService } from '../../core/services/auth.service';
+
+
 
 interface Categoria {
   id: string;
@@ -31,6 +34,7 @@ interface Categoria {
 export class NuevoPedidoComponent implements OnInit, AfterViewInit {
   @ViewChild(IonContent) content!: IonContent;
   
+  private currentUser: any = null;
   seccionActual = 'nuevo';
   terminoBusqueda = '';
   categoriaSeleccionada = 'todas';
@@ -73,12 +77,14 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
     private alertController: AlertController,
     private router: Router,
     private uiService: UiService,
-    private pedidosService: PedidosService
+    private pedidosService: PedidosService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.cargarProductos();
     this.cargarCategorias();
+    this.loadCurrentUser();
   }
 
   ngAfterViewInit() {
@@ -172,6 +178,13 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
       );
     }
   }
+
+  private loadCurrentUser() {
+  this.authService.currentUser.subscribe(user => {
+    this.currentUser = user;
+    console.log('👤 Usuario cargado:', user?.username);
+  });
+}
 
   async agregarAlPedido(producto: Producto) {
     if (producto.is_weighable) {
@@ -332,7 +345,7 @@ export class NuevoPedidoComponent implements OnInit, AfterViewInit {
       type: this.esPedidoAnticipado ? 'pedido' : 'orden',
       customer_name: this.nombreCliente,
       payment_method: this.metodoPago,
-      created_by: localStorage.getItem('userId') || 'temp-user-id',
+      created_by: this.currentUser?.id || 'temp-user-id',
       total_amount: this.totalPedido,
       items: this.itemsPedido.map(item => ({
         product_id: item.producto.id,
