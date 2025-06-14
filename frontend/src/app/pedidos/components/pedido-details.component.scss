@@ -1,0 +1,222 @@
+// frontend/src/app/pedidos/components/pedido-details.component.scss
+
+:host {
+    display: block;
+    height: 100%;
+  }
+  
+  // ===== LOADING & ERROR STATES =====
+  .loading-container, 
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 16px;
+    text-align: center;
+  
+    ion-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+  
+    p {
+      color: var(--ion-color-medium);
+      margin: 0;
+    }
+  
+    ion-button {
+      margin-top: 16px;
+    }
+  }
+  
+  // ===== MAIN CONTENT =====
+  .pedido-details {
+    padding-bottom: 20px;
+  }
+  
+  // ===== CARDS STYLING =====
+  ion-card {
+    margin-bottom: 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+    &.header-card {
+      background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+      color: white;
+  
+      ion-card-title,
+      ion-card-subtitle {
+        color: white;
+      }
+    }
+  
+    &.info-card,
+    &.products-card,
+    &.payment-card,
+    &.timestamps-card {
+      --background: var(--ion-color-light);
+      
+      ion-card-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        
+        ion-icon {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+  
+  // ===== HEADER SECTION =====
+  .pedido-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  
+    .header-info {
+      flex: 1;
+    }
+  
+    .status-badge {
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+  }
+  
+  // ===== LISTS & ITEMS =====
+  ion-list {
+    background: transparent;
+    
+    ion-item {
+      --background: transparent;
+      --inner-padding-end: 0;
+      --padding-start: 0;
+      margin-bottom: 8px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+  
+      ion-icon[slot="start"] {
+        margin-right: 12px;
+        font-size: 18px;
+      }
+  
+      ion-label {
+        h2, h3 {
+          margin: 0 0 4px 0;
+          font-weight: 500;
+        }
+  
+        p {
+          margin: 0;
+          color: var(--ion-color-medium);
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+  
+  // ===== PRODUCTS SECTION =====
+  .product-item {
+    border-radius: 8px;
+    background: var(--ion-color-light-shade);
+    margin-bottom: 8px;
+    padding: 8px;
+  
+    .product-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--ion-color-primary-tint);
+      margin-right: 12px;
+  
+      ion-icon {
+        color: var(--ion-color-primary);
+        font-size: 20px;
+      }
+    }
+  
+    .product-details {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium-shade);
+    }
+  
+    .item-total {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+  }
+  
+  .no-items {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    color: var(--ion-color-medium);
+    text-align: center;
+  
+    ion-icon {
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+  
+    p {
+      margin: 0;
+      font-style: italic;
+    }
+  }
+  
+  // ===== PAYMENT SECTION =====
+  .payment-card {
+    .amount,
+    .discount,
+    .final-total,
+    .deposit {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+  
+    .total-item {
+      border-top: 1px solid var(--ion-color-light-shade);
+      margin-top: 8px;
+      padding-top: 12px;
+  
+      .final-total {
+        font-size: 1.2rem;
+      }
+    }
+  
+    .payment-method {
+      text-transform: capitalize;
+      font-weight: 500;
+    }
+  }
+  
+  // ===== ACTIONS SECTION =====
+  .actions {
+    margin-top: 24px;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  
+    .action-btn {
+      --border-radius: 12px;
+      font-weight: 600;
+      
+      &[color="primary"] {
+        --background: var(--ion-color-success);
+        --background-hover: var(

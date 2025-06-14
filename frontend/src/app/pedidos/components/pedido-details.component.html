@@ -1,0 +1,271 @@
+<!-- frontend/src/app/pedidos/components/pedido-details.component.html -->
+
+<ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Detalles del Pedido</ion-title>
+      <ion-buttons slot="end">
+        <ion-button fill="clear" (click)="closeModal()">
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+  
+  <ion-content class="ion-padding">
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Cargando detalles...</p>
+    </div>
+  
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+      <ion-icon name="alert-circle" color="danger"></ion-icon>
+      <p>{{ error }}</p>
+      <ion-button fill="outline" (click)="loadPedidoDetails()">
+        <ion-icon name="refresh" slot="start"></ion-icon>
+        Reintentar
+      </ion-button>
+    </div>
+  
+    <!-- Main Content -->
+    <div *ngIf="pedido && !loading" class="pedido-details">
+      
+      <!-- Header Card -->
+      <ion-card class="header-card">
+        <ion-card-header>
+          <div class="pedido-header">
+            <div class="header-info">
+              <ion-card-title>{{ pedido.order_code }}</ion-card-title>
+              <ion-card-subtitle>{{ pedido.type | pedidoType }}</ion-card-subtitle>
+            </div>
+            <ion-badge [color]="getStatusColor(pedido.status)" class="status-badge">
+              {{ pedido.status | pedidoStatus }}
+            </ion-badge>
+          </div>
+        </ion-card-header>
+      </ion-card>
+  
+      <!-- Customer Information -->
+      <ion-card class="info-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="person-circle" slot="start"></ion-icon>
+            Información del Cliente
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none">
+            <ion-item>
+              <ion-icon name="person" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Nombre</h3>
+                <p>{{ pedido.customer_name || 'No especificado' }}</p>
+              </ion-label>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.customer_phone">
+              <ion-icon name="call" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Teléfono</h3>
+                <p>{{ pedido.customer_phone }}</p>
+              </ion-label>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.customer_email">
+              <ion-icon name="mail" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Email</h3>
+                <p>{{ pedido.customer_email }}</p>
+              </ion-label>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.table_number">
+              <ion-icon name="restaurant" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Mesa</h3>
+                <p>Mesa {{ pedido.table_number }}</p>
+              </ion-label>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.delivery_address">
+              <ion-icon name="location" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Dirección de Entrega</h3>
+                <p>{{ pedido.delivery_address }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+  
+      <!-- Products List -->
+      <ion-card class="products-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="bag" slot="start"></ion-icon>
+            Productos
+            <ion-chip color="primary" *ngIf="pedido.items?.length">
+              {{ pedido.items.length }}
+            </ion-chip>
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list *ngIf="pedido.items && pedido.items.length > 0" lines="inset">
+            <ion-item *ngFor="let item of pedido.items" class="product-item">
+              <div slot="start" class="product-avatar">
+                <ion-icon name="cube-outline"></ion-icon>
+              </div>
+              <ion-label>
+                <h2>{{ item.product_name }}</h2>
+                <p class="product-details">
+                  {{ item.quantity }} {{ item.unit_label }} 
+                  × {{ item.unit_price | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+                </p>
+              </ion-label>
+              <ion-note slot="end" color="primary" class="item-total">
+                {{ item.subtotal | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+              </ion-note>
+            </ion-item>
+          </ion-list>
+          
+          <div *ngIf="!pedido.items || pedido.items.length === 0" class="no-items">
+            <ion-icon name="cube-outline" size="large" color="medium"></ion-icon>
+            <p>No hay productos en este pedido</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+  
+      <!-- Payment Information -->
+      <ion-card class="payment-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="card" slot="start"></ion-icon>
+            Información de Pago
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none">
+            <ion-item>
+              <ion-label>
+                <h3>Subtotal</h3>
+              </ion-label>
+              <ion-note slot="end" class="amount">
+                {{ pedido.total_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+              </ion-note>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.discount_amount && pedido.discount_amount > 0">
+              <ion-label>
+                <h3>Descuento</h3>
+                <p *ngIf="pedido.coupon_code">Cupón: {{ pedido.coupon_code }}</p>
+              </ion-label>
+              <ion-note slot="end" color="success" class="discount">
+                -{{ pedido.discount_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+              </ion-note>
+            </ion-item>
+            
+            <ion-item class="total-item">
+              <ion-label>
+                <h2><strong>Total Final</strong></h2>
+              </ion-label>
+              <ion-note slot="end" color="primary" class="final-total">
+                <strong>{{ getFinalTotal() | currency:'ARS':'symbol':'1.2-2':'es-AR' }}</strong>
+              </ion-note>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.payment_method">
+              <ion-icon name="wallet" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Método de Pago</h3>
+                <p class="payment-method">{{ pedido.payment_method }}</p>
+              </ion-label>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.deposit_amount && pedido.deposit_amount > 0">
+              <ion-icon name="cash" slot="start" color="success"></ion-icon>
+              <ion-label>
+                <h3>Seña Pagada</h3>
+              </ion-label>
+              <ion-note slot="end" color="success" class="deposit">
+                {{ pedido.deposit_amount | currency:'ARS':'symbol':'1.2-2':'es-AR' }}
+              </ion-note>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+  
+      <!-- Timestamps -->
+      <ion-card class="timestamps-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="time" slot="start"></ion-icon>
+            Fechas Importantes
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none">
+            <ion-item>
+              <ion-icon name="calendar" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Fecha de Creación</h3>
+                <p>{{ pedido.created_at | timeAgo }}</p>
+              </ion-label>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.updated_at">
+              <ion-icon name="sync" slot="start" color="medium"></ion-icon>
+              <ion-label>
+                <h3>Última Actualización</h3>
+                <p>{{ pedido.updated_at | timeAgo }}</p>
+              </ion-label>
+            </ion-item>
+            
+            <ion-item *ngIf="pedido.delivery_date">
+              <ion-icon name="truck" slot="start" color="warning"></ion-icon>
+              <ion-label>
+                <h3>Fecha de Entrega Programada</h3>
+                <p>{{ pedido.delivery_date | timeAgo }}</p>
+              </ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+  
+      <!-- Action Buttons -->
+      <div class="actions" *ngIf="canPerformActions()">
+        <ion-button 
+          *ngIf="canConfirmPedido()"
+          expand="block" 
+          color="primary"
+          size="large"
+          (click)="confirmPedido()"
+          class="action-btn">
+          <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+          Confirmar Pedido
+        </ion-button>
+        
+        <ion-button 
+          *ngIf="canCancelPedido()"
+          expand="block" 
+          color="danger" 
+          fill="outline"
+          size="large"
+          (click)="cancelPedido()"
+          class="action-btn">
+          <ion-icon name="close-circle" slot="start"></ion-icon>
+          Cancelar Pedido
+        </ion-button>
+      </div>
+  
+      <!-- Footer Info -->
+      <div class="footer-info" *ngIf="!canPerformActions()">
+        <ion-chip color="medium">
+          <ion-icon name="information-circle" slot="start"></ion-icon>
+          <ion-label>
+            Este pedido no permite más acciones
+          </ion-label>
+        </ion-chip>
+      </div>
+    </div>
+  </ion-content>

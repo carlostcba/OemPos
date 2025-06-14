@@ -1,41 +1,214 @@
-<!-- // frontend/src/app/cash-register/cash-register.component/cash-register.component.html -->
+<!-- frontend/src/app/cash-register/cash-register.component.html -->
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Caja</ion-title>
+    <ion-title>Cash Register</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="refreshData()" [disabled]="loading">
+        <ion-icon name="refresh" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="toggleAutoRefresh()">
+        <ion-icon [name]="autoRefresh ? 'pause' : 'play'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Resumen del Día</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>Efectivo: ${{ totalEfectivo }}</p>
-      <p>Débito: ${{ totalDebito }}</p>
-      <p>Crédito: ${{ totalCredito }}</p>
-      <p>Billetera Electrónica: ${{ totalBilletera }}</p>
-      <p>Descuentos Aplicados: ${{ totalDescuentos }}</p>
-      <p>Pagos a Proveedores: ${{ totalPagosProveedores }}</p>
-    </ion-card-content>
-  </ion-card>
+<ion-content class="ion-padding">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading cash register data...</p>
+  </div>
 
-  <ion-button expand="full" color="success" (click)="abrirCaja()">Abrir Caja</ion-button>
-  <ion-button expand="full" color="warning" (click)="cerrarCaja()">Cerrar Caja</ion-button>
-  <ion-button expand="full" color="medium" (click)="agregarIngresoManual()">Agregar Ingreso Manual</ion-button>
-  <ion-button expand="full" color="danger" (click)="registrarPagoProveedor()">Pago a Proveedor</ion-button>
+  <div *ngIf="!loading">
+    <!-- Daily Summary Card -->
+    <ion-card class="summary-card">
+      <ion-card-header>
+        <ion-card-title>Daily Summary</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <ion-label>
+              <h3>Cash</h3>
+              <p>{{ cashSummary?.cashSales | cashAmount }}</p>
+            </ion-label>
+          </div>
+          <div class="summary-item">
+            <ion-label>
+              <h3>Debit</h3>
+              <p>{{ 0 | cashAmount }}</p>
+            </ion-label>
+          </div>
+          <div class="summary-item">
+            <ion-label>
+              <h3>Credit</h3>
+              <p>{{ cashSummary?.cardSales | cashAmount }}</p>
+            </ion-label>
+          </div>
+          <div class="summary-item">
+            <ion-label>
+              <h3>Digital Wallet</h3>
+              <p>{{ cashSummary?.transferSales | cashAmount }}</p>
+            </ion-label>
+          </div>
+          <div class="summary-item">
+            <ion-label>
+              <h3>Applied Discounts</h3>
+              <p>{{ 0 | cashAmount }}</p>
+            </ion-label>
+          </div>
+          <div class="summary-item">
+            <ion-label>
+              <h3>Supplier Payments</h3>
+              <p>{{ cashSummary?.totalExpenses | cashAmount }}</p>
+            </ion-label>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+<!--
+     Action Buttons 
+    <div class="action-buttons">
+      <ion-button 
+        expand="block" 
+        color="success" 
+        [disabled]="hasOpenRegister || !userPermissions.canOpenRegister"
+        (click)="openRegister()"
+        class="action-btn">
+        OPEN REGISTER
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        color="warning" 
+        [disabled]="!hasOpenRegister || !userPermissions.canCloseRegister"
+        (click)="closeRegister()"
+        class="action-btn">
+        CLOSE REGISTER
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        color="medium" 
+        [disabled]="!hasOpenRegister || !userPermissions.canAddTransaction"
+        (click)="addManualTransaction()"
+        class="action-btn">
+        ADD MANUAL INCOME
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        color="danger" 
+        [disabled]="!hasOpenRegister || !userPermissions.canAddTransaction"
+        (click)="payToSupplier()"
+        class="action-btn">
+        PAY TO SUPPLIER
+      </ion-button>
+    </div>
+  -->
 
-  <ion-list>
-    <ion-list-header>
-      <ion-label>Órdenes en curso</ion-label>
-    </ion-list-header>
-    <ion-item *ngFor="let orden of comandas">
-      <ion-label>
-        <h2>{{ orden.tipo | titlecase }} - {{ orden.codigo }}</h2>
-        <p>Estado: {{ orden.estado }}</p>
-      </ion-label>
-      <ion-button slot="end" fill="clear" color="success" (click)="marcarOrdenComoPagada(orden)">Pagado</ion-button>
-      <ion-button slot="end" fill="clear" color="danger" (click)="cancelarOrden(orden)">Cancelar</ion-button>
-    </ion-item>
-  </ion-list>
+    <!-- Current Balance (Admin/Manager Only) -->
+    <ion-card *ngIf="userPermissions.canViewBalance" class="balance-card">
+      <ion-card-content>
+        <div class="balance-info">
+          <ion-icon name="wallet" class="balance-icon"></ion-icon>
+          <div class="balance-details">
+            <h2>Current Cash Balance</h2>
+            <p class="balance-amount">{{ cashSummary?.currentBalance | cashAmount }}</p>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Order Queue Section -->
+    <div class="queue-section">
+      <div class="queue-header">
+        <h2>Order Queue</h2>
+        <ion-button 
+          *ngIf="canPerformOperations" 
+          fill="outline" 
+          size="small"
+          (click)="callNextOrder()">
+          <ion-icon name="megaphone" slot="start"></ion-icon>
+          Call Next
+        </ion-button>
+      </div>
+
+      <!-- Queue Filters -->
+      <div class="queue-filters">
+        <ion-segment [(ngModel)]="queueFilter" (ionChange)="onQueueFilterChange($event)" mode="md">
+          <ion-segment-button value="all">
+            <ion-label>All</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="orders">
+            <ion-label>Orders</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="reservations">
+            <ion-label>Advance Orders</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+
+        <ion-searchbar 
+          placeholder="Search by order # or customer..."
+          [(ngModel)]="searchTerm"
+          (ionChange)="onSearchChange($event)"
+          class="queue-search">
+        </ion-searchbar>
+      </div>
+
+      <!-- Orders List -->
+      <div class="orders-container">
+        <ion-list *ngIf="filteredOrders.length > 0" class="orders-list">
+          <ion-item-sliding *ngFor="let orderInQueue of filteredOrders; trackBy: trackByOrderId">
+            <ion-item>
+              <div class="order-info">
+                <div class="order-header">
+                  <h3>{{ orderInQueue.order.type | orderType }} - {{ orderInQueue.order.orderCode }}</h3>
+                  <ion-badge [color]="getOrderStatusColor(orderInQueue.status)">
+                    {{ orderInQueue.status | orderStatus }}
+                  </ion-badge>
+                </div>
+                <div class="order-details">
+                  <p class="customer-name">
+                    <ion-icon name="person" size="small"></ion-icon>
+                    {{ orderInQueue.order.customerName }}
+                  </p>
+                  <p class="order-amount">
+                    {{ orderInQueue.order.totalAmount | cashAmount }}
+                  </p>
+                </div>
+                <div class="order-meta">
+                  <p class="queue-position">Position: {{ orderInQueue.queuePosition }}</p>
+                  <p *ngIf="orderInQueue.order.paymentMethod" class="payment-method">
+                    <ion-icon name="card" size="small"></ion-icon>
+                    {{ orderInQueue.order.paymentMethod }}
+                  </p>
+                </div>
+              </div>
+            </ion-item>
+            
+            <!-- Sliding Actions -->
+            <ion-item-options side="end" *ngIf="canPerformOperations">
+              <ion-item-option 
+                color="primary" 
+                (click)="processOrder(orderInQueue)"
+                *ngIf="orderInQueue.status === 'called'">
+                <ion-icon name="checkmark" slot="icon-only"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredOrders.length === 0" class="empty-queue">
+          <ion-icon name="receipt-outline" size="large"></ion-icon>
+          <h3>No pending orders to collect</h3>
+          <p *ngIf="queueFilter !== 'all' || searchTerm">
+            Try adjusting your filters or search term.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </ion-content>

@@ -1,17 +1,13 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { CashRegisterComponent } from './cash-register.component/cash-register.component';
+// frontend/src/app/cash-register/cash-register.module.ts
 
-const routes: Routes = [
-  {
-    path: '',
-    component: CashRegisterComponent
-  }
-];
+import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { CASH_REGISTER_ROUTES } from './cash-register.routes';
+import { CashRegisterComponent } from './cash-register.component/cash-register.component';
 
 @NgModule({
   imports: [
-    RouterModule.forChild(routes),
+    RouterModule.forChild(CASH_REGISTER_ROUTES),
     CashRegisterComponent
   ]
 })
