@@ -151,6 +151,39 @@ exports.create = async (req, res) => {
     const orderCode = `${codePrefix}${String(countToday + 1).padStart(3, '0')}`;
     const orderId = uuidv4();
 
+
+    const currentMaxPosition = await sequelize.query(
+      `SELECT ISNULL(MAX(queue_position), 0) as maxPos FROM OrderQueue`,
+      {
+        type: sequelize.QueryTypes.SELECT,
+        transaction
+      }
+    );
+    
+    const queuePosition = (currentMaxPosition[0]?.maxPos || 0) + 1;
+    const queueId = uuidv4();
+    
+    await sequelize.query(
+      `INSERT INTO OrderQueue (
+        id, order_id, priority, queue_position, status, created_at
+      ) VALUES (
+        :id, :order_id, :priority, :queue_position, :status, GETDATE()
+      )`,
+      {
+        replacements: {
+          id: queueId,
+          order_id: orderId,
+          priority: type === 'pedido' ? 5 : 0, // Pedidos tienen mayor prioridad
+          queue_position: queuePosition,
+          status: 'waiting'
+        },
+        type: sequelize.QueryTypes.INSERT,
+        transaction
+      }
+    );
+
+    console.log('✅ Orden agregada a cola:', queueId, 'posición:', queuePosition);
+
     // ✅ CREAR ORDEN PRINCIPAL
     const orderData = {
       id: orderId,

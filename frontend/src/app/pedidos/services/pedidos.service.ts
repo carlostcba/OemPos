@@ -5,6 +5,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { throwError } from 'rxjs';
+import { OrderQueueService } from '../../shared/services/order-queue.service';
 
 export interface Pedido {
   id: string;
@@ -75,13 +77,16 @@ export class PedidosService {
   private pedidosSubject = new BehaviorSubject<Pedido[]>([]);
   public pedidos$ = this.pedidosSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private queueService: OrderQueueService 
+  ) {}
 
   // === CRUD OPERATIONS ===
 
   getAll(filters?: PedidoFilters): Observable<Pedido[]> {
     let params = new HttpParams();
-    
+  
     if (filters) {
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
@@ -89,7 +94,7 @@ export class PedidosService {
         }
       });
     }
-
+  
     return this.http.get<Pedido[]>(this.apiUrl, { params }).pipe(
       tap(pedidos => {
         console.log('📦 Pedidos obtenidos:', pedidos);
@@ -97,106 +102,17 @@ export class PedidosService {
       }),
       catchError(error => {
         console.error('❌ Error fetching pedidos:', error);
-        
-        // Retornar datos mock en caso de error
-        const mockPedidos: Pedido[] = [
-          {
-            id: '1',
-            order_code: 'O001',
-            type: 'orden',
-            status: 'pendiente',
-            customer_name: 'Juan Pérez',
-            customer_phone: '+54911234567',
-            total_amount: 1500.00,
-            created_by: 'admin',
-            created_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            order_code: 'P001',
-            type: 'pedido',
-            status: 'confirmado',
-            customer_name: 'María García',
-            customer_phone: '+54911234568',
-            total_amount: 2300.00,
-            created_by: 'admin',
-            created_at: new Date(Date.now() - 3600000).toISOString()
-          },
-          {
-            id: '3',
-            order_code: 'D001',
-            type: 'delivery',
-            status: 'esperando_retiro',
-            customer_name: 'Carlos López',
-            customer_phone: '+54911234569',
-            delivery_address: 'Av. Libertador 1234',
-            total_amount: 4200.00,
-            created_by: 'admin',
-            created_at: new Date(Date.now() - 7200000).toISOString()
-          },
-          {
-            id: '4',
-            order_code: 'S001',
-            type: 'salon',
-            status: 'entregado',
-            customer_name: 'Ana Rodríguez',
-            table_number: 'Mesa 5',
-            total_amount: 3800.00,
-            created_by: 'admin',
-            created_at: new Date(Date.now() - 10800000).toISOString()
-          },
-          {
-            id: '5',
-            order_code: 'O002',
-            type: 'orden',
-            status: 'cancelado',
-            customer_name: 'Luis Martínez',
-            customer_phone: '+54911234570',
-            total_amount: 750.00,
-            created_by: 'admin',
-            created_at: new Date(Date.now() - 14400000).toISOString()
-          }
-        ];
-        
-        console.log('🔄 Usando datos mock de pedidos');
-        this.pedidosSubject.next(mockPedidos);
-        return of(mockPedidos);
+        return throwError(() => error);
       })
     );
   }
-
+  
+  
   getById(id: string): Observable<Pedido> {
     return this.http.get<Pedido>(`${this.apiUrl}/${id}`).pipe(
       catchError(error => {
         console.error(`❌ Error fetching pedido ${id}:`, error);
-        
-        // Retornar pedido mock
-        const mockPedido: Pedido = {
-          id,
-          order_code: 'O001',
-          type: 'orden',
-          status: 'pendiente',
-          customer_name: 'Cliente Mock',
-          total_amount: 1000.00,
-          created_by: 'admin',
-          created_at: new Date().toISOString(),
-          items: [
-            {
-              id: '1',
-              order_id: id,
-              product_id: '1',
-              product_name: 'Producto Mock',
-              unit_price: 500.00,
-              final_price: 500.00,
-              quantity: 2,
-              subtotal: 1000.00,
-              unit_label: 'unidad',
-              is_weighable: false
-            }
-          ]
-        };
-        
-        return of(mockPedido);
+        return throwError(() => error);
       })
     );
   }
@@ -204,14 +120,15 @@ export class PedidosService {
   create(pedidoData: CreatePedidoRequest): Observable<Pedido> {
     const total_amount = pedidoData.total_amount ??
       pedidoData.items.reduce((sum, item) => sum + (item.quantity * item.final_price), 0);
-
+  
     const requestData = {
       ...pedidoData,
       total_amount
     };
-
+  
     return this.http.post<Pedido>(this.apiUrl, requestData).pipe(
       tap(newPedido => {
+        console.log('✅ Orden creada y agregada a cola automáticamente'); // ✅ AGREGAR
         const currentPedidos = this.pedidosSubject.value;
         this.pedidosSubject.next([newPedido, ...currentPedidos]);
       }),
@@ -221,6 +138,7 @@ export class PedidosService {
       })
     );
   }
+  
 
   update(id: string, updateData: Partial<Pedido>): Observable<Pedido> {
     return this.http.put<Pedido>(`${this.apiUrl}/${id}`, updateData).pipe(

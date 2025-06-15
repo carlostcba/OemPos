@@ -31,6 +31,7 @@ Product.belongsTo(ProductImage, { foreignKey: 'product_image_id', as: 'image' })
 Product.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
 Product.hasMany(InventoryMovement, { foreignKey: 'product_id', as: 'inventory_movements' });
 
+
 // Relaciones inversas para categorías
 Category.hasMany(Product, { foreignKey: 'category_id', as: 'products' });
 Subcategory.hasMany(Product, { foreignKey: 'subcategory_id', as: 'products' });
@@ -41,6 +42,8 @@ Order.hasMany(OrderItem, { foreignKey: 'order_id', as: 'items' });
 Order.hasOne(Receipt, { foreignKey: 'order_id', as: 'receipt' });
 Order.belongsTo(CashRegister, { foreignKey: 'cash_register_id', as: 'cash_register' });
 Order.hasMany(CashTransaction, { foreignKey: 'order_id', as: 'transactions' });
+Order.hasOne(OrderQueue, { foreignKey: 'order_id', as: 'queue_entry' });
+OrderQueue.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 
 // 🔗 Relaciones de ítems de orden
 OrderItem.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
